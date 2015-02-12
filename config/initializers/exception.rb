@@ -1,1 +1,0 @@
-class RepeatedFailException < Exception; end

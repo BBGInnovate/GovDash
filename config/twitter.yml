@@ -1,0 +1,56 @@
+# https://apps.twitter.com/
+development: &defaults
+# ads@bbg.gov
+# OddiLiwen
+  strategy: oauth
+  consumer_key: "LgDmUB9EQDYJcv1utoHGnwOdX"
+  consumer_secret: "AGi8msJKyR3poLuR3YSgdi7zVQZz6EenaKNVQUO5bcjbdrg4fa"
+  callback_url: "/twitter/callback"
+  base_url: "https://api.twitter.com"
+  api_version: "1.1"
+  access_token: "2770585550-J9shbCW5pNewcD66p55y06cPd2PGX0MoH0MNOF1"
+  access_token_secret: "ZZs81WRWvCeu9r45IakQC3h2MTunfdntpR0JFxsPV8KEy"
+  since_date: 7.days.ago
+  months_list: 2
+  weeks_list: 4
+  days_list: 7
+  owner_id: 588576061
+  authorize_path: "/oauth/authorize"
+  api_timeout: 10
+  remember_for: 14 # days
+  
+staging:
+  <<: *defaults
+# odditect@bbg.gov
+# odditech
+  strategy: oauth
+  consumer_key: "GvLGnirsKQArX9BxGreuwGX7Y"
+  consumer_secret: "Ld7dgepgQs6W6eLE3AJXYGU1MADbpONZZIhABdIWPkrCy2Nicj"
+  callback_url: "/twitter/callback"
+  base_url: "https://api.twitter.com"
+  api_version: "1.1"
+  access_token: "2828394380-04przBDuXyB1pFI9DZzdIecI9YflSsX1LiS4T6C"
+  access_token_secret: "GX9F1X0P6ZIX5xhanvOgi0QKmIQIUs645yeN9YTtpcDSw"
+  since_date: 7.days.ago
+  owner_id: 2828394380
+production:
+# oddidev@bbg.gov
+# oddedev
+  strategy: oauth
+  consumer_key: "taRM3U675XOjORRTYHBZ6hkHE"
+  consumer_secret: "CPLraTGfiBmcLsMdX8X9yNXkvJjDyYlJFtvbNEmysxISAHpVH7"
+  callback_url: "/twitter/callback"
+  base_url: "https://api.twitter.com"
+  api_version: "1.1"
+  access_token: "588576061-XdPM6zqfsIXGY97MgzswxWeBYTBe6rz6bUHu5lZr"
+  access_token_secret: "wrVZhzJizKxcLo1UzCYFKdcAwMWv1QlZtiDDOhHbjpoRv"
+  since_date: 7.days.ago
+  months_list: 2
+  weeks_list: 4
+  days_list: 7
+  owner_id: 588576061
+  authorize_path: "/oauth/authorize"
+  api_timeout: 10
+  remember_for: 14 # days
+
+  

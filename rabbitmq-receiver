@@ -1,6 +1,0 @@
-#!/bin/sh
-
-# /home/lliu/socialdash/current/rabbitmq-receiver
-/bin/bash -l -c 'source /home/lliu/.rvm/scripts/rvm; cd /home/lliu/socialdash/current && bundle exec rails runner -e development  "RabbitReceiver.consumers"'  > /tmp/mq-consumer.log 2>&1;
-# this file must be owned by lliu:lliu to run
-

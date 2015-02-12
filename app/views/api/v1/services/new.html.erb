@@ -1,0 +1,22 @@
+<%= form_for @service, {:url=>api_services_path} do |f| %>
+  <div id="notice"></div>
+  <%= f.label :name %>
+  <%= f.text_field :name %><br />
+
+  <%= f.label :description %>
+  <%= f.text_field :description %><br />
+
+  <%= f.label :network_id %>
+  <% opt = Network.all.map{|s| [s.name, s.id]} %>
+  <%= f.select :network_id, options_for_select(opt, :selected => :network_id) %>
+  
+  <%= f.label :is_active %>
+  <%= f.text_field :is_active %><br />
+  
+  <%= f.submit "Create", :id=>"submit" %>
+<% end %>
+<script>
+  jQuery(document).ready(function(){
+     service.init(); 
+  });
+</script>

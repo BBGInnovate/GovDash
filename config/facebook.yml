@@ -1,0 +1,79 @@
+development: &defaults
+  # this is VOA Social Dashboard APP
+  # goto www.facebook.com sign as socialvoa@gmail.com VoiceofFacebook and
+  # click Pages, under a title, click View Insights, click Settings,
+  # click Page Roles, click Add Another Person at the buttom of the page
+  # or replace VOASonny by the FB page name
+  # Or https://www.facebook.com/VOASonny/settings?tab=admin_roles
+  # Add ads@bbg.gov to SocialVOA InSights as Admin
+  # Get access_token for ads
+  # feeds=graph_api.graph_call("v2.0/voiceofamerica/insights", {:use_ssl=>true})
+  #
+  # client_id and secret are used in models/facebook.rb to authenticate into Facebook.
+  # To generate page_access_token, we need to switch between users ads@bbg.gov
+  # and odditech@bbg.gov
+  # ads@bbg.gov
+  client_id: 1485668908334414
+  client_secret: 5f047edc869ac47f423649ae3abd4d8a
+  #
+  # odditech@bbg.gov
+  # client_id: 518623351606222
+  # client_secret: 88ff19899a43c5ec997039975e251427
+  #
+  # get facebook posts create_time > 1.month.ago
+  since_date: 7.days.ago
+  months_list: 2
+  weeks_list: 4
+  days_list: 7
+  access_token: 
+  canvas_url: http://ads.localhost.com:3000/
+  scope: user_about_me,friends_about_me,user_activities,friends_activities,user_birthday,friends_birthday,user_checkins,friends_checkins,user_education_history,friends_education_history,user_events,friends_events,user_groups,friends_groups,user_hometown,friends_hometown,user_interests,friends_interests,user_likes,friends_likes,user_location,friends_location,user_notes,friends_notes,user_online_presence,friends_online_presence,user_photo_video_tags,friends_photo_video_tags,user_photos,friends_photos,user_questions,friends_questions,user_relationships,friends_relationships,user_relationship_details,friends_relationship_details,user_religion_politics,friends_religion_politics,user_status,friends_status,user_videos,friends_videos,user_website,friends_website,user_work_history,friends_work_history,email,read_friendlists,read_insights,read_mailbox,read_requests,read_stream,xmpp_login,ads_management,create_event,manage_friendlists,manage_notifications,offline_access,publish_checkins,publish_stream,rsvp_event,publish_actions,manage_pages,user_subscriptions #,friend_subscriptions
+  
+staging:
+  <<: *defaults
+# odditech@bbg.gov
+  client_id: 518623351606222
+  client_secret: 88ff19899a43c5ec997039975e251427
+
+production:
+  <<: *defaults
+  # this is ODDI Uber Dashboard Social Scr  APP
+  # oddidev@bbg.gov
+  since_date: 4.days.ago
+  months_list: 2
+  weeks.list: 4
+  days_list: 7
+  client_id: 762515890447080
+  client_secret: f89517ad8f0118032e3323da04a11249
+  canvas_url: http://smdata.bbg.gov/
+  
+liwliu:
+  # this is VOA Social Dashboard APP
+  # Add liwliu@bbg.gov to SocialVOA InSights as Admin
+  # Get access_token for liwliu
+  # feeds=graph_api.graph_call("v2.0/voiceofamerica/insights", {:use_ssl=>true})
+  #
+  client_id: 505262319601631
+  client_secret: 9d38626fdb98cade12a10a435e63760f
+  access_token: 
+  canvas_url: http://ads.localhost.com:3000/
+  
+
+changsha2152:
+  # this is VOAEnglish APP
+  # Add Changsha2152@yahoo.com to SocialVOA InSights as Admin
+  # Get access_token for Changsha2152
+  # feeds=graph_api.graph_call("v2.0/voiceofamerica/insights", {:use_ssl=>true})
+  #
+  client_id: 1438530799734900
+  client_secret: 84fc5c129dfabd93dc63a2e777d0e629
+  access_token: CAACEdEose0cBANFkYj4xsmr2jGO3RsThOkuRzegNkzohjRZB8d0f8OUSsDmK9fsBos1tot8avRYULRVW2tqGSRJfk6XhUCJb919D2TmGZCTc9KoYYA7QxVw3KWVSD66sDXsVKOJ9epsfmeZBVs84LpSHZBg4I5Y5Xt12ZA98N08KbBQ36mY1Gar2enph8ZADAZD
+  canvas_url: http://ads.localhost.com:3000/
+ 
+# ads.localhost.com:3000
+# Changsha2152@yahoo.com Hunan2
+canvas_url: http://ads.localhost.com:3000/
+test:
+  <<: *defaults
+  socialvoa: gmail.com
+  VoiceofFacebook:

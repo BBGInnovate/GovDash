@@ -11,7 +11,7 @@ production:
   encoding: utf8
   database: radd_production
   username: radd
-  password: 4radd!
+  password: radd
 
 # Warning: The database defined as 'test' will be erased and
 # re-generated from your development database when you run 'rake'.

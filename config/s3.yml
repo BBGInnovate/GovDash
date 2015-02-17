@@ -1,0 +1,14 @@
+# overriden by OpsWorks
+access_key_id: 
+secret_access_key: 
+
+development: &defaults
+  bucket: uber-dashboard-socialscraper
+  storage: s3
+  path: ':contest/:attachment/:id/:style/:basename.:extension'
+
+staging:
+  <<: *defaults
+  
+production:
+  <<: *defaults

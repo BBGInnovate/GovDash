@@ -1,0 +1,650 @@
+<link rel="stylesheet" href="../assets/angucomplete.css"/>
+
+<div class="jumbotron" ng-cloak>
+   
+    <!--
+    <p class="lead">A basic example of how to use Rails, Devise and Angular.js in conjunction.</p>
+    <a class="btn btn-large btn-success" href="/#/record">Login</a>
+    -->
+
+    <!-- Loading modal -->
+    <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel"
+         id="loading-modal" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="padding: 30px">
+                <img src="../assets/ajax_loader_gray_32.gif" width="64" height="64"/>
+                <br>
+                <br>
+
+                Loading ...
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade bs-example-modal-sm" my-modal tabindex="-1" role="dialog" id="modal-wizard" aria-labelledby="mySmallModalLabel" aria-hidden="false">
+
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button data-dismiss="modal" class="close" type="button"><span aria-hidden="true">×</span></button>
+            <h4 class="modal-title">Welcome to the BBG Social Media Dashboard</h4>
+          </div>
+          <div class="modal-body">
+          	<div class="alert alert-danger no-results-found" role="alert" ng-if="dataReturned == false">
+          		<p>There was no data found for your selection. Please adjust your filters.</p>
+          	</div>
+            <div id="tabsleft" class="tabbable tabs-left" data-ng-init="getData()">
+			<ul>
+				<li><a href="#tabsleft-tab1" class="wizard-tabs" data-toggle="tab">Welcome</a></li>
+				<li><a href="#tabsleft-tab2" class="wizard-tabs" data-toggle="tab">Location</a></li>
+				<li><a href="#tabsleft-tab3" class="wizard-tabs" data-toggle="tab">Language</a></li>
+				<li><a href="#tabsleft-tab4" class="wizard-tabs" data-toggle="tab">Entity</a></li>
+			</ul>
+			<div class="progress progress-info progress-striped">
+			  <div class="bar"></div>
+			</div>
+			
+			<div class="tab-content">
+			
+				<div class="tab-pane" id="tabsleft-tab1">
+				  <h3>How would you like to display your data?</h3>
+					<p style="margin-bottom: 160px; margin-top: 20px">You can either select by 
+					<a href="javascript:;" id="location-item">location</a>, 
+					<a href="javascript:;" id="language-item">language</a>,
+					<a href="javascript:;" id="entity-item">entity</a> or follow the <a href="javascript:;" id="wizard-item">wizard</a>.</p>
+					
+				</div>
+		
+				<div class="tab-pane" id="tabsleft-tab2">
+					<section>
+						<div id="region-section">
+						  <h3 id="select-region-h3">Select accounts targeting following Region: </h3>
+							<select multiple ng-model="selectedRegion" ng-options="region.name for region in regions" style="height: 132px;"></select>
+							<p class="ctrl-key-text">Hold 'Ctrl' key to select multiple items</p>
+						</div>
+						<div id="country-section">
+							 <h3 style="line-height: 24px">Select accounts targeting following Country: </h3>
+
+							 <div style="margin-left: 95px">
+								<angucomplete id="ex1"
+								  placeholder="Type a country here"
+								  pause="100"
+								  selectedobject="selectedCountry"
+								  localdata="countries"
+								  searchfields="name"
+								  titlefield="name"
+								  minlength="3"
+								  inputclass="form-control form-control-small"/>
+								  <!--
+								  <h4>or </h4>
+								  <h3 style="margin-top:20px; height: 80px;"><a href="" ng-click="selectAllCountries()">Select all countries </a></h3>
+								  -->
+								  <p id="related-text">If your filter has an asterisk, hover over to see the related countries.</p>
+							 </div>
+						</div>
+					</section>
+				</div>
+				
+				
+			
+				
+				
+				<div class="tab-pane" id="tabsleft-tab3" style="height: 220px">
+					<h3>Please select a language: </h3>
+					
+					<angucomplete id="ex2"
+					  placeholder="Type a language here"
+					  pause="100"
+					  selectedobject="selectedLanguage"
+					  localdata="languages"
+					  searchfields="name"
+					  titlefield="name"
+					  minlength="3"
+					  inputclass="form-control form-control-small"/>
+			  		 
+						<br><br><br>
+				</div>
+				
+				<div class="tab-pane" id="tabsleft-tab4" style="height: 220px">
+					<h3>Please select an entity: </h3>
+						<select multiple ng-model="selectedNetwork" ng-options="network.name for network in networks" style="height: 100px"></select>
+						<p class="ctrl-key-text">Hold 'Ctrl' key to select multiple items</p>
+				</div>
+				
+				
+				
+			
+				 
+			
+				<ul class="pager wizard">
+					<div id="selected-filters">
+					  <ul class="navlist" style="padding-top: 0px">
+					  		<li data-ng-repeat="region in selectedRegion">
+								<div class="btn-group">
+									<button type="button" class="btn btn-success" data-ng-click="removeRegion($index)">{{region.name}} <i class="icon-remove"></i></button>
+								</div><!-- /btn-group -->
+							</li>
+							<li data-ng-repeat="country in selectedCountry">
+								<div class="btn-group">
+									<button type="button" ng-if="!!country.originalObject.related_country_names.length" class="btn btn-success" data-ng-click="removeCountry($index)" data-toggle="tooltip" data-placement="top" title="Includes accounts targeting: {{country.originalObject.related_country_names | toString }}">{{country.title}} * <i class="icon-remove"></i></button>
+									<button type="button" ng-if="!!!country.originalObject.related_country_names.length" class="btn btn-success" data-ng-click="removeCountry($index)">{{country.title}} <i class="icon-remove"></i></button>
+
+								</div><!-- /btn-group -->
+							</li>
+							<li data-ng-repeat="language in selectedLanguage">
+									<div class="btn-group">
+										<button type="button" class="btn btn-success" data-ng-click="removeLanguage($index)">{{language.title}} <i class="icon-remove"></i></button>
+									</div><!-- /btn-group -->
+							</li>
+							<li data-ng-repeat="network in selectedNetwork">
+								<div class="btn-group">
+									<button type="button" class="btn btn-success" data-ng-click="removeNetwork($index)">{{network.name}} <i class="icon-remove"></i></button>
+								</div><!-- /btn-group -->
+							</li>
+					  </ul>	
+
+					</div>
+			
+					<!--
+					<li class="previous first"><a href="javascript:;">First</a></li>
+					-->
+					<li class="previous"><a href="javascript:;">Previous</a></li>
+					<!--
+					<li class="next last"><a href="javascript:;">Last</a></li>
+					-->
+					<li class="next"><a href="javascript:;">Next</a></li>
+					<li class="finish-here"><a style="cursor: pointer" id="finish-here" data-ng-click="finish()">Finish Here</a></li>
+					<li class="next finish" style="display:none;"><a style="cursor: pointer" data-ng-click="finish()">Finish</a></li>
+				</ul>
+			</div>	
+		   </div>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+    
+	<!-- Modal for Account Info -->
+	<div class="modal fade account-modal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="false" style="width: 915px; left: 39%; display: none">
+	  <div class="modal-dialog modal-sm">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			<h4 class="modal-title account-modal-title">{{ account.name }}</h4>
+			<span style="float: right; position: relative; top: -28px; left: -50px; margin-left: -170px">{{(a|date)||"Start Date"}} - {{(b|date)||"End Date"}} </span>
+		  </div>
+		  <div class="modal-body">
+			 <table class="table accounts">
+				<thead>
+				  <tr>
+					<th>Region</th>
+					<th>Target Countries</th>
+					<th>Entities</th>
+					<th>Service</th>
+				<!--<th>Contact</th> -->
+				  </tr>
+				</thead>
+				<tbody>
+				  <tr>
+					<td>{{ account.regions | formatMap }}</td>
+					<td>{{ account.countries | formatMap }}</td>
+					<td>{{ account.entity }}</td>
+					<td>{{ account.service }}</td>
+				<!--<td>{{ account.contact }}</td> -->
+				  </tr>
+				</tbody>
+		   </table>
+		   <div id="account-fans" style="float: left; width: 28%; text-align: left; margin-left: 50px; border-right: 1px solid #EEE">
+		   	<p class="account-segment-header">{{ fansOrFollowers }}</p>
+		   	<span class="account-val">{{ fansOrFollowersVal | number : fractionSize }}</span><span class="account-percent-{{ fansOrFollowersDelta | valueColor }}"><i class="icon-arrow-{{ fansOrFollowersDelta | valueColor }}"></i> {{ fansOrFollowersDelta }}</span>
+		   </div>
+		   <div id="account-posts" style="float: left; width: 28%; text-align: left; border-right: 1px solid #EEE; margin-left: 40px">
+		   	<p class="account-segment-header">{{ storyLikesOrFavorites }}</p>
+		   	<span class="account-val">{{ storyLikesOrFavoritesVal | number : fractionSize}}</span><span class="account-percent-{{ storyLikesOrFavoritesDelta | valueColor }}"><i class="icon-arrow-{{ storyLikesOrFavoritesDelta | valueColor }}"></i> {{ storyLikesOrFavoritesDelta }}</span>
+		   </div>
+		   <div id="account-engagement-actions" style="float: left; width: 28%; text-align: left; margin-left: 40px">
+		   	<p class="account-segment-header">Engagement Actions</p>
+		   	<span class="account-val">{{ engagementActions | number : fractionSize }}</span><span class="account-percent-{{ engagementActionsDelta | valueColor }}"><i class="icon-arrow-{{ engagementActionsDelta | valueColor }}"></i> {{ engagementActionsDelta }}</span>
+		   </div>
+		   <hr style="margin-top: 95px">
+		   <div id="account-trend-chart">
+		   		<p class="account-segment-header" style="margin-right: 303px;">Trend</p>
+		   		<!-- line chart here -->
+		   		<div class="no-data-found" ng-if="account.trend.length == 0">
+					<p>No data found</p>
+				</div>
+		   		<div ng-if="account.trend.length > 0" google-chart chart="accountTrendChart" id="accountTrendChart" style="height: 200px; width: 410px;  position: normal; margin-top: -12px;"></div>
+		   </div>
+		   <div id="account-engagement-actions-chart">
+		   		<p class="account-segment-header">Types of Engagement Actions</p>
+		   		<div class="no-data-found" style="margin-right: 100px" ng-if="account.trend.length == 0">
+					<p>No data found</p>
+				</div>
+		   		<div ng-if="account.trend.length > 0" google-chart chart="accountPieChart" id="accountPieChart" style="height: 200px; width: 350px;  position: normal; margin-top: -12px;"></div>
+		   </div>
+		  </div>
+		</div><!-- /.modal-content -->
+	  </div>
+	</div>
+
+    <div class="box" id="my-filters" ng-show="reportDone" ng-cloak>
+    	<div style="margin-top: 4px">
+				<div id="navcontainer">
+					<ul id="filters-navlist">
+						<li><a href="" ng-click="showFilterModal()"><i class="icon-pencil"></i>&nbsp;Edit Filters</a></li>
+						<li><a id="download-pdf" href="" ng-click="print()"><i class="icon-print"></i>&nbsp;Print</li>
+					</ul>
+				</div>
+			
+				<!-- Date Range -->
+				 <div style="float: right">
+					<div class="row-fluid">
+					  <div class="span6">
+						<div class="dropdown">
+						  <a class="dropdown-toggle btn btn-default" style="padding: 3px; width: 200px; font-size: 12px;">
+							{{(a|date)||"Start Date"}} - {{(b|date)||"End Date"}} 
+						  </a>
+						  <div class="dropdown-menu" id="datepicker-dropdown" ng-click="$event.preventDefault();$event.stopPropagation()">
+						  	<div id="quick-dates">
+						  		<span id="compare-to">Compare to: </span>
+						  		<span class="date-compare"><a href="" ng-click="selectDates('week')">Last Week</a></span>
+						  		<span class="date-compare"><a href="" ng-click="selectDates('month')">Last Month</a></span>
+						  		<span class="date-compare-last">Last Quarter</span>
+						  	<!--	<span class="date-compare-last"><a href="" ng-click="selectDates('quarter')">Last Quarter</a></span> -->
+						  	</div>
+						
+						  	<span id="select-custom-dates">Or, Select Start and End Date</span>
+						  
+							<div date-range start="a" end="b"></div>
+							<div class="btn-group" id="date-range-filter">
+								<button type="button" class="btn btn-success" ng-click="selectDates('custom')">Select date range</button>
+							</div><!-- /btn-group -->
+						  </div>
+						</div>
+					  </div>
+					</div>
+				 </div>	
+			 
+				 <div id="navcontainer">
+					<ul id="filters-navlist">
+						<li><strong><span style="color: #1A75BB">Date Range</span></strong></li>
+					</ul>
+				</div>
+			</div>
+			
+			
+    
+    		<div style="margin-top: -17px; max-width: 450px;">
+				<h1 class="box-header" style="text-align: left;">My Filters: 
+					<span style="color: #289841">{{ filterText | removeCommaFromFilters }}</span>
+				</h1>
+			</div>
+
+    
+    	<h5 class="box-header" id="includes" ng-if="includedCountries != null">Includes accounts targeting</h5><p id="included-filters">{{ includedCountries | formatMap }}</p>
+    	<div id="compared-to">
+    		<p class="box-header" id="includes">Compared to</p>
+    		<p id="included-filters">{{(compareStartDate|date)||"Start Date"}} - {{(compareEndDate|date)||"End Date"}}</p>
+    	</div>	
+    	<div class="jumbotron"  ng-if="dataReturned == false">
+			  <h5>No results found for your selection. Please try again.</h5>
+		</div>
+    	<table class="table accounts" id="facebook-accounts" ng-if="dataReturned != false && fbAccounts.length > 0">
+			<thead>
+			  <tr>
+				<th>Accounts</th>
+				<th>Engagement Actions</th>
+				<th>New Fans</th>
+				<th>Story Likes</th>
+				<th>Shares</th>
+				<th>Comments</th>
+			  </tr>
+			</thead>
+			<tbody>
+			  <tr ng-repeat="account in fbAccounts">
+				<td><i class="icon-facebook fb-table-icon"></i><a style="cursor: pointer" data-toggle="modal" data-target=".account-modal" ng-click="getAccountReport('Facebook', $index)">{{ account.name }} </a></td>
+				<td>
+					{{ account.values[0].totals | number : fractionSize}}
+					<span class="account-percent-small-{{ account.values[0]['changes'].totals | valueColor }}"><i class="icon-arrow-{{ account.values[0]['changes'].totals | valueColor }}" style="margin-left: 10px; font-size: 10px; top: -1px"></i> {{ account.values[0]['changes'].totals }}</span>
+				</td>
+				<td>
+					{{ account.values[0].page_likes | number : fractionSize}} 
+					<span class="account-percent-small-{{ account.values[0]['changes'].page_likes | valueColor }}"><i class="icon-arrow-{{ account.values[0]['changes'].page_likes | valueColor }}" style="margin-left: 10px; font-size: 10px; top: -1px"></i> {{ account.values[0]['changes'].page_likes }}</span>
+				</td>
+				<td>
+					{{ account.values[0].story_likes | number : fractionSize}} 
+					<span class="account-percent-small-{{ account.values[0]['changes'].story_likes | valueColor }}"><i class="icon-arrow-{{ account.values[0]['changes'].story_likes | valueColor }}" style="margin-left: 10px; font-size: 10px; top: -1px"></i> {{ account.values[0]['changes'].story_likes }}</span>
+				</td>
+				<td>
+					{{ account.values[0].shares | number : fractionSize}} 
+					<span class="account-percent-small-{{ account.values[0]['changes'].shares | valueColor }}"><i class="icon-arrow-{{ account.values[0]['changes'].shares | valueColor }}" style="margin-left: 10px; font-size: 10px; top: -1px"></i> {{ account.values[0]['changes'].shares }}</span>
+				</td>
+				<td>
+					{{ account.values[0].comments | number : fractionSize}} 
+					<span class="account-percent-small-{{ account.values[0]['changes'].comments | valueColor }}"><i class="icon-arrow-{{ account.values[0]['changes'].comments | valueColor }}" style="margin-left: 10px; font-size: 10px; top: -1px"></i> {{ account.values[0]['changes'].comments }}</span>
+				</td>
+              </tr>
+			</tbody>
+       </table>
+       <table class="table accounts" id="twitter-accounts" ng-if="dataReturned != false && twAccounts.length > 0">
+			<thead>
+			  <tr>
+				<th>Accounts</th>
+				<th>Engagement Actions</th>
+				<th>New Followers</th>
+				<th>Favorites</th>
+				<th>Retweets</th>
+				<th>Mentions</th>
+			  </tr>
+			</thead>
+			<tbody>
+              <tr ng-repeat="account in twAccounts">
+				<td><i class="icon-twitter tw-table-icon"></i><a style="cursor: pointer" data-toggle="modal" data-target=".account-modal" ng-click="getAccountReport('Twitter', $index)">{{ account.name }} </a></td>
+				<td>
+					{{ account.values[0].totals | number : fractionSize}}
+					<span class="account-percent-small-{{ account.values[0]['changes'].totals | valueColor }}"><i class="icon-arrow-{{ account.values[0]['changes'].totals | valueColor }}" style="margin-left: 10px; font-size: 10px; top: -1px"></i> {{ account.values[0]['changes'].totals }}</span>
+				</td>
+				<td>
+					{{ account.values[0].followers | number : fractionSize}}
+					<span class="account-percent-small-{{ account.values[0]['changes'].followers | valueColor }}"><i class="icon-arrow-{{ account.values[0]['changes'].followers | valueColor }}" style="margin-left: 10px; font-size: 10px; top: -1px"></i> {{ account.values[0]['changes'].followers }}</span>
+				</td>
+				<td>
+					{{ account.values[0].favorites | number : fractionSize}}
+					<span class="account-percent-small-{{ account.values[0]['changes'].favorites | valueColor }}"><i class="icon-arrow-{{ account.values[0]['changes'].favorites | valueColor }}" style="margin-left: 10px; font-size: 10px; top: -1px"></i> {{ account.values[0]['changes'].favorites }}</span>
+				</td>
+				<td>
+					{{ account.values[0].retweets | number : fractionSize}}
+					<span class="account-percent-small-{{ account.values[0]['changes'].retweets | valueColor }}"><i class="icon-arrow-{{ account.values[0]['changes'].retweets | valueColor }}" style="margin-left: 10px; font-size: 10px; top: -1px"></i> {{ account.values[0]['changes'].retweets }}</span>
+				</td>
+				<td>
+					{{ account.values[0].mentions | number : fractionSize}}
+					<span class="account-percent-small-{{ account.values[0]['changes'].mentions | valueColor }}"><i class="icon-arrow-{{ account.values[0]['changes'].mentions | valueColor }}" style="margin-left: 10px; font-size: 10px; top: -1px"></i> {{ account.values[0]['changes'].mentions }}</span>
+				</td>
+              </tr>
+			</tbody>
+       </table>
+    </div>
+    
+    <div class="box" id="engagement-actions" ng-show="reportDone" ng-cloak>
+    	<h2 class="box-header">Engagement Actions</h2>
+    	   <div class="tab-pane" id="tabsleft-tab6">
+			<div class="jumbotron"  ng-if="dataReturned == null">
+			  <h5>Loading...</h5>
+			  <img src="../assets/ajax_loader_gray_32.gif" />
+			</div>
+			<div class="jumbotron"  ng-if="dataReturned == false">
+			  <h5>No results found for your selection. Please try again.</h5>
+			</div>
+			<div style="text-align: left; margin-left: 20px" ng-if="dataReturned != false">
+				<div class="engagement-actions-box">
+					<div>
+						<div class="amount-box">
+							<h4 class="box-subheader">Amount</h4>
+							<div ng-if="amountChart.length != 0">
+								<div style="position: relative; top: 18px;">
+									<p class="all-amount-chart-label">ALL</p>
+									<p><i class="icon-facebook fb-amount-chart-icon" style="margin-left: -32px"></i></p>
+									<p><i class="icon-twitter tw-amount-chart-icon" style="margin-left: -26px"></i></p>
+								</div>	
+								<div google-chart chart="amountChart" id="amountChart"></div>
+							</div> 
+							<div class="no-data-found" ng-if="amountChart.length == 0" style="position: relative; top: 85px; left: 150px">
+								<p>No data found</p>
+							</div>
+						
+							<div id="amount-chart-changes" ng-if="hasPercentages == true" ng-cloak>
+								<p class="account-percent-{{ allChangePercent | valueColor }} amount-percent">
+									<i class="icon-arrow-{{ allChangePercent | valueColor }}" style="margin-left: 10px; font-size: 18px;"></i> 
+									{{ allChangePercent }}
+								</p>
+								<p class="account-percent-{{ fbChangePercent | valueColor }} amount-percent">
+									<i class="icon-arrow-{{ fbChangePercent | valueColor }}" style="margin-left: 10px; font-size: 18px;"></i> 
+									{{ fbChangePercent }}
+								</p>
+								<p class="account-percent-{{ twChangePercent | valueColor }} amount-percent">
+									<i class="icon-arrow-{{ twChangePercent | valueColor }}" style="margin-left: 10px; font-size: 18px;"></i> 
+									{{ twChangePercent }}
+								</p>
+
+							</div>
+
+						</div>
+						<div class="trend-box">
+							<h4 class="box-subheader">Trend</h4>
+							<div>
+								<div class="trend-box-charts">
+									<p class="all-line-chart-label">ALL</p>
+									<div class="no-data-found" ng-if="allDailyTrend.length == 0">
+										<p>No data found</p>
+									</div>
+									<div ng-if="allDailyTrend.length > 0" google-chart chart="allTrend" style="height: 150px; top: 1px"></div>
+								</div>
+								<div class="trend-box-charts">
+									<p><i class="icon-facebook fb-line-chart-icon" style="margin-left: -53px"></i></p>
+									<div class="no-data-found" ng-if="fbDailyTrend.length == 0">
+										<p>No data found</p>
+									</div>
+									<div ng-if="fbDailyTrend.length > 0" google-chart chart="fbTrend" style="height: 150px;"></div>
+								</div>
+								<div class="trend-box-charts">
+									<p><i class="icon-twitter tw-line-chart-icon" style="margin-left: -47px"></i></p>
+									<div class="no-data-found" ng-if="twDailyTrend.length == 0">
+										<p>No data found</p>
+									</div>
+									<div ng-if="twDailyTrend.length > 0" google-chart chart="twTrend" style="height: 150px;"></div>
+								</div>
+							</div>
+							
+						</div>
+					</div>
+					
+				</div>
+				
+				<div id="pie-chart-box" style="display: inline-flex" ng-show="showPieCharts">
+					<i class="icon-facebook fb-pie-chart-icon"></i>
+					<div class="no-data-found" ng-if="fbDailyTrend.length == 0">
+						<br>
+						<p>No data found</p>
+					</div>		
+					<div ng-if="fbDailyTrend.length > 0" google-chart chart="amountChartFacebook" id="amountChartFacebook" style="height: 200px; width: 350px; left: -45px"></div>
+					
+					<div class="no-data-found" ng-if="twDailyTrend.length == 0">
+						<br>
+						<p>No data found</p>
+					</div>
+					<i class="icon-twitter tw-pie-chart-icon"></i>
+					<div ng-if="twDailyTrend.length > 0" google-chart chart="amountChartTwitter" id="amountChartTwitter" style="height: 200px; width: 350px; left: -45px"></div>
+				</div>
+				<br>
+				<a href="" ng-attr-class="{{amountChart.length != 0 && 'show-more-text' || 'show-more-text-none' }}" ng-click="pieChartDisplay()" style="">{{ pieChartDisplayText }}</a>
+				
+			</div> 
+		</div>	
+    </div>
+    
+
+    <div class="box" id="referrals" ng-show="reportDone" ng-cloak>
+    	<h2 class="box-header">Referrals to Websites from Social Media</h2>
+    	<div class="jumbotron"  ng-if="dataReturned != false && siteCatalystReports == true" style="margin: 0; height: 225px">
+		  <div class="amount-box">
+				<h4 class="box-subheader" style="text-align: left">Amount</h4>
+				<div style="position: relative; top: 18px;">
+					<p class="all-amount-chart-label">ALL</p>
+					<p style="text-align: left"><i class="icon-facebook fb-amount-chart-icon" style="margin-left: -32px"></i></p>
+					<p style="text-align: left"><i class="icon-twitter tw-amount-chart-icon" style="margin-left: -26px"></i></p>
+				</div>	
+				<div google-chart chart="amountChartReferrals" id="amountChartReferrals"></div>
+				<div id="amount-chart-changes-referrals" ng-cloak>
+					<p class="account-percent-{{ allChangePercentReferrals | valueColor }} amount-percent">
+						<i class="icon-arrow-{{ allChangePercentReferrals | valueColor }}" style="margin-left: 10px; font-size: 18px;"></i> 
+						{{ allChangePercentReferrals }}
+					</p>
+					<p class="account-percent-{{ fbChangePercentReferrals | valueColor }} amount-percent">
+						<i class="icon-arrow-{{ fbChangePercentReferrals | valueColor }}" style="margin-left: 10px; font-size: 18px;"></i> 
+						{{ fbChangePercentReferrals }}
+					</p>
+					<p class="account-percent-{{ twChangePercentReferrals | valueColor }} amount-percent">
+						<i class="icon-arrow-{{ twChangePercentReferrals | valueColor }}" style="margin-left: 10px; font-size: 18px;"></i> 
+						{{ twChangePercentReferrals }}
+					</p>
+
+				</div>
+
+			</div>
+			
+			<div class="trend-box" style="text-align: left">
+				<h4 class="box-subheader">Trend</h4>
+				<div>
+					<div class="trend-box-charts">
+						<p class="all-line-chart-label">ALL</p>
+						<div class="no-data-found" ng-if="allDailyTrendReferral.length == 0">
+							<p>No data found</p>
+						</div>
+						<div ng-if="allDailyTrendReferral.length != 0" google-chart chart="allDailyTrendReferral" style="height: 150px; top: 1px"></div>
+					</div>
+					<div class="trend-box-charts">
+						<p><i class="icon-facebook fb-line-chart-icon" style="margin-left: -53px"></i></p>
+						<div class="no-data-found" ng-if="fbDailyTrendReferral.length == 0">
+							<p>No data found</p>
+						</div>
+						<div ng-if="fbDailyTrendReferral.length != 0" google-chart chart="fbDailyTrendReferral" style="height: 150px;"></div>
+					</div>
+					<div class="trend-box-charts">
+						<p><i class="icon-twitter tw-line-chart-icon" style="margin-left: -47px"></i></p>
+						<div class="no-data-found" ng-if="twDailyTrendReferral.length == 0">
+							<p>No data found</p>
+						</div>
+						<div ng-if="twDailyTrendReferral.length != 0" google-chart chart="twDailyTrendReferral" style="height: 150px;"></div>
+					</div>
+				</div>
+				
+			</div>
+			
+		</div>
+    	
+    	<div class="jumbotron"  ng-if="dataReturned == false">
+			  <h5>No results found for your selection. Please try again.</h5>
+		</div>
+		
+		<div class="jumbotron"  ng-if="siteCatalystReports == false">
+			  <h5>We do not have data that goes back this far.</h5>
+		</div>
+    </div>
+    
+    <!--
+	<div class="box" id="tabular" ng-show="reportDone">
+		<h2 class="box-header">Tabular</h2>
+		<div class="jumbotron"  ng-if="dataReturned == false">
+			  <h5>No results found for your selection. Please try again.</h5>
+		</div>
+		<div style="border: 1px solid #F2F2F2; padding: 10px" ng-if="dataReturned != false">
+			<div ng-if="dataReturned == 'Both' || dataReturned == 'Facebook'">  	
+				<h5 class="box-header"><i class="icon-facebook"></i> Facebook</h5>
+				<table class="table">
+				<th>Date</th>
+				<th>Likes</th>
+				<th>Shares</th>
+				<th>Talking About</th>
+				<tbody>
+					<tr>
+						<td>As of {{ fbDataPrevMonth.date | date : format}}</td>
+						<td>{{ fbDataPrevMonth.total_likes | number : fractionSize}}</td>
+						<td>{{ fbDataPrevMonth.total_shares | number : fractionSize}}</td>
+						<td>{{ fbDataPrevMonth.total_talking_about | number : fractionSize}}</td>
+					</tr>	
+					<tr>
+						<td>As of {{ fbDataCurrMonth.date | date : format}}</td>
+						<td>{{ fbDataCurrMonth.total_likes | number : fractionSize}}</td>
+						<td>{{ fbDataCurrMonth.total_shares | number : fractionSize}}</td>
+						<td>{{ fbDataCurrMonth.total_talking_about | number : fractionSize}}</td>
+					</tr>
+				</tbody>
+				</table>
+		
+				<br>
+		
+				<table class="table">
+				<th>Period</th>
+				<th>Page Likes</th>
+				<th>Shares</th>
+				<th>Comments</th>
+				<th>Posts</th>
+				<th>Story Likes</th>
+				<tbody>
+					<tr>
+						<td>{{ fbDataPrevMonthRange.period | customDateRange }}</td>
+						<td>{{ fbDataPrevMonthRange.page_likes  | number : fractionSize}}</td>
+						<td>{{ fbDataPrevMonthRange.shares | number : fractionSize}}</td>
+						<td>{{ fbDataPrevMonthRange.comments | number : fractionSize}}</td>
+						<td>{{ fbDataPrevMonthRange.posts | number : fractionSize}}</td> 
+						<td>{{ fbDataPrevMonthRange.story_likes | number : fractionSize}}</td>
+					</tr>	
+					<tr>
+						<td>{{ fbDataCurrMonthRange.period | customDateRange }}</td>
+						<td>{{ fbDataCurrMonthRange.page_likes | number : fractionSize}}</td>
+						<td>{{ fbDataCurrMonthRange.shares | number : fractionSize}}</td>
+						<td>{{ fbDataCurrMonthRange.comments | number : fractionSize}}</td>
+						<td>{{ fbDataCurrMonthRange.posts | number : fractionSize}}</td>
+						<td>{{ fbDataCurrMonthRange.story_likes | number : fractionSize}}</td>
+					</tr>
+				</tbody>
+				</table>
+			</div>
+			<br>
+			<br>	
+			<div ng-if="dataReturned == 'Both' || dataReturned == 'Twitter'"> 	
+				<h5 class="box-header"><i class="icon-twitter"></i> Twitter</h5>
+				<table class="table">
+				<th>Date</th>
+				<th>Tweets</th>
+				<th>Favorites</th>
+				<th>Followers</th>
+				<tbody>
+					<tr>
+						<td>As of {{ twDataPrevMonth.date | date : format}}</td>
+						<td>{{ twDataPrevMonth.total_tweets | number : fractionSize}}</td>
+						<td>{{ twDataPrevMonth.total_favorites | number : fractionSize}}</td>
+						<td>{{ twDataPrevMonth.total_followers | number : fractionSize}}</td>
+					</tr>	
+					<tr>
+						<td>As of {{ twDataCurrMonth.date | date : format}}</td>
+						<td>{{ twDataCurrMonth.total_tweets | number : fractionSize}}</td>
+						<td>{{ twDataCurrMonth.total_favorites | number : fractionSize}}</td>
+						<td>{{ twDataCurrMonth.total_followers | number : fractionSize}}</td>
+					</tr>
+				</tbody>
+				</table>
+		
+				<br>
+		
+				<table class="table">
+				<th>Period</th>
+				<th>Retweets</th>
+				<th>Favorites</th>
+				<th>Followers</th>
+				<tbody>
+					<tr>
+						<td>{{ twDataPrevMonthRange.period | customDateRange }}</td>
+						<td>{{ twDataPrevMonthRange.retweets | number : fractionSize}}</td>
+						<td>{{ twDataPrevMonthRange.favorites | number : fractionSize}}</td>
+						<td>{{ twDataPrevMonthRange.followers | number : fractionSize}}</td>
+					</tr>	
+					<tr>
+						<td>{{ twDataCurrMonthRange.period | customDateRange }}</td>
+						<td>{{ twDataCurrMonthRange.retweets | number : fractionSize}}</td>
+						<td>{{ twDataCurrMonthRange.favorites | number : fractionSize}}</td>
+						<td>{{ twDataCurrMonthRange.followers | number : fractionSize}}</td>
+					</tr>
+				</tbody>
+				</table>
+			</div>
+		</div>	
+	</div>
+	-->
+	
+
+<div class="footer">
+    <p>&copy; BBG Social Media Dashboard</p>
+</div>
+
+<script src="../assets/jquery.bootstrap.wizard.js"></script>
+<script src="../assets/wizard-controls.js"></script>

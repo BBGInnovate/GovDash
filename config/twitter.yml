@@ -1,0 +1,25 @@
+# overriden by OpsWorks
+
+development: &defaults
+  strategy: oauth
+  consumer_key: 
+  consumer_secret: 
+  callback_url: "/twitter/callback"
+  base_url: "https://api.twitter.com"
+  api_version: "1.1"
+  access_token: 
+  access_token_secret: 
+  since_date: 7.days.ago
+  months_list: 2
+  weeks_list: 4
+  days_list: 7
+  owner_id: 588576061
+  authorize_path: "/oauth/authorize"
+  api_timeout: 10
+  remember_for: 14 # days
+  
+staging:
+  <<: *defaults
+  
+production:
+  <<: *defaults

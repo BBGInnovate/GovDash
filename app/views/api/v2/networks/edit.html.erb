@@ -1,0 +1,37 @@
+<script type='text/javascript'>
+  var network = {
+    init : function() {
+      $("#submit").click(function() {
+        var url = $('form[action]').attr('action');
+        $('input[name="authenticity_token"]').remove();
+        var data = $('#new_network').serialize();
+        $.put(url, data, network.done);
+        return false;
+      });
+    },
+    done : function(resp){
+      var obj = jQuery.parseJSON(resp);
+      $('#notice').html(obj.error);
+    }
+  }
+</script>
+
+<%= form_for @network, {:url=>api_network_path, :method=>"put"} do |f| %>
+  <div id="notice"></div>
+  <%= f.hidden_field :id %><br />
+  <%= f.label :name %>
+  <%= f.text_field :name %><br />
+
+  <%= f.label :description %>
+  <%= f.text_field :description %><br />
+
+  <%= f.label :is_active %>
+  <%= f.text_field :is_active %><br />
+  
+  <%= f.submit "Update", :id=>"submit" %>
+<% end %>
+<script>
+  jQuery(document).ready(function(){
+    network.init(); 
+  });
+</script>

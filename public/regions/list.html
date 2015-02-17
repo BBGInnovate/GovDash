@@ -1,0 +1,21 @@
+<!-- user comes from $scope.user -->
+<div>
+	<p><a href="" back-button><i class="icon-angle-left"></i> Back</a></p>
+	<div style="float:left" class="page-header">
+		<h1>Regions</h1>
+	</div>
+	
+</div>
+<div style="clear:both;"></div>
+
+
+<div data-ng-init="list()">
+	<ul>
+		<li data-ng-repeat="region in regions">
+			<div class="well">
+				<h3><a href="#/regions/edit/{{region.id}}">{{region.name}}</a></h3>
+			</div>
+		</li>
+	</ul>
+	
+</div>

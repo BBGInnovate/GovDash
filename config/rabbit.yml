@@ -1,0 +1,15 @@
+#
+# this config is overriden by OpsWorks
+#
+development: &defaults
+  host: 127.0.0.1
+  username: 
+  password: 
+
+staging:
+  <<: *defaults
+  
+production:
+  host: 127.0.0.1
+  username: 
+  password: 

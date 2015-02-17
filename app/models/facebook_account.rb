@@ -1,23 +1,4 @@
-
-# https://developers.facebook.com/docs/reference/ads-api/api-rate-limiting/
-# RabbitMQ vs ActiveMQ
-# http://blog.x-aeon.com/2013/04/10/a-quick-message-queue-benchmark-activemq-rabbitmq-hornetq-qpid-apollo/
-# AMQP protocol:
-# http://blog.brianploetz.com/post/36886084370/producing-amqp-messages-from-ruby-on-rails-applications
 require Rails.root.to_s + '/lib/write_fb_page'
-
-=begin
-
-a.graph_api.get_object('/7040724713_10153169445599714/likes?limit=10000&format=json')
-
-a.graph.get_object('/7040724713_10153169445599714/comments?limit=10000&format=json')
-
-a.graph.get_object('/7040724713_10153169445599714')  #> has shares
-
-A user access token with read_stream permission,
-a.graph.get_object('/7040724713_10153169445599714/sharedposts?limit=10000&format=json')
-
-=end
 
 class FacebookAccount < Account
   include WriteFbPage
@@ -35,13 +16,7 @@ class FacebookAccount < Account
        @since_date = 3.months.ago
      end
    end
-   
-=begin
-https://docs.google.com/spreadsheets/d/176ZKecqb-l0aDKko4BzzWhSH_x2NYtRp49ik3eHGCIw/edit?usp=sharing 
-https://docs.google.com/spreadsheets/d/176ZKecqb-l0aDKko4BzzWhSH_x2NYtRp49ik3eHGCIw/edit?pli=1#gid=1517254613
-Everyone Else (MBN, OCB, RFA, RFERL)
-https://docs.google.com/spreadsheets/d/1-9jygmoQ3nMuQvZNGl_mo3ylELfuwLSwbj-lZG0UWWg/edit?usp=sharing 
-=end
+
 # main entry point to process facebook data
   QUERY_LIMIT = 250
   SCHEDULED_DELAY = 1.hour.from_now
@@ -81,9 +56,7 @@ https://docs.google.com/spreadsheets/d/1-9jygmoQ3nMuQvZNGl_mo3ylELfuwLSwbj-lZG0U
      level = ((size-count)/2.0).round % size
      log_error msg,level
   end
-  #
-  # finish 1 years data for voiceofamerica: 1.5hours
-  # 
+
   def archive
     @since_date = 3.months.ago
     since = @since_date
@@ -93,7 +66,7 @@ https://docs.google.com/spreadsheets/d/1-9jygmoQ3nMuQvZNGl_mo3ylELfuwLSwbj-lZG0U
     data = FbPost.select("post_created_time").
        where(:account_id=>self.id,:post_created_time=>since.beginning_of_day..until_date.end_of_day).to_a
     data = data.map{|d| d.post_created_time.beginning_of_day}
-    ## while (hasta - since_date) >= 3.months.to_i
+    
     while (hasta > @since_date)
       # since = hasta - 3.months.to_i
       since = hasta - 1.day
@@ -116,8 +89,6 @@ https://docs.google.com/spreadsheets/d/1-9jygmoQ3nMuQvZNGl_mo3ylELfuwLSwbj-lZG0U
         success = do_retrieve(since, hasta)
         sleep 1
       end
-      # hasta = since - 1
-      # since -= 1
       hasta -= 1
     end
     if success
@@ -137,7 +108,6 @@ https://docs.google.com/spreadsheets/d/1-9jygmoQ3nMuQvZNGl_mo3ylELfuwLSwbj-lZG0U
        where("api_user_email is not null").
        map{|a| [a.api_user_email,0]}     
      @token_count = Hash[*arr.flatten] 
-     # @token_count = {'smdata.bbg.gov'=>0,'ads.localhost.com'=>0}
      started = Time.zone.now
      count = 0
      no_count = 0
@@ -152,13 +122,6 @@ https://docs.google.com/spreadsheets/d/1-9jygmoQ3nMuQvZNGl_mo3ylELfuwLSwbj-lZG0U
                @token_count[key] += 1
              end
            end
-=begin
-           if a.token_count['smdata.bbg.gov'].to_i > 0
-             @token_count['smdata.bbg.gov'] += 1
-           elsif a.token_count['ads.localhost.com'].to_i > 0
-             @token_count['ads.localhost.com'] += 1
-           end
-=end
            logger.debug "Sleep #{SLEEP} seconds for next account"
            sleep SLEEP
          else
@@ -277,11 +240,6 @@ https://docs.google.com/spreadsheets/d/1-9jygmoQ3nMuQvZNGl_mo3ylELfuwLSwbj-lZG0U
     begin     
       process_posts(posts)
       !!rabbit ? send_mq_message(rabbit) : save_post_details
-      # upload_insights
-      #
-      # parse_insights defined in module WriteFbPage
-      # parse_insights
-      # get_insights_page_fan_adds_day
     rescue Exception=>error
       logger.debug error.backtrace
       log_fail "process_posts() #{error.message}"
@@ -301,8 +259,6 @@ https://docs.google.com/spreadsheets/d/1-9jygmoQ3nMuQvZNGl_mo3ylELfuwLSwbj-lZG0U
   end
   handle_asynchronously :delayed_do_retrieve,:run_at => Proc.new { SCHEDULED_DELAY }
   
-#  handle_asynchronously :delayed_retrieve,:run_at => Proc.new { SCHEDULED_DELAY }
-  
   def process_posts(posts)
     return true if !posts || posts.empty?
     logger.debug "Process posts #{posts.size}"
@@ -310,23 +266,19 @@ https://docs.google.com/spreadsheets/d/1-9jygmoQ3nMuQvZNGl_mo3ylELfuwLSwbj-lZG0U
     last_created_time = Time.zone.now
     posts.each do |f|
       last_created_time= DateTime.parse(f['created_time'])
-      # if !exist_posts.include? f["id"]
       if last_created_time > since_date
         replies_to_comment = get_replies_to_comment(f)          
         # no good way to tell a post is the original
         post_type = 'original'
-        # if f['actions'] || f['comments']
-        #  post_type='original'
-        # end
+        
         insert = {:account_id=>self.id,
                   :post_type=>post_type,
                   :replies_to_comment =>replies_to_comment,
                   :post_created_time=>last_created_time}
         dbpost = FbPost.find_or_create_by(:post_id=>f['id'])
         dbpost.update_attributes insert
-        # @exist_posts << f['id']
-      end 
-      # end # if !exist_posts.include? f["id"]
+        
+      end
     end
     unless @bulk_insert.empty?
       FbPost.import!(@bulk_insert)
@@ -378,7 +330,6 @@ https://docs.google.com/spreadsheets/d/1-9jygmoQ3nMuQvZNGl_mo3ylELfuwLSwbj-lZG0U
          @num_attempts += 1   
          insights = graph_api.graph_call("v2.1/#{post.post_id}/insights/post_story_adds_by_action_type")
          data=insights[0]['values'][0]['value'] rescue {}
-         # {"like"=>2454, "comment"=>70, "share"=>53}
        rescue Koala::Facebook::ClientError, Timeout::Error=>error
          if @num_attempts < self.max_attempts
            sleep RETRY_SLEEP
@@ -405,74 +356,11 @@ https://docs.google.com/spreadsheets/d/1-9jygmoQ3nMuQvZNGl_mo3ylELfuwLSwbj-lZG0U
        end
      end
      aggregate_data 1,'day', true
-     #
      # recent_page available after aggregate_data
      recent_page.save_lifetime_data
     
   end
   
-=begin
-  def save_post_details
-     count = 0
-     total_processed = 0
-     started = Time.zone.now
-     myposts = self.fb_posts.where("post_created_time > '#{since_date}'").to_a
-     myposts.each do |post|
-       count += 1
-       total_processed += 1
-       fin = Time.zone.now
-       duration = fin.to_i - started.to_i
-       if count > 10
-           puts "Sleep #{SLEEP}"
-           started - Time.zone.now
-           count = 0
-           sleep SLEEP
-       end
-       @num_attempts = 0
-       data = []
-       fql = "SELECT like_info.like_count, comment_info.comment_count, share_count FROM stream  WHERE post_id = '#{post.post_id}'"
-       begin
-         @num_attempts += 1   
-         data = graph_api.fql_query(fql)
-         # a=graph_api.api post.post_id
-         # a.keys
-         # ["id", "from", "message", "picture", "link", "icon", "privacy", "type", "status_type", "object_id", "created_time", "updated_time", "shares", "likes", "comments"] 
-       rescue Koala::Facebook::ClientError, Timeout::Error=>error
-         if @num_attempts < self.max_attempts
-           sleep RETRY_SLEEP
-           retry
-         else
-           log_fail "Tried #{@num_attempts} times. #{error.message}", 5
-           logger.error error.message
-         end
-       rescue Exception=>error
-         log_fail error.message
-         logger.error error.message
-       end
-       completed = ((total_processed.to_f / myposts.size) * 100).to_i
-       logger.debug "#{completed} % completed" if ((total_processed % 10)==0 )
-       unless data.empty?
-         data = data[0]
-         like_count = data['like_info']['like_count']
-         comment_count = data['comment_info']['comment_count']
-         share_count = data['share_count']
-         post.update_attributes :likes=>like_count,
-             :comments=>comment_count,
-             :shares=>share_count
-       else
-         logger.debug "No FQL Data post_id #{post.id}"
-       end
-     end
-     aggregate_data 1,'day', true
-     #
-     # recent_page available after aggregate_data
-     recent_page.save_lifetime_data
-    
-  end
-=end
-
-  # https://024699842891.signin.aws.amazon.com/console
-  # lliu Chang   2014!
   def upload_insights
     file_path = s3_filepath(Time.zone.now) + "insights.json"
     S3Model.new.store(file_path, get_insights.to_json)
@@ -500,7 +388,7 @@ https://docs.google.com/spreadsheets/d/1-9jygmoQ3nMuQvZNGl_mo3ylELfuwLSwbj-lZG0U
     @insights
   end
   
-    # to get insights page_fan_adds_day metrix directly
+  # to get insights page_fan_adds_day metrix directly
   def get_insights_page_fan_adds_day
     duration = since_date
     @num_attempts = 0
@@ -672,13 +560,9 @@ https://docs.google.com/spreadsheets/d/1-9jygmoQ3nMuQvZNGl_mo3ylELfuwLSwbj-lZG0U
     end  
   end
   
-
-  # http://simplymeasured.com/blog/2011/10/20/the-60-facebook-insights-data-definitions/
   # download insights from S3
   # return array of hashes
   def download_insights(date=Time.zone.now)
-    # new code
-    # S3Model.new.download_insights(self)
     path = s3_filepath(date) + "insights.json"
     logger.debug "Download from S3 #{path}. All dates are end date"
     results = []
@@ -1106,399 +990,10 @@ https://docs.google.com/spreadsheets/d/1-9jygmoQ3nMuQvZNGl_mo3ylELfuwLSwbj-lZG0U
     count
   end
 
-  
-  def self.create_test_account obj_name='oddidevelopers'
-    cnf = fb_conf
-    acc = Account.find_by object_name: obj_name
-    voa = Account.find 7
-    if acc 
-      acc.user_access_token = voa.user_access_token
-      acc.page_access_token = voa.page_access_token
-      acc.save
-    else
-      hash = {:name=>'oddidevelopers',
-       :object_name=>'oddidevelopers',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>1,
-       :language_id=>Language.find_by_name('English').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url'],
-       :user_access_token => voa.user_access_token,
-       :page_access_token => voa.page_access_token
-       }
-      Account.create hash
-    end
-
-  end
-  
   def self.populate
-    cnf = fb_conf
-    
-    self.truncate
-    AccountsRegion.truncate
-    AccountsCountry.truncate
-    
-    a = FacebookAccount.create :name=>'Radio Sawa', 
-       :object_name => 'Sawa',
-       :network_id=>Network.find_by_name('MBN').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Radio Sawa','MBN').id,
-       :language_id=>Language.find_by_name('Arabic').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>12
-    AccountsCountry.create :account_id=>a.id, :country_id=>4
-    AccountsCountry.create :account_id=>a.id, :country_id=>69
-    AccountsCountry.create :account_id=>a.id, :country_id=>129
-    AccountsCountry.create :account_id=>a.id, :country_id=>205
-    
-    a = FacebookAccount.create :name=>'Alhurra TV', 
-       :object_name => 'alhurra',
-       :network_id=>Network.find_by_name('MBN').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Alhurra TV','MBN').id,
-       :language_id=>Language.find_by_name('Arabic').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>12
-    AccountsCountry.create :account_id=>a.id, :country_id=>4
-    AccountsCountry.create :account_id=>a.id, :country_id=>69
-    AccountsCountry.create :account_id=>a.id, :country_id=>129
-    AccountsCountry.create :account_id=>a.id, :country_id=>205
-    
-    # below for VOA Network
-    a = FacebookAccount.create :name=>'voaindonesian', 
-       :object_name => 'voaindonesia',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Indonesian','VOA').id,
-       :language_id=>Language.find_by_name('Indonesian').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>9
-    AccountsCountry.create :account_id=>a.id, :country_id=>107
-    
-    a=FacebookAccount.create :name=>'parazitparazit', 
-       :object_name => 'parazitparazit',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('PNN','VOA').id,
- 
-       :language_id=>Language.find_by_name('Persian').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>6
-    AccountsCountry.create :account_id=>a.id, :country_id=>108
-    
-    a=FacebookAccount.create :name=>'voalearningenglish', 
-       :object_name => 'voalearningenglish',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Learning English','VOA').id,
- 
-       :language_id=>Language.find_by_name('English').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>1
-    AccountsCountry.create :account_id=>a.id, :country_id=>1
-    
-    a=FacebookAccount.create :name=>'voakhmer', 
-       :object_name => 'voakhmer',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Khmer','VOA').id,
-       
-       :language_id=>Language.find_by_name('Khmer').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>9
-    AccountsCountry.create :account_id=>a.id, :country_id=>39 
-    
-    a=FacebookAccount.create :name=>'voiceofamerica', 
-       :object_name => 'voiceofamerica',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('English','VOA').id,
-       
-       :language_id=>Language.find_by_name('English').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>1
-    AccountsCountry.create :account_id=>a.id, :country_id=>1
-    
-    a = FacebookAccount.create :name=>'VoA.Burmese.News', 
-       :object_name => 'VoA.Burmese.News',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Burmese','VOA').id,
-       
-       :language_id=>Language.find_by_name('Burmese').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>9
-    AccountsCountry.create :account_id=>a.id, :country_id=>157
-    
-    a = FacebookAccount.create :name=>'voaurdu', 
-       :object_name => 'voaurdu',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Urdu','VOA').id,
-       
-       :language_id=>Language.find_by_name('Urdu').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>9
-    AccountsCountry.create :account_id=>a.id, :country_id=>177
-    
-    a = FacebookAccount.create :name=>'voapersian', 
-       :object_name => 'voapersian',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('PNN','VOA').id,
-       
-       :language_id=>Language.find_by_name('Persian').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>6
-    AccountsCountry.create :account_id=>a.id, :country_id=>108
-    
-    a = FacebookAccount.create :name=>'VOATiengViet', 
-       :object_name => 'VOATiengViet',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Vietnamese','VOA').id,
-      
-       :language_id=>Language.find_by_name('Vietnamese').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>9
-    AccountsCountry.create :account_id=>a.id, :country_id=>258
-    
-    a = FacebookAccount.create :name=>'DuniaKita', 
-       :object_name => 'DuniaKita',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Indonesian','VOA').id,
-       :language_id=>Language.find_by_name('Indonesian').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>9
-    AccountsCountry.create :account_id=>a.id, :country_id=>107
-    
-    a = FacebookAccount.create :name=>'voapashto', 
-       :object_name => 'voapashto',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Afghan','VOA').id,
-       :language_id=>Language.find_by_name('Pashto').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>8
-    AccountsCountry.create :account_id=>a.id, :country_id=>2
-    
-    a = FacebookAccount.create :name=>'voahausa', 
-       :object_name => 'voahausa',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Hausa','VOA').id,
-       :language_id=>Language.find_by_name('Hausa').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>10
-    AccountsCountry.create :account_id=>a.id, :country_id=>168
-    
-    a = FacebookAccount.create :name=>'KarwanTV', 
-       :object_name => 'KarwanTV',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Afghan','VOA').id,
-       :language_id=>Language.find_by_name('Pashto').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>8
-    AccountsCountry.create :account_id=>a.id, :country_id=>2
-    
-    a = FacebookAccount.create :name=>'VOAStraightTalkAfrica',
-       :object_name => 'VOAStraightTalkAfrica',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('English to Africa','VOA').id,
-       :language_id=>Language.find_by_name('English').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>2
-    AccountsRegion.create :account_id=>a.id, :region_id=>7
-    AccountsRegion.create :account_id=>a.id, :region_id=>10
-    AccountsCountry.create :account_id=>a.id, :country_id=>88
-    AccountsCountry.create :account_id=>a.id, :country_id=>120
-    AccountsCountry.create :account_id=>a.id, :country_id=>167
-    AccountsCountry.create :account_id=>a.id, :country_id=>168
-    AccountsCountry.create :account_id=>a.id, :country_id=>231
-    
-    a = FacebookAccount.create :name=>'OnTenOnTen',
-       :object_name => 'OnTenOnTen',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('PNN','VOA').id,
-       :language_id=>Language.find_by_name('Persian').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>6
-    AccountsCountry.create :account_id=>a.id, :country_id=>108
-    
-    a = FacebookAccount.create :name=>'voadari',
-       :object_name => 'voadari',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Afghan','VOA').id,
-       :language_id=>Language.find_by_name('Dari').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>8
-    AccountsCountry.create :account_id=>a.id, :country_id=>2
-    
-    a = FacebookAccount.create :name=>'voaamharic',
-       :object_name => 'voaamharic',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Amharic','VOA').id,
-       :language_id=>Language.find_by_name('Amharic').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>2
-    AccountsCountry.create :account_id=>a.id, :country_id=>74
-    
-    a = FacebookAccount.create :name=>"voastudentu",
-       :object_name => 'voastudentu',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('English','VOA').id,
-       :language_id=>Language.find_by_name('English').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>1
-    AccountsCountry.create :account_id=>a.id, :country_id=>1
-    
-    a = FacebookAccount.create :name=>"zeriamerikes",
-       :object_name => 'zeriamerikes',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Albanian','VOA').id,
-       :language_id=>Language.find_by_name('Albanian').id,
-       :client_id=>cnf['client_id'],
-       :client_secret=>cnf['client_secret'],
-       :canvas_url=>cnf['canvas_url']
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>4
-    AccountsCountry.create :account_id=>a.id, :country_id=>3
-       
-    AccountsRegion.create :account_id=>a.id, :region_id=>1
-    AccountsCountry.create :account_id=>a.id, :country_id=>1
-    
+    # place holder
   end
   
 end
-=begin
-  def upload_insights
-    @insights=graph_api.graph_call("v2.0/#{self.object_name}/insights?since=#{since_date.to_i}")
-    @insights.unshift insights_day
-    @insights.unshift insights_week
-    @insights.unshift insights_month
-    @insights.unshift insights_life
-    file_path = s3_filepath(Time.zone.now) + "insights.json"
-    #"facebook/#{Time.zone.now.strftime("%d%b%y")}/user/#{self.object_name}/insights.json"
-    puts "Upload to S3 #{file_path}"
-    S3Model.new.store(file_path, @insights.to_json)
-    @insights
-  end
-
-  def sum_nested_value content,name,desc
-    hsh = {"name"=>name,"description"=>desc}
-    content['values'].each do |co|
-      end_time = Time.parse co['end_time']
-      end_time = end_time.strftime("%Y-%m-%d")
-      value = co['value'].values.inject { |a, b| a + b }
-      hsh[end_time] = value
-    end
-    hsh
-  end
-  def test_insights(dir)
-    # trucate fb_posts table
-    # FbPost.truncate 
-    
-    @insights=graph_api.graph_call("v2.0/#{self.object_name}/insights?since=#{7.days.ago}")
-    file_path = 
-       "facebook/#{Time.zone.now.strftime("%d%b%y")}/user/#{dir}/insights.json"
-    
-    posts = graph_api.get_connections(self.object_name, "posts", :fields=>"id,created_time",:limit=>200, :since=>1.day.ago, :until=>Time.zone.now)
-    process_posts(posts)
-    
-    # puts "Upload to S3 #{file_path}"
-    S3Model.new.store(file_path, @insights.to_json)
-    @insights
-  end
-  
-  def self.stress_test
-    started = Time.zone.now
-    arr = []
-    arr << Account.find(7)
-    arr << Account.find(16)
-    arr << Account.find(20)
-    []
-    (1..100).each do | i |
-       u = arr[ i % 3]
-       ended = Time.zone.now
-       elapsed = Time.at((ended-started).to_i).utc.strftime("%H:%M:%S")
-       puts "Account #{i} #{u.object_name} Time elapsed #{elapsed}"
-       u.test_insights("test-#{i}")
-       u.save_post_details
-       u.recent_page.save_lifetime_data
-    end
-    ended = Time.zone.now
-    puts "Finished 100 accounts #{started.to_s(:db)} #{ended.to_s(:db)}"
-  end
-=end
 
   

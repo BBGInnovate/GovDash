@@ -5,7 +5,6 @@ class Admin::AccountsRegionsController < Admin::BaseController
     config.update.refresh_list = true
     config.delete.refresh_list = true
     config.columns = [:id,:account_id,:region_id,:created_at,:updated_at]
-    # config.actions.exclude :create, :update,:delete,:show
     config.create.columns.exclude :id
     config.update.columns.exclude :id
     config.list.per_page = 30

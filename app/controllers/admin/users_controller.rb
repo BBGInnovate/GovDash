@@ -10,8 +10,6 @@ class Admin::UsersController < Admin::BaseController
     
     config.create.columns.exclude :id
     config.update.columns.exclude :id,:accounts, :encrypted_password
-    # config.actions.exclude :search, :show
-    
     config.create.columns = [
       :firstname,:lastname, :email, 
       :role, :password, :password_confirmation

@@ -7,7 +7,6 @@ class Admin::RegionsController < Admin::BaseController
     config.columns = [:id, :name, :created_at,:updated_at]
     config.create.columns.exclude :id
     config.update.columns.exclude :id
-    # config.actions.exclude :search, :show
     config.list.per_page = 30
   end
   

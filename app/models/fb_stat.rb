@@ -30,34 +30,7 @@ class FbStat
     records = FbPage.select(sql).where(cond).
       where(["account_id in (?)",account_ids]).
       group("month_number")
-=begin 
-    name = get_account_name myaccounts    
-    records.each do |rec|
-      from_date = Time.parse rec.trend_date
-      # populate page_likes[name]
-      rec = get_select_lifetime(from_date, from_date,myaccounts)
-      page_likes[name]["#{rec.date}"] = rec.total_likes
-    end
-    
-    if records.first
-      mypage = page_likes[name]
-      records[1..-1].each do |rec|
-        previous_day = (Time.parse(rec.trend_date) - 1.month).end_of_month.strftime('%Y-%m-%d')
-        rec.page_likes = mypage[rec.trend_date] - mypage[previous_day]
-      end
-    else
-      rec = OpenStruct.new
-      rec.account_id = account_ids[0]
-      rec.trend_date = max
-      rec.trend_type = 'month'
-      rec.likes = 0
-      rec.shares = 0
-      rec.replies_to_comment = 0
-      rec.comments = 0
-      rec.page_likes = 0
-      records = [rec]
-    end
-=end
+
     records
   end
   
@@ -86,27 +59,7 @@ class FbStat
     records = FbPage.select(sql).where(cond).
       where(["account_id in (?)",account_ids]).
       group("week_number-1")
-    
-=begin
-    name = get_account_name myaccounts
-    records.each do |rec|
-      from_date = Time.parse rec.trend_date
-      # populate page_likes[name]
-      rec = get_select_lifetime(from_date, from_date,myaccounts)
-      page_likes[name]["#{rec.date}"] = rec.total_likes
-    end
-    
-    mypage = page_likes[name]
-    records[1..-1].each do |rec|
-      previous_day = (Time.parse(rec.trend_date) - 1.week).end_of_week
-        .strftime('%Y-%m-%d')   
-      if mypage[rec.trend_date]!=0 && mypage[previous_day]!=0 
-        rec.page_likes = mypage[rec.trend_date] - mypage[previous_day]
-      else
-        rec.page_likes = rec.fan_adds_day
-      end
-    end
-=end
+
     records
   end
   
@@ -125,31 +78,6 @@ class FbStat
     records = FbPage.select(sql).where(cond).
       where(["account_id in (?)",account_ids]).
       group("trend_date").to_a
-=begin
-    name = get_account_name myaccounts
-    if records.first
-      records.each do |rec|
-        mypage = page_likes[name]
-        previous_day = (Time.parse(rec.trend_date) - 1.day).strftime('%Y-%m-%d')
-        if mypage[rec.trend_date]!=0 && mypage[previous_day]!=0 
-          rec.page_likes = mypage[rec.trend_date] - mypage[previous_day]
-        else
-          rec.page_likes = rec.fan_adds_day
-        end
-      end
-    else
-      rec = OpenStruct.new
-      rec.account_id = account_ids[0]
-      rec.trend_date = start_date.beginning_of_day.to_s(:db)
-      rec.trend_type = 'dai'
-      rec.likes = 0
-      rec.shares = 0
-      rec.replies_to_comment = 0
-      rec.comments = 0
-      rec.page_likes = 0
-      records = [rec]
-    end
-=end
     records = fill_missing_rows records, start_date,end_date
     records
   end
@@ -173,19 +101,6 @@ class FbStat
     if start_date.strftime('%y%m%d') != end_date.strftime('%y%m%d')
       raise "start_date, end_date  must be on the same day. #{start_date} and #{end_date}"
     end
-=begin
-    account_ids = myaccounts.map{|a| a.id}
-    date = end_date.strftime("%Y-%m-%d")
-    cond = ["post_created_time BETWEEN '#{start_date.beginning_of_day.to_s(:db)}' AND '#{end_date.end_of_day.to_s(:db)}' "]
-    sql = "'#{date}' AS date, "
-    sql += select_account_name myaccounts
-    sql += "COALESCE(sum(total_likes),0) as total_likes, COALESCE(sum(total_shares),0) AS total_shares, "
-    sql += "COALESCE(sum(total_talking_about),0) as total_talking_about, "
-    sql += "COALESCE(sum(total_likes+total_shares+total_talking_about),0) as total_number"
-    record = FbPage.select(sql).where(cond).where(["account_id in (?)",account_ids]).first
-    page_likes[record.name]["#{record.date}"] = record.total_likes    
-    record
-=end
   end
 
   # start_date,end_date : Time object
@@ -218,14 +133,6 @@ class FbStat
   def story_adds_by_story_type_day
     logger.warn "DEPRECATED 'story_adds_by_story_type_day' use 'story_adds_by_story_type_period' instead"
     story_adds_by_story_type_period
-=begin
-    account_ids = options[:account_ids] 
-    records = []
-    records << get_story_adds_by_story_type_day_by(period1_from_date, period1_end_date,account_ids)
-    records << get_story_adds_by_story_type_day_by(period2_from_date, period2_end_date,account_ids)
-    records.flatten!
-    final_results << {:story_adds_by_story_type_day=>records}
-=end
   end
  
   def story_adds_by_story_type_period
@@ -295,7 +202,6 @@ class FbStat
     end
   end
   
-  # 36235438073_10152175670143074
   def save_lifetime_data
     today = Time.zone.now
     if post_created_time > today.beginning_of_day &&
@@ -364,8 +270,6 @@ class FbStat
       attr.delete('id')
       arr << attr
     end
-#    arrays = []
-#    arrays << convert(records)
     arr
   end
   
@@ -385,12 +289,7 @@ class FbStat
     records.each do |rec|
       # hsh = {'name'=>'page_story_adds_by_story_type_day','date' => rec.end_time.strftime("%Y-%m-%d")}
       # hsh.merge!
-      hsh = {:date=>rec.end_time}
-=begin
-      story_type_day = JSON.parse(rec.story_type_day).to_h
-      hsh.merge! story_type_day
-      arrays  << StoryTypeDay.new( hsh )
-=end      
+      hsh = {:date=>rec.end_time}  
       hsh.merge! StoryTypeDay.sum(rec.story_type_day, start_date, end_date)
       arrays << hsh
     end
@@ -415,11 +314,6 @@ class FbStat
     daily_data  = []  
     arrays = [] 
     records.each do |rec|
-=begin
-      hsh = {'name'=>'page_story_adds_by_story_type_day','date' => rec.end_time}
-      hsh.merge! JSON.parse(rec.story_type_day).to_h
-      tmp_arrays  << StoryTypeDay.new( hsh )
-=end
       hsh = {:date=>rec.end_time}
       # sum is a hash
       # story_adds_by_story_type by day
@@ -441,8 +335,7 @@ class FbStat
     records = FbPage.select(sql).
        where(cond).
        where(["account_id in (?)",account_ids]).to_a
-#    arrays = convert(records)
-#    arrays.flatten
+
     records
   end
   
@@ -460,10 +353,6 @@ class FbStat
     records = FbPage.select(sql).where(cond).where(["account_id in (?)",account_ids]).to_a
     arrays  = []   
     records.each do |rec|
-     # hsh = {'name'=>'page_stories_by_story_type_week','date' => rec.end_time.strftime("%Y-%m-%d")}
-     # hsh.merge! JSON.parse(rec.story_type_week).to_h
-     # arrays  << StoryTypeWeek.new( hsh )
-      
       arrays << rec.story_type_week
     end
     sum = StoryTypeWeek.summarize arrays,start_date,end_date
@@ -484,7 +373,6 @@ class FbStat
       arrays  << ConsumptionTypeDay.new( hsh )
     end
     sum = ConsumptionTypeDay.sum arrays,start_date,end_date
-    # arrays << sum
     arrays.flatten
   end
   
@@ -501,24 +389,11 @@ class FbStat
       hsh.merge! JSON.parse(rec.consumptions).to_h
       tmp_arrays  << ConsumptionTypeDay.new( hsh )
     end
-    # tmp_arrays.last is the data on this period's end date 
-    # for test if the period data is correct
-    # arrays = [tmp_arrays.last]
     arrays << ConsumptionTypeDay.sum(tmp_arrays,start_date,end_date)
     arrays.flatten
   end
   
   def get_lifetime_result rec1, rec2
-=begin
-    # get_page_likes rec1,rec2,rec3,rec4, rec1.name
-    [rec1,rec2,rec3,rec4].each do |rec|
-      page_likes[rec.name]["#{rec.date}"] = rec.total_likes
-    end
-  
-    likes_change = compute_change(rec2.total_likes, rec1.total_likes)
-    shares_change = compute_change(rec2.total_shares,rec1.total_shares)
-    talking_about_change = compute_change(rec2.total_talking_about,rec1.total_talking_about)
-=end
     results = []
     [rec1, rec2].each_with_index do |rec, i|
       result = init_struct
@@ -530,24 +405,12 @@ class FbStat
           :totals=>total
           }
       results << result.values
-      # final_results << result.values
     end
-    # final_results << {:lifetime=>results}
     results
   end
   
   
   def get_detail_result rec1, rec2
-  # rec1  2014-07-14 - 2014-07-20
-  # rec2 2014-07-21 - 2014-07-27
-=begin
-    date1,date2 = rec1.period.split(' - ')
-    date3,date4 = rec2.period.split(' - ')
-    mypage = page_likes[rec1.name]
-    pagelikes = [(mypage["#{date2}"] - mypage["#{date1}"]),
-                 (mypage["#{date4}"] - mypage["#{date3}"])]
-=end
-   
     pagelikes = calculate_pagelikes rec1, rec2
     compute_changes rec1, rec2   
     @page_likes_change = compute_change(pagelikes[1],pagelikes[0])
@@ -579,36 +442,14 @@ class FbStat
           :totals=>rate}
         results << result.data
       end 
-      # no show for period 1    
-      # results << result.data
     end
     results
-    #data = account_info(rec1.account)
-    #data[:values]=results
-    #data
   end
   
   def get_period_result rec1, rec2
-=begin
-  # rec1  2014-07-14 - 2014-07-20
-  # rec2 2014-07-21 - 2014-07-27
-    date1,date2 = rec1.period.split(' - ')
-    date3,date4 = rec2.period.split(' - ')
-    mypage = page_likes[rec1.name]
-=end
     results = []
     totals = []
-=begin
-    if !rec2
-      result = init_struct
-      result.values[:changes]={:page_likes=>'N/A',
-           :story_likes=>'N/A',:shares=>'N/A',
-           :comments=>'N/A',
-           :totals=>'N/A'}
-      return result.values 
-    end
-=end
-    
+
     pagelikes = calculate_pagelikes rec1, rec2
     compute_changes rec1, rec2
     @page_likes_change = compute_change(pagelikes[1],pagelikes[0])
@@ -639,24 +480,12 @@ class FbStat
            :totals=>rate}
         results << result.values 
       end
-      # no show for period 1
-      # results << result.values  
-      # final_results << result.values
     end
-    # final_results << {:period=>results}
     results
   end
 
   def set_engagement_data rec
     pagelikes = rec.fan_adds_day.to_i
-=begin
-    if pagelikes == 0
-      date = rec.post_created_time.strftime('%Y-%m-%d')
-      predate = (rec.post_created_time-1.day).strftime('%Y-%m-%d')
-      pagelikes = page_likes[rec.name]["#{date}"] -
-        page_likes[rec.name]["#{predate}"]  
-    end
-=end
     comments=rec.comments + rec.replies_to_comment
     {:story_likes=>rec.likes,
      :shares=>rec.shares,
@@ -692,42 +521,8 @@ class FbStat
   end
   
   def calculate_pagelikes rec1, rec2
-    # rec1  2014-07-14 - 2014-07-20
-    # rec2 2014-07-21 - 2014-07-27
-=begin
-    date1,date2 = rec1.period.split(' - ')
-    date3,date4 = rec2.period.split(' - ')
-    mypage = page_likes[rec1.name]
-    
-    date1 = (Time.parse(date1) - 1.day).strftime('%Y-%m-%d')
-    date3 = (Time.parse(date3) - 1.day).strftime('%Y-%m-%d')
-    if mypage["#{date1}"] == 0 || mypage["#{date2}"] == 0
-      likes1 = rec1.fan_adds_day || 0
-    else
-      likes1 = mypage["#{date2}"] - mypage["#{date1}"]
-    end
-    if mypage["#{date3}"] == 0 || mypage["#{date4}"] == 0
-      likes2 = rec2.fan_adds_day || 0
-    else
-      likes2 = mypage["#{date4}"] - mypage["#{date3}"]
-    end
-=end
     likes1 = rec1.fan_adds_day rescue 0
     likes2 = rec2.fan_adds_day rescue 0
-=begin
-    if likes1 == 0
-      date = rec1.post_created_time.strftime('%Y-%m-%d')
-      predate = (rec1.post_created_time-1.day).strftime('%Y-%m-%d')
-      likes1 = page_likes[rec1.name]["#{date}"] -
-        page_likes[rec1.name]["#{predate}"]  
-    end
-    if likes2 == 0
-      date = rec2.post_created_time.strftime('%Y-%m-%d')
-      predate = (rec2.post_created_time-1.day).strftime('%Y-%m-%d')
-      likes2 = page_likes[rec2.name]["#{date}"] -
-        page_likes[rec2.name]["#{predate}"]  
-    end
-=end
     @pagelikes = [likes1,likes2]
   end
   

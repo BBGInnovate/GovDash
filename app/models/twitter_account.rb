@@ -1,10 +1,3 @@
-
-# https://developers.facebook.com/docs/reference/ads-api/api-rate-limiting/
-# RabbitMQ vs ActiveMQ
-# http://blog.x-aeon.com/2013/04/10/a-quick-message-queue-benchmark-activemq-rabbitmq-hornetq-qpid-apollo/
-# AMQP protocol:
-# http://blog.brianploetz.com/post/36886084370/producing-amqp-messages-from-ruby-on-rails-applications
-
 class TwitterAccount < Account
   attr_accessor :show_raw, :is_download
   has_many :tw_timelines,  -> { order 'tweet_created_at desc' }, :foreign_key=>:account_id
@@ -227,46 +220,23 @@ class TwitterAccount < Account
   def upload_show
     hsh = {}
     hsh['lifetime'] = twitter_user
-#    hsh['month']  = get_aggregated 1.month,'month'
-#    hsh['week'] = get_aggregated 1.week,'week'
-#    hsh['day'] = get_aggregated 1.day,'day' 
-#    File.open("#{Rails.root}/show.json", 'w') { |file| file.write( hsh.to_json)}
     S3Model.new.store(s3_filepath+"show.json", hsh.to_json) 
   end
   
   def upload_timeline timelines
     S3Model.new.store(s3_filepath+"timeline.json", timelines.to_json)
   end
-  
-=begin  
-  # return Hash
-  a["followers_count"] =>105491
-  a["friends_count"] =>157  #=> following
-  a["listed_count"] =>2761
-  a["favourites_count"] =>3
-  a["statuses_count"]=>34575 
-=end
+
   def s3_show(date=Time.zone.now)
     self.is_download = true
-    arr = []
     arr = get_show(date)
-#    arr << get_aggregated('month')
-#    arr << get_aggregated('week')
-#    arr << get_aggregated('day')
-#    arr
   end
   
   # read one show.json
   def get_show(date_str=Time.zone.now)
     date_str = date_str.end_of_day
     started = date_str  #  .days_ago(days_list)
-    
-#    path = s3_filepath(date_str) + "show.json"
-#    content = S3Model.new.json_obj path
-#    result_month = parse_show_period(content, 'month')
-#    result_week = parse_show_period(content, 'week')
-#    result_day = parse_show_period(content, 'day')
-          
+ 
     results = []
     while started <= date_str
       path = s3_filepath(started) + "show.json"
@@ -279,8 +249,6 @@ class TwitterAccount < Account
         else
           results << parse_lifetime_from_table
           results << get_aggregated(1.month,'month')
-          # results << parse_show_lifetime(content)
-          # results << parse_show_period(content, 'month')
           results << parse_show_period(content, 'week')
           results << parse_show_period(content, 'day')
         end
@@ -394,21 +362,10 @@ class TwitterAccount < Account
       {}
     end
   end
-  
-=begin
-  # return Hash
-  b[0]["followers_count"] =>105491
-  b[0]["friends_count"] =>157
-  b[0]["listed_count"] =>2761
-  b[0]["statuses_count"] =>34575
-=end
+
   def s3_timeline(date=Time.zone.now)
     self.is_download = true
-    arr = []
     arr = get_lifetime(date)
-#    arr << get_aggregated('month')
-#    arr << get_aggregated('week')
-#    arr << get_aggregated('day')
     arr
   end
   
@@ -455,7 +412,6 @@ class TwitterAccount < Account
     result['values'] = []
     
     while current_date > increment.ago do
-    ## while current_date > min_tweet_date do
       beginning_of_ = (current_date-increment+1.day).beginning_of_day.to_s(:db)
       end_of_ = current_date.end_of_day
       if end_of_ > Time.zone.now.end_of_day
@@ -545,15 +501,13 @@ class TwitterAccount < Account
     else
       net_followers_for_day = 0
     end
-    # statuses_count == tweets_count
     options = {:object_name=>self.object_name,
                :account_id=>self.id,
                :total_tweets => user.tweets_count,
                :followers => net_followers_for_day,
                :total_favorites => user.favorites_count,
                :total_followers => user.followers_count}
-           #   :total_friends => user.friends_count,
-           #   :total_lists => user.listed_count
+           
     if tl[1] && tl[1].tweet_created_at.to_date==today.to_date
       tl[1].update_attributes options
     else
@@ -565,7 +519,6 @@ class TwitterAccount < Account
     created_time = options[:tweet_created_at]
     begin_date = created_time.beginning_of_day.to_s(:db)
     end_date = created_time.end_of_day.to_s(:db)
-    # timelines = TwTimeline.where("tweet_created_at BETWEEN '#{begin_date}' AND '#{end_date}' AND account_id=#{self.id}")
     timelines = TwTimeline.where(:tweet_created_at=> begin_date..end_date, :account_id=>self.id).to_a
     timeline = timelines.first    
     if timelines.size > 1
@@ -589,7 +542,6 @@ class TwitterAccount < Account
   def find_or_create_tweet(options)
     re = my_tweets.select{|t| t.tweet_id==options[:tweet_id]}.first
     if !re
-      # re = my_tweets.create options
       @bulk_tweets << options
     else
       re.update_attributes options
@@ -597,12 +549,10 @@ class TwitterAccount < Account
   end
   
   def my_timelines
-    # @my_timelines ||= self.tw_timelines
     @my_timelines = recent_timelines
   end
   
   def my_tweets
-    # @my_tweets ||= self.tw_tweets
     @my_tweets = recent_tweets
   end
   
@@ -692,224 +642,9 @@ class TwitterAccount < Account
   end
 
   def self.populate
-
-    a = TwitterAccount.create :name=>'GolosAmeriki', 
-       :object_name => 'GolosAmeriki',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Russian','VOA').id,
-       :language_id=>Language.find_by_name('Russian').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>4
-    AccountsCountry.create :account_id=>a.id, :country_id=>193
-    AccountsCountry.create :account_id=>a.id, :country_id=>247
-    
-    a = TwitterAccount.create :name=>'VOA_News', 
-       :object_name => 'VOA_News',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('English','VOA').id,
-       :language_id=>Language.find_by_name('English').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>1
-    AccountsCountry.create :account_id=>a.id, :country_id=>1
-    
-    a = TwitterAccount.create :name=>'VOAIran', 
-       :object_name => 'VOAIran',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('PNN','VOA').id,
-       :language_id=>Language.find_by_name('Persian').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>6
-    AccountsCountry.create :account_id=>a.id, :country_id=>108
-    
-    a = TwitterAccount.create :name=>'VOALearnEnglish', 
-       :object_name => 'VOALearnEnglish',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Learning English','VOA').id,
-       :language_id=>Language.find_by_name('English').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>1
-    AccountsCountry.create :account_id=>a.id, :country_id=>1
-    
-    a = TwitterAccount.create :name=>'voaindonesia', 
-       :object_name => 'voaindonesia',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Indonesian','VOA').id,
-       :language_id=>Language.find_by_name('Indonesian').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>9
-    AccountsCountry.create :account_id=>a.id, :country_id=>107
-    
-    a = TwitterAccount.create :name=>'chastime', 
-       :object_name => 'chastime',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Ukrainian','VOA').id,
-       :language_id=>Language.find_by_name('Ukrainian').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>4
-    AccountsCountry.create :account_id=>a.id, :country_id=>193
-    AccountsCountry.create :account_id=>a.id, :country_id=>247
-    
-    a = TwitterAccount.create :name=>'voachina', 
-       :object_name => 'voachina',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Mandarin','VOA').id,
-       :language_id=>Language.find_by_name('Mandarin').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>3
-    AccountsCountry.create :account_id=>a.id, :country_id=>48
-    
-    a = TwitterAccount.create :name=>'VOANoticias', 
-       :object_name => 'VOANoticias',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Spanish','VOA').id,
-       :language_id=>Language.find_by_name('Spanish').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>5
-    AccountsCountry.create :account_id=>a.id, :country_id=>51
-    AccountsCountry.create :account_id=>a.id, :country_id=>147
-    AccountsCountry.create :account_id=>a.id, :country_id=>257
-    
-    a = TwitterAccount.create :name=>'voahausa', 
-       :object_name => 'voahausa',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Hausa','VOA').id,
-       :language_id=>Language.find_by_name('Hausa').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>10
-    AccountsCountry.create :account_id=>a.id, :country_id=>168
-    
-    a = TwitterAccount.create :name=>'voakhmer', 
-       :object_name => 'voakhmer',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Khmer','VOA').id,
-       :language_id=>Language.find_by_name('Khmer').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>9
-    AccountsCountry.create :account_id=>a.id, :country_id=>39
-    
-    a = TwitterAccount.create :name=>'URDUVOA', 
-       :object_name => 'URDUVOA',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Urdu','VOA').id,
-       :language_id=>Language.find_by_name('Urdu').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>8
-    AccountsCountry.create :account_id=>a.id, :country_id=>177
-    
-    a = TwitterAccount.create :name=>'VOATurkish', 
-       :object_name => 'VOATurkish',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Turkish','VOA').id,
-       :language_id=>Language.find_by_name('Turkish').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>6
-    AccountsCountry.create :account_id=>a.id, :country_id=>239
-    
-    a = TwitterAccount.create :name=>'VOA_Somali', 
-       :object_name => 'VOA_Somali',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Somali','VOA').id,
-       :language_id=>Language.find_by_name('Somali').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>2
-    AccountsCountry.create :account_id=>a.id, :country_id=>215
-    
-    a = TwitterAccount.create :name=>'zeriamerikes', 
-       :object_name => 'zeriamerikes',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Albanian','VOA').id,
-       :language_id=>Language.find_by_name('Albanian').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>4
-    AccountsCountry.create :account_id=>a.id, :country_id=>3
-    
-    a = TwitterAccount.create :name=>'Voaburmese', 
-       :object_name => 'Voaburmese',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Burmese','VOA').id,
-       :language_id=>Language.find_by_name('Burmese').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>9
-    AccountsCountry.create :account_id=>a.id, :country_id=>157
-    
-    a = TwitterAccount.create :name=>'VOAAmharic', 
-       :object_name => 'VOAAmharic',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Amharic','VOA').id,
-       :language_id=>Language.find_by_name('Amharic').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>2
-    AccountsCountry.create :account_id=>a.id, :country_id=>74
-    
-    
-    a = TwitterAccount.create :name=>'VOAPashto', 
-       :object_name => 'VOAPashto',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Pashto','VOA').id,
-       :language_id=>Language.find_by_name('Pashto').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>8
-    AccountsCountry.create :account_id=>a.id, :country_id=>2
-    
-    a = TwitterAccount.create :name=>'voadeewa', 
-       :object_name => 'voadeewa',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Deewa','VOA').id,
-       :language_id=>Language.find_by_name('Deewa').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>8
-    AccountsCountry.create :account_id=>a.id, :country_id=>2
-    
-    a = TwitterAccount.create :name=>'VOADariAfghan', 
-       :object_name => 'VOADariAfghan',
-       :network_id=>Network.find_by_name('VOA').id,
-       :account_type_id=>1,
-       :service_id=>Service.find_me('Afghan','VOA').id,
-       :language_id=>Language.find_by_name('Dari').id
-   
-    AccountsRegion.create :account_id=>a.id, :region_id=>8
-    AccountsCountry.create :account_id=>a.id, :country_id=>2
-    
+    # place holder
   end
   
   protected
   
 end
-=begin
-  def read_json
-    c = File.read("#{Rails.root}/show.json")
-    c = JSON.parse c
-  end
-  
-  def self.stress_test
-    started = Time.zone.now
-    arr = self.all
-    (1..100).each do | i |
-       u = arr[ i % arr.size]
-       ended = Time.zone.now
-       elapsed = Time.at((ended-started).to_i).utc.strftime("%H:%M:%S")
-       puts "Account #{i} #{u.object_name} Time elapsed #{elapsed}"
-       u.retrieve
-    end
-    ended = Time.zone.now
-    puts "Finished 100 accounts #{started.to_s(:db)} #{ended.to_s(:db)}"
-  end
-=end

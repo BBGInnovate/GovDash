@@ -14,10 +14,6 @@ class Account < ActiveRecord::Base
   has_and_belongs_to_many :sc_segments
   has_and_belongs_to_many :users
   
-=begin
-0 */4 * * * /bin/bash -l -c 'source /home/lliu/.rvm/scripts/rvm; \
-   cd /home/lliu/socialdash/current && bundle exec rails runner -e production  "Account.send_message_queues"'  > /tmp/hub-cron.log 2>&1
-=end
   def self.send_message_queues
     records = self.where(:is_active=>true).all
     records.each do |a|
@@ -87,15 +83,7 @@ class Account < ActiveRecord::Base
     else
       combined_account_ids << options[:account_ids]
     end
-    
-=begin
-    if !account_ids.empty?
-      if account_ids.first == 0
-         account_ids = Account.where(:is_active=>true).map{|a| a.id}
-      end
-      return account_ids
-    end
-=end
+
     [:ids, :account_type_ids, :media_type_names, :network_ids, :service_ids].each do |opt|
        if (options[opt] && options[opt].first)
          cond += ["#{opt.to_s.singularize} in (#{options[opt].join(',')})"]
@@ -139,18 +127,7 @@ class Account < ActiveRecord::Base
     else
       account_ids = []
     end
-=begin
-    # deduplicate account base on object_name
-    accounts = Account.where(["id in (?)", account_ids])
-    hsh = {}
-    accounts.each do |a|
-      # if !hsh[a.object_name]
-        hsh[a.object_name] = a.id 
-      # end 
-    end
-    account_ids = hsh.values
-=end
-    
+
     puts "CONSOLIDATED account ids #{account_ids}"
     account_ids
   end

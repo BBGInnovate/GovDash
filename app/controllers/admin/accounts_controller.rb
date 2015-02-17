@@ -42,24 +42,7 @@ class Admin::AccountsController < Admin::BaseController
       :page => false
 
   end
- 
-=begin 
-  def start_producers
-     logger.debug "start_producers: started"
-     `bundle exec clockworkd -c app/models/clock.rb start --log`  
-     redirect_to('/admin/accounts') and return
-  end
-  
-  def stop_producers
-     pid = `pidof clockworkd.clock`.to_i
-     begin
-       logger.debug  `#{Rails.root}/gracefully-kill #{pid}`  if pid > 0
-     rescue
-       logger.debug "stop_producers: #{$!}"
-     end
-     redirect_to('/admin/accounts') and return
-  end
-=end
+
   def fetch
     record = Account.find_by id: params[:id]
     ret = record.retrieve
@@ -161,8 +144,6 @@ class Admin::AccountsController < Admin::BaseController
       :confirm => 'Are you sure to start all producers?',
       :page => true,
       :position => :top,
- #     :dhtml_confirm=>DhtmlConfirm.new({:message=>'Are you sure to restart all scheduled jobs?',
- #        :url=>'/admin/schedulers/restart_all'}),
       :inline => false
       
     links.add 'stop_producers',

@@ -2,11 +2,6 @@ class Api::V1::TwittersController < Api::V1::BaseController
   skip_before_filter :authenticate_user!
   #before_filter :is_analyst?
 
-  # api/facebook/s3/voiceofamerica
-  # api/twitter/show/VOA_News
-  # api/twitter/show/VOA_News/2014-06-20
-  # api/twitter/timeline/VOA_News
-  # api/twitter/timeline/VOA_News/2014-08-18
   def index
     
     @show_raw = params[:raw]
@@ -36,9 +31,6 @@ class Api::V1::TwittersController < Api::V1::BaseController
     if TwitterAccount===u
       u.show_raw = @show_raw
       hsh = u.s3_show(date)
-      # c = File.read("#{Rails.root}/show.json")
-      # c = JSON.parse c
-      # c=c[0]
     end
     pretty_respond hsh and return
   end

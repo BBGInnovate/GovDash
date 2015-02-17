@@ -31,13 +31,17 @@ Environment: <%= Rails.env.to_s %>
 <li>odditech@bbg.gov</li>
 <li>oddidev@bbg.gov</li>
 </ul>
-<p>To get page access tokens for ads@bbg.gov, you need to
+<p>To get page access tokens
 <ul>
-<li>Run Social Dashboard App locally with:  rails s</li>
-<li>Goto page http://ads.localhost.com:3000/facebooks/index.
-You need to add to /etc/hosts file with "127.0.0.1 ads.localhost.com"</li>
-<li>In the same Web browser, login to Facebook.com with user
-ads@bbg.gov.</li>
+<li>Login to facebook.com using the email with which a Facebook App is created
+</li>
+<li>If the Facebook App's Canvas_url is http://ads.localhost.com:3000/ <br />
+  Goto page http://ads.localhost.com:3000/facebooks/index.
+  *You need to add to /etc/hosts file with "127.0.0.1 ads.localhost.com"</li>
+
+<li>If the Facebook App's Canvas_url is https://smdata.bbg.gov/ <br />
+  Goto page https://smdata.bbg.gov/facebooks/index</li>
+
 <li>In the Account dropdown list, select any one account, e.g. voiceofamerica</li>
 <li>In the Email dropdown list, select ads@bbg.gov</li>
 <li>Click Submit</li>
@@ -46,33 +50,10 @@ After the process completed, the "Access Toten?" column in the table below will 
 for all the pages the user has "Page Role"
 </p>
 
-<p>To get page access tokens for odditech@bbg.gov, you need to
-<ul>
-<li>Run Social Dashboard App locally with:  rails s staging</li>
-<li>Goto page http://ads.localhost.com:3000/facebooks/index</li>
-<li>In the same Web browser, login to Facebook.com with user
-odditech@bbg.gov.</li>
-<li>In the Account dropdown list, select any one account, e.g. voiceofamerica</li>
-<li>In the Email dropdown list, select odditech@bbg.gov</li>
-<li>Click Submit</li>
 </ul>
 After the process completed, the "Access Toten?" column in the table below will change to Yes
 for all the pages the user has "Page Role"
 </p>
-
-<p>To get page access tokens for oddidev@bbg.gov, you need to
-<ul>
-<li>Login to http://smdata.bbg.gov/facebooks/index</li>
-<li>In the same Web browser, login to Facebook.com with user
- oddidev@bbg.gov.</li>
-<li>In the Account dropdown list, select any one account, e.g. voiceofamerica</li>
-<li>In the Email dropdown list, select oddidev@bbg.gov</li>
-<li>Click Submit</li>
-</ul>
-After the process completed, the "Access Toten?" column in the table below will change to Yes
-for all the pages the user has "Page Role"
-</p>
-
 
 <div class="float-left1">
 <% if authenticated? %>
@@ -109,11 +90,5 @@ for all the pages the user has "Page Role"
 <div id="accounts" class="float-left2">
     <%= render :partial=>'account' %>
 </div>
-
 <div class="twitter">&nbsp;</div>
-<!--
-<div class="float-left1">
-  <h2>Twitter Access Token</h2>
-</div>
-</div>
--->
+

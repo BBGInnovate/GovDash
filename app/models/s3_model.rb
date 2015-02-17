@@ -17,8 +17,6 @@ class S3Model < Object
     @bucket ||= S3.config[:bucket]
   end
   
-# https://024699842891.signin.aws.amazon.com/console
-# lliu Chang   4!
   def store(file_path, content)
     begin
     AWS::S3::S3Object.store(
@@ -36,7 +34,6 @@ class S3Model < Object
 
   end
   
-  # bucket = 'oddibbg'
   def get_url(file_name)
     file_name = file_name.sub(/^\//, '')
     obj=AWS::S3::S3Object.find file_name, bucket
@@ -46,7 +43,6 @@ class S3Model < Object
   def json_obj file_name
     str = AWS::S3::S3Object.value file_name, bucket
     json_obj = JSON.parse str
-    # JSON.pretty_generate json_obj
   end
   
   def download_insights(account)
@@ -140,29 +136,5 @@ class S3Model < Object
   end
   
 end
-=begin
-  bucket = AWS::S3::Bucket.find('oddibbg')
-  AWS::S3::Bucket.create("my-new-bucket")
-  AWS::S3::S3Object.store(
-      file_name,
-      File.open(local_file),
-      bucket,
-      :content_type => 'text/plain',:access => :private
-  )
-  AWS::S3::Service.buckets
-    
- S3Model.upload "/facebook/test.txt}", 
- local_file = "/Users/lliu/development/socialdash/README.md"
 
- file_path = "facebook/voiceofamerica/insights/#{Time.now.strftime("%d%b%y")}.json"
- arr = []
-    User.all[0..0].each do |u| 
-      arr << OpenStruct.new(u.attributes).send('table')
-    end
-    content = arr.to_json
-    
- file_path = "facebook/twitter/#{Time.now.strftime("%d%b%y")}/user/VOA_News/show.json"
- file_path = "facebook/twitter/#{Time.now.strftime("%d%b%y")}/user/VOA_News/timeline.json"
- 
-=end
 

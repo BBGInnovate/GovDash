@@ -1,11 +1,5 @@
-# require Rails.root.to_s + '/lib/read_page_detail'
-
 class TwTimeline < ActiveRecord::Base
-#  include ReadPageDetail
-  
-  # belongs_to :account
-
-  after_save :sync_redshift
+  # after_save :sync_redshift
   def sync_redshift
     attr = self.attributes
     RedshiftTwTimeline.create_or_update(attr)

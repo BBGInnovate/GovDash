@@ -10,9 +10,6 @@ class TwStat
        myend_date = (myend_date - 1.month)
     end
     account_ids = myaccounts.map{|a| a.id}
-    #min = start_date.strftime "%Y-%m-%d"
-    #max = myend_date.strftime "%Y-%m-%d"
-    
     min = "DATE_FORMAT(min(tweet_created_at),'%Y-%m-%d')"
     max = "DATE_FORMAT(max(tweet_created_at),'%Y-%m-%d')"
         
@@ -51,7 +48,6 @@ class TwStat
     sql += "1 + DATEDIFF(tweet_created_at, '#{min}') DIV 7  AS week_number, "
     sql += "'#{min}' + INTERVAL (DATEDIFF(tweet_created_at, '#{min}') DIV 7) WEEK AS week_start_date,"
 
-    # sql += "WEEK(tweet_created_at,1) AS week_number, "
     sql += select_account_name myaccounts
     sql += select_summary_sql
     
@@ -127,16 +123,6 @@ class TwStat
   end
   
   def get_lifetime_result rec1, rec2
-  # #<TwTimeline total_tweets: 38564, total_favorites: 3, total_followers: 179423>
-=begin  
-    tweets_change = ((rec2.total_tweets - rec1.total_tweets)*100/rec1.total_tweets.to_f).ceil rescue "N/A"
-    favorites_change = ((rec2.total_favorites -  rec1.total_favorites)*100/rec1.total_favorites.to_f).ceil rescue "N/A"
-    followers_change = ((rec2.total_followers - rec1.total_followers)*100/rec1.total_followers.to_f).ceil rescue "N/A"
-    
-    tweets_change = "#{tweets_change} %"
-    favorites_change = "#{favorites_change} %"
-    followers_change = "#{followers_change} %"
-=end
     results = []
     [rec1, rec2].each_with_index do |rec, i|
       result = init_struct
@@ -148,9 +134,7 @@ class TwStat
           :totals=>total
           }   
       results << result.values
-      # final_results << result.values
     end
-    # final_results << {:lifetime=>results}
     results
   end
 
@@ -177,13 +161,8 @@ class TwStat
             :totals=>rate}         
         results << result.values
       end  
-      # no show for period 1  
-      # results << result.values
     end
     results
-    # data = account_info(rec1.account)
-    # data[:values]=results
-    # data
   end
 
   def get_period_result rec1, rec2
@@ -193,18 +172,7 @@ class TwStat
     if !rec1
       return missing_record rec2
     end
-=begin    
-    if !rec2
-      result = init_struct
-      result.values[:changes] = {:retweets=>'N/A', 
-            :mentions=>'N/A',
-            :favorites=>'N/A', 
-            :followers=>'N/A',
-            :totals=>'N/A'}
-      return result.values 
-    end
-=end
-   
+
     [rec1, rec2].each_with_index do |rec, i|
       result = init_struct
       result.values = {:period=>rec.period}
@@ -222,12 +190,7 @@ class TwStat
             :totals=>rate}         
         results << result.values      
       end  
-      # no show for period 1
-      # results << result.values  
-      # final_results << result.values
-      # final_results << {:period=>results}
     end
-    # final_results << {:period=>results}
     results
   end
  

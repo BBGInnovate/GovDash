@@ -1,0 +1,16 @@
+# is overriden by OpsWorks
+development: &default
+  adapter: mysql2
+  encoding: utf8
+  database: radd_development
+  username: root
+  password: root
+  port: 3306
+  socket: /tmp/mysql.sock
+
+
+staging:
+  <<: *default
+
+production:
+  

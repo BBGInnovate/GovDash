@@ -1,0 +1,17 @@
+#
+# is overriden by OpsWorks
+#
+development: &defaults
+  company: "bbg"
+  username: 
+  shared_secret: 
+  rsid: "bbgprod"
+
+staging:
+  <<: *defaults
+  
+production:
+  company: "bbg"
+  username: 
+  shared_secret: 
+  rsid: "bbgprod"

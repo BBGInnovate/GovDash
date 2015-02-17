@@ -1,0 +1,24 @@
+ <h3>This App can get full Insights for the following Facebook pages
+  which have access token</h3>
+  <span><b>User</b> : <%= @user %></span>&nbsp;&nbsp;&nbsp;&nbsp;
+  <span><b>Page Count</b> : <%= @accounts.size %></span>
+  <span><b>AccessToken Count</b> : <%= @token_count %></span>
+  <table border="1">
+<tr>
+  <th class="alabel1"><b>ID</b></th>
+  <th class="alabel1"><b>Object Name</b></th>
+  <th class="alabel2"><b>Updated</b></th>
+  <th class="alabel2"><b>Access Token?</b></th>
+  <th class="alabel1"><b>Expire</b></th>
+</tr>
+<% @accounts.each do |a| %>
+<tr>
+  <td class="alabel1"><%= a.id %></td>
+  <td class="alabel1"><%= a.object_name %></td>
+  <td class="alabel2"><%= a.updated_at.to_s(:db) %></td>
+  <td class="alabel1"><%= a.token? ? 'Yes' : 'No' %></td>
+  <td class="alabel1"><%= a.debug_token %></td>
+
+</tr>
+<% end %>
+</table>

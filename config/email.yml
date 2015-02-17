@@ -1,0 +1,22 @@
+# is overriden by OpsWorks
+development: &defaults
+  :address: smtp.gmail.com
+  :port: 587
+  :domain: gmail.com
+  :authentication: plain
+  :user_name: 
+  :password: 
+  :enable_starttls_auto: true
+  :receivers: 
+staging:
+  <<: *defaults
+  
+production:
+  :address: email-smtp.us-east-1.amazonaws.com
+  :port: 587
+  :domain: amazonaws.com
+  :authentication: :login
+  :user_name: 
+  :password: 
+  :enable_starttls_auto: true
+  :receivers: 

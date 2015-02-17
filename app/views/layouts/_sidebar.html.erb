@@ -1,0 +1,63 @@
+<!--
+<div class="avatar">
+  <fb:profile-pic uid="<%= current_user.try(:identifier) %>" size="normal" facebook-logo="true"></fb:profile-pic>
+</div>
+-->
+<style>
+.content1 {:width: 900px;}
+.float-left1 {float: left; width: 300px;}
+.divide {float: left;width: 20px;}
+.float-left2 {float: left; width: 500px;}
+.label1 {display: inline-block; width: 200px; }
+.label3 {display: inline-block; width: 200px; }
+.float-right {float: right; width: 500px;}
+
+</style>
+<div class="content1">
+<div class="float-left1">
+<% if authenticated? %>
+  <p><%= link_to "Logout", facebook_path, :method => :delete %></p>
+<% elsif @account %>
+  <% content_for :head do %>
+  <%= stylesheet_link_tag 'projects' %>
+  <% end %>
+
+  <dl>
+    <dt>JavaScript SDK</dt>
+    <dd><fb:login-button length="long" onlogin="location.href = '<%= facebook_path %>'" scope="<%= Facebook.config[:scope] %>"></fb:login-button></dd>
+    <dt>Normal OAuth flow</dt>
+    <dd><%= link_to "Start", new_facebook_path %></dd>
+  </dl>
+<% end %>
+
+<h2>Get Access Token</h2>
+  <%= form_tag(new_facebook_path, :method=>'get') do %>
+  <% opt=options_for_select(Account.all.map{|c| [c.name,c.id]}.unshift(['--Select--',''])) %>
+  <%= select_tag('account[name]', opt,:multiple => false,:readonly=>true) %>
+  <%= submit_tag "Submit" %>
+  <% end %>
+
+</div>
+<div class="divide">&nbsp;</div>
+<div class="float-left2">
+  <h3>This App can get full Insights for the following Facebook pages</h3>
+  <div>
+  <span class="label1"><b>Object Name</b></span>
+  <span class="label2"><b>Token Updated</b></span><br />
+  <% @accounts.each do |a| %>
+  <p>
+  
+  <span class="label1"><%= a.object_name %></span>
+  <span class="label2"><%= a.updated_at.to_s(:db) %></span>
+  </p>
+  <% end %>
+  </div>
+</div>
+</div>
+<!--
+  
+     
+<fb:like-box profile_id="117513961602338" width="300" connections="6"></fb:like-box>
+-->
+
+

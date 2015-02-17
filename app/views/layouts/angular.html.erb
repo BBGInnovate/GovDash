@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html ng-app="radd" ng-controller="AppCtrl">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Dashboard</title>
+    <%= stylesheet_link_tag    "application", :media => "all" %>
+    <%= csrf_meta_tags %>
+</head>
+<body>
+    <div class="navbar" ng-cloak>
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="#"><img src="../assets/logo-smdashboard-bbg.png"/><span id="sm-dashboard-header">&nbsp;Social Media Dashboard</span></a>
+          <div class="navbar-content" id="sm-top-navbar">
+            <ul class="nav  pull-right" ng-show="loggedInUser">
+            <!--	<li class="dropdown" ng-controller="NetworksCtrl" data-ng-init="list()"> -->
+            <!--
+            	<li class="dropdown">
+				  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Networks <b class="caret"></b></a>
+				  <ul class="dropdown-menu">
+					<li ng-repeat="network in networks"><a href="#/networks/edit/{{ network.id }}">{{ network.name }}</a></li>
+				  </ul>
+				</li>
+				-->
+				<!--
+				<li class="dropdown" ng-controller="ServicesCtrl">
+				  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Services <b class="caret"></b></a>
+				  <ul class="dropdown-menu">
+					<li ng-repeat="service in services"><a href="#">{{ service.name }}</a></li>
+				  </ul>
+				</li>
+				-->
+				<li class="dropdown">
+				  <a href="" class="dropdown-toggle" data-toggle="dropdown">Settings <b class="caret header-arrow"></b></a>
+				  <ul class="dropdown-menu">
+					<li><a href="#/accounts">Social Media Accounts</a></li>
+					<li><a href="#/config">My Configuration</a></li>
+					<li ng-if="userRole == 'Administrator'">
+						<a href="/admin/error_logs">Logs</a>
+					</li>
+				  </ul>
+				</li>
+				<li class="dropdown">
+				  <a href="" class="dropdown-toggle" data-toggle="dropdown">{{ email }} <b class="caret header-arrow"></b></a>
+				  <ul class="dropdown-menu">
+					<li><a style="cursor: pointer" ng-click="logout('/users/login')">Logout</a></li>
+				  </ul>
+				</li>
+            </ul>
+            <ul class="nav  pull-right" ng-show="!loggedInUser">
+				<li><a style="cursor: pointer" href="/#/users/login">Login</a></li>
+				<!--<li><a style="cursor: pointer" href="/#/users/register">Register</a></li> -->
+				<li class="dropdown">
+				  <a href="" class="dropdown-toggle" data-toggle="dropdown">Contact <b class="caret header-arrow"></b></a>
+				  <ul class="dropdown-menu">
+					<li><a href="mailto:oddidev@bbg.gov">ODDI Developers</a></li>
+				  </ul>
+				</li>
+				<li><a style="cursor: pointer" href="/#/accounts">View All Accounts</a></li>
+				<li>
+				<div class="btn-group">
+					<button type="button" class="btn btn-success" ng-click="showFilterModal()">Select New Dashboard</button>
+				</div><!-- /btn-group -->
+				</li>
+            </ul>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="container-narrow">
+        <%= bootstrap_flash %>
+        <div ng-view></div>
+    </div>
+
+
+	
+    <%= javascript_include_tag "application" %>
+    
+</body>
+</html>

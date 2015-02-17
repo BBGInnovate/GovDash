@@ -176,12 +176,6 @@ class Api::V1::BaseController <  ActionController::Base
       attr['region_names']= names
       ids = regions.map{|c| c.id}
       attr['region_ids']= ids
-      
- #     users = record.users
- #     names = users.map{|c| c.email}
- #     attr['user_names']= names
- #     ids = users.map{|c| c.id}
- #     attr['user_ids']= ids
 
     elsif AccountsCountry === record
       attr['account_name']= record.account.name if !!record.respond_to?(:account) && record.account
@@ -242,7 +236,6 @@ class Api::V1::BaseController <  ActionController::Base
   def pretty_respond(data)
     respond_to do |format|
      format.json { render :json=>JSON.pretty_generate(data), :layout => false }
-     # format.json { render :json=>(data), :layout => false }
     end
   end
   
@@ -250,21 +243,21 @@ class Api::V1::BaseController <  ActionController::Base
     unless !!current_user && current_user.role_id.to_i == 1
       redirect_to "/#/users/login"
     else
-    #  redirect_to request.referer if !!request.referer
+
     end
   end
   def is_analyst?
     unless !!current_user && [1,2].include?(current_user.role_id.to_i)
       redirect_to "/#/users/login"
     else
-    #  redirect_to request.referer if !!request.referer
+
     end
   end
   def is_service_chief?
     unless !!current_user && [1,2,3].include?(current_user.role_id.to_i)
       redirect_to "/#/users/login"
     else
-    #  redirect_to request.referer if !!request.referer
+    
     end
   end
   

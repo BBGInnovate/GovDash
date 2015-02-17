@@ -24,10 +24,8 @@ class FacebooksController < ApplicationController
   rescue_from Rack::OAuth2::Client::Error, :with => :oauth2_error
 
   def index
-    # @accounts = FacebookAccount.where("is_active=1 AND page_access_token is not null").to_a
-    # conf = FacebookAccount.fb_conf 
     if session[:email]
-      email="api_user_email='#{session[:email]}'"
+      email="email='#{session[:email]}'"
     else
       email=""
     end
@@ -48,7 +46,7 @@ class FacebooksController < ApplicationController
       end
     end
     @user = @accounts[0].api_user_email rescue "N/A"
-    @token_count = ApiToken.where("api_user_email='#{@user}' and page_access_token is not null").
+    @token_count = ApiToken.where("app_user_email='#{@user}' and page_access_token is not null").
        group("account_id").to_a.size
   end
   

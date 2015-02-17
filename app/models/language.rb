@@ -52,34 +52,7 @@ Vietnamese}
     end
     
   end
-  
-  
-  def self.Apopulate
-    self.truncate
-    commons = LanguageList::ALL_LANGUAGES  
-    self.create :name=>'Khmer', :iso_639_1=>'kh'
-    commons.each do |c|
-      self.create :name=>c.name, :iso_639_1=>c.iso_639_1
-    end
-    self.create :name=>'Deewa'
-    
-    a = self.find_by_name "Afghan Sign Language"
-    a.update_attribute :name, "Pashto"
-     
-  end
 
 end
-=begin
- def self.populate
-    @feeds = []
-    url = "http://en.wikipedia.org/wiki/List_of_languages_by_number_of_native_speakers"
-    doc = Nokogiri::HTML(open(url))
-    if doc
-      doc.css("table tr td b a[href]").each do |a|
-        puts a.text
-      end
-    end
-  end
-=end
 
 

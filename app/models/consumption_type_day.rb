@@ -4,8 +4,6 @@ class ConsumptionTypeDay < TableLess
   # input array of ActiveRecord
   def self.sum records,start_date, end_date
     rec  = OpenStruct.new
-    # start_date = records.first.date
-    # end_date = records.last.date
     rec.name = "page_consumptions_by_consumption_type_day"
     rec.period  = "#{start_date.strftime('%Y-%m-%d')} - #{end_date.strftime('%Y-%m-%d')}"
     rec.other_clicks = records.map { |h| h.other_clicks.to_i }.sum

@@ -1,18 +1,6 @@
 require 'rack/oauth2'
 require 'authentication'
 
-=begin
-undefined method `allow_forgery_protection' 
-Since abstract_controller includes that module a config method is automatically created. 
-If you have an action named 'config' then that would overrite this config and that's not good.
-
-https://github.com/moomerman/twitter_oauth
-
-https://rubygems.org/gems/twitter_oauth
-
-http://michaelhallsmoore.com/blog/Getting-to-grips-with-the-Ruby-OAuth-gem-and-the-Twitter-API
-=end
-
 class TwittersController < ApplicationController
   include Authentication
   

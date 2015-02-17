@@ -15,8 +15,6 @@ class Admin::FbPagesController < Admin::BaseController
     config.list.sorting = {:post_created_time => :desc}
     
     config.columns = FbPage.columns.map{|a| a.name}
-    # config.list.columns.exclude :user_access_token, :description,:account_type_id,
-    #   :client_id, :client_secret,:canvas_url,:created_at,:page_admin,:contact
     config.create.columns.exclude :id
     config.update.columns.exclude :id, :post_created_time
 

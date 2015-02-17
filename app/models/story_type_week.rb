@@ -5,8 +5,6 @@ class StoryTypeWeek < TableLess
   
   def self.summarize arr_json_str, start_date, end_date
     rec  = OpenStruct.new
-    # start_date = records.first.date
-    # end_date = records.last.date
     arr_hsh = []
     arr_json_str.each do |json_str|
       arr_hsh << JSON.parse(json_str).to_h.with_indifferent_access
@@ -27,8 +25,6 @@ class StoryTypeWeek < TableLess
   # input array of ActiveRecord
   def self.sum records, start_date, end_date
     rec  = OpenStruct.new
-    # start_date = records.first.date
-    # end_date = records.last.date
     rec.name = "page_stories_by_story_type_week"
     rec.period  = "#{start_date.strftime('%Y-%m-%d')} - #{end_date.strftime('%Y-%m-%d')}"
     rec.other = records.map { |h| h.other.to_i }.sum
@@ -44,22 +40,4 @@ class StoryTypeWeek < TableLess
   
 end
 
-=begin
-class StoryTypeWeek < ActiveRecord::Base
-  has_no_table
-  column :end_time, :datetime
-  column :other, :integer
-  column :fan, :integer
-  column :page_post, :integer
-  column :user_post, :integer
-  column :checkein, :integer
-  column :coupon, :integer
-  column :mention, :integer
-  column :question, :integer
-  
-  # validates_presence_of :name, :email
-  
-end
-
-=end
 

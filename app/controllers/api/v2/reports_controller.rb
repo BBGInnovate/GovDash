@@ -5,21 +5,6 @@ class Api::V1::ReportsController < Api::V1::BaseController
   #before_filter :is_analyst?
 
   before_filter :init
-  
-=begin
-  {:options=>{
-     :source=>"facebook",
-     :end_date=>"2014-06-30",
-     :period=>"1.week",
-     :network_ids=>[1,2],
-     :region_ids=>[1,2],
-     :service_ids=>[1,2],
-     :country_ids=>[1,2],
-     :account_ids=>[1,2]
-   }
-  }
-=end
-
   def index
     source = @options[:source]
     @collection = {}  # []
@@ -28,15 +13,11 @@ class Api::V1::ReportsController < Api::V1::BaseController
     elsif source == 'twitter'
       @collection = get_twitters
     else
-     # @collection << get_facebooks
-     # @collection << get_twitters
-     # @collection << get_sitecatalysts
-    # @collection = get_facebooks if !!get_facebooks
+     @collection = get_facebooks if !!get_facebooks
      @collection.merge! get_twitters if !!get_twitters
-    # @collection.merge! get_sitecatalysts if !!get_sitecatalysts
+     @collection.merge! get_sitecatalysts if !!get_sitecatalysts
     end
     begin
-      # @collection = convert(@collection)
       pretty_respond @collection
     rescue Exception=>e
       logger.error "Error #{e.message}"
@@ -55,15 +36,7 @@ class Api::V1::ReportsController < Api::V1::BaseController
    
   def get_facebooks
     names = fb_account_names
-=begin
-    hsh = {:platform => "Facebook",
-           :accounts=> fb_accounts.to_h,
-           :countries => fb_related_countries.to_h,
-           :regions => fb_related_regions.to_h
-           }       
-=end
     if names.empty?
-      # return hsh
       return nil
     end
     begin
@@ -80,9 +53,6 @@ class Api::V1::ReportsController < Api::V1::BaseController
         @report[:facebook][:values] = sel
         acc = stat.select_accounts
         @report[:facebook][:values].merge! acc if acc
-        # values = stat.final_results.as_json
-        # hsh[:values] = values
-        # hsh
         @report
       end
     rescue Exception=>error
@@ -90,21 +60,13 @@ class Api::V1::ReportsController < Api::V1::BaseController
       error.backtrace.each do |m|
         logger.error "#{m}"
       end
-      # hsh
       nil
     end
   end
   
   def get_twitters
     names = tw_account_names
-=begin
-    hsh = {:platform => "Twitter",
-           :accounts=>tw_accounts.to_h,
-           :countries => tw_related_countries.to_h,
-           :regions=> tw_related_regions.to_h}
-=end
     if names.empty?
-      # return hsh
       return nil
     end
     begin
@@ -121,9 +83,6 @@ class Api::V1::ReportsController < Api::V1::BaseController
         @report[:twitter][:values] = sel
         acc = stat.select_accounts
         @report[:twitter][:values].merge! acc if acc
-        # values = stat.final_results.as_json
-        # hsh[:values] = values
-        # hsh
         @report
       end
     rescue Exception=>error
@@ -150,10 +109,6 @@ class Api::V1::ReportsController < Api::V1::BaseController
         return nil
       else
         @report[:sitecatalyst][:values] = sel 
-        # hsh = {:platform => "Sitecatalyst" }
-        # values = stat.final_results.as_json
-        # hsh[:values] = values
-        # hsh
         @report
       end
     rescue Exception=>error
@@ -168,7 +123,6 @@ class Api::V1::ReportsController < Api::V1::BaseController
   def init
     @report = Hash.new {|h,k| h[k] = {} }
     get_options
-    # get_related_countries
   end
   
   def get_options
@@ -185,17 +139,7 @@ class Api::V1::ReportsController < Api::V1::BaseController
     end
     period = @options[:period]
     @options[:period] = !!period ? instance_eval(period) : 1.week
-    
-=begin
-    if @options[:trend].match(/week/i)
-      @options[:period] = 1.day
-    elsif @options[:trend].match(/month/i)
-      @options[:period] = 1.week
-    elsif @options[:trend].match(/year/i)
-      @options[:period] = 1.month
-    end
-=end
-  
+
     source = @options[:source]
     @options[:source] = !!source ? source : 'all'
     @options[:trend] = 'weekly' if !@options[:trend]
@@ -260,18 +204,3 @@ class Api::V1::ReportsController < Api::V1::BaseController
     # do nothing
   end
 end
-=begin
-      stat.select_lifetime
-      stat.insight_by
-      # not used stat.story_adds_by_story_type_day
-      stat.story_adds_by_story_type_period
-      stat.stories_week_by
-      stat.story_type_week_by
-      stat.consumption_type_day_by
-
-      values << FbPage.insight_by(@options)
-      values << FbPage.story_adds_by_story_type_period(@options)
-      values << FbPage.story_type_week_by(@options)
-      values << FbPage.stories_week_by(@options)
-      values << FbPage.consumption_type_day_by(@options)
-=end

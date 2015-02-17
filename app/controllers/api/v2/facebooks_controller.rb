@@ -2,16 +2,6 @@ class Api::V1::FacebooksController < Api::V1::BaseController
   skip_before_filter :authenticate_user!
   #before_filter :is_analyst?
 
-  # get insights from Facebook and upload to S3
-  # api/facebook/upload/voiceofamerica
-  #
-  # get insights.json from S3
-  # api/facebook/download/voiceofamerica
-  # api/facebook/download/voiceofamerica/2014-06-24
-  #
-  # get aggregated likes, shares from database table fb_pages
-  # api/facebook/voiceofamerica/2014-08-18
-  # api/facebook/voiceofamerica/2014-05-17/2014-08-18
   def index
     @fb_object_name = nil
     @from_date = Time.now

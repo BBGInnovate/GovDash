@@ -5,8 +5,6 @@ class Admin::AccountsCountriesController < Admin::BaseController
     config.update.refresh_list = true
     config.delete.refresh_list = true
     config.columns = [:account_id,:country_id,:created_at,:updated_at]
-    # config.actions.exclude :create, :update,:delete,:show
-    # config.actions.exclude :search, :show
     config.list.per_page = 30
   end
   

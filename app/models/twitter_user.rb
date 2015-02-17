@@ -58,7 +58,6 @@ class TwitterUser < ActiveRecord::Base
   end
   
   def self.handle_response(response)
-    puts "AAAA #{response.inspect}"
     case response
       when Net::HTTPOK 
       begin
@@ -88,7 +87,6 @@ class TwitterUser < ActiveRecord::Base
     raise ArgumentError, 'Invalid hash: must include id.' unless hash.key?('id')
 
     user = self.new
-    # user.login = hash['screen_name']
     user.identifier = hash['screen_name']
     user
   end

@@ -7,7 +7,6 @@ class Admin::AccountTypesController < Admin::BaseController
     config.delete.refresh_list = true
     config.create.columns.exclude :id
     config.update.columns.exclude :id
-    # config.actions.exclude :search, :show
     config.list.per_page = 30
   end
   

@@ -1,31 +1,14 @@
 #
 # this class is to get data from a facebook page
 # first get top level likes, all posts
-# require Rails.root.to_s + '/lib/read_page_detail'
-
+#
 class FbPage < ActiveRecord::Base
-#  include ReadPageDetail
   belongs_to :account
 
-  # prerequisite:
-  # add to database.yml:
-  #    redshift_development
-  #    redshift_production
-  # gem 'daemons'
-  # gem 'delayed_job_active_record'
-  # gem 'activerecord4-redshift-adapter'
-  # gem 'pg'
-  # run RAILS_ENV=production bin/delayed_job restart
-  # uncomment after_save for sync record to AWS RedShift
-  #
-  # after_save :sync_redshift
-  
-  # 36235438073_10152175670143074
   def save_lifetime_data
     today = Time.zone.now
     if post_created_time > today.beginning_of_day &&
        post_created_time <= today.end_of_day
-       # link = "https://graph.facebook.com/?id=http://www.voanews.com"
        link = "https://graph.facebook.com/?id=#{self.obj_name}"
        begin       
          response = fetch(link)

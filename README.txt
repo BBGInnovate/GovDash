@@ -7,14 +7,16 @@ application.rb database.yml email.yml facebook.yml
 s3.yml sitecatalyst.yml twitter.yml twitter.yml
 rabbit.yml
 
-1. MySQL database dash_production installation
+1. MySQL database $db_name installation
+  $db_name=govdash_app
+  
   After deploy source code to target, 
   login to MySQL client and run
   # replace variables by the real values
   # dump radd_production 
   mysqldump -u$db_user -p  -h$db_host radd_production > dash.sql
   # load to dash_production
-  mysql -u$db_user -p -h$db_host -Ddash_production < dash.sql
+  mysql -u$db_user -p -h$db_host -D$db_name < dash.sql
   
   In MySQL client, execute query to create table app_token
   This table is to replace api_tokens
@@ -31,7 +33,7 @@ rabbit.yml
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 2. run `rails c production`
   Copy and paste following code in Rails console:

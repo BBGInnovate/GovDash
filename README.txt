@@ -53,7 +53,7 @@ rabbit.yml
   # facebook.yml and replace '?' with the real values.
   update app_tokens set client_id='1485668908334414', client_secret='?' where api_user_email='ads@bbg.gov';
   update app_tokens set client_id='518623351606222', client_secret='?' where api_user_email='odditect@bbg.gov';
-  update app_tokens set api_user_email='oddidev@bbg.gov',client_id='?', client_secret='f89517ad8f0118032e3323da04a11249' where canvas_url='smdata.bbg.gov';
+  update app_tokens set api_user_email='oddidev@bbg.gov',client_id='?', client_secret='?' where canvas_url='smdata.bbg.gov';
 
 4. After testing the Facebook account retrieve functions successfully,
    In MySQL client, remove columns 

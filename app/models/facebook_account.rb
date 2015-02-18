@@ -7,6 +7,10 @@ class FacebookAccount < Account
   has_many :fb_pages, -> { order 'post_created_time desc' }, :foreign_key=>:account_id
   has_many :fb_posts, -> { order 'post_created_time desc' }, :foreign_key=>:account_id
   
+  belongs_to :app_token, foreign_key: :contact, primary_key: :api_user_email,
+    inverse_of: :facebook_accounts
+  
+  # below to be removed
   has_many :api_tokens, :foreign_key=>"account_id"
   
   after_initialize :do_this_after_initialize
@@ -671,20 +675,28 @@ class FacebookAccount < Account
   end
   
   def token?
-    !!page_access_token
+    !!app_token && !!app_token.page_access_token
   end
   
   def debug_token
-    token = self.page_access_token || self.user_access_token
-    user_token = self.user_access_token
-    end_point = "v2.1/debug_token?input_token=#{token}&access_token=#{token}"
-    re = graph_api.graph_call end_point
-    expiry = re['data']['expires_at']
-    if expiry == 0
-      'never'
-    else
-      expiry = (Time.at(expiry) - Time.zone.now) / 3600 
-      "in about #{exp.to} hours"
+     
+    begin
+      token = self.app_token.page_access_token
+      if token
+        end_point = "v2.1/debug_token?input_token=#{token}&access_token=#{token}"
+        re = graph_api.graph_call end_point
+        expiry = re['data']['expires_at']
+        if expiry == 0
+          'never'
+        else
+          expiry = (Time.at(expiry) - Time.zone.now) / 3600 
+          "in about #{exp.to} hours"
+        end
+      else
+        ''
+      end
+    rescue Exception=>ex
+      'FB Error'
     end
     
   end

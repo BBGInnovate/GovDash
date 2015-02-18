@@ -72,15 +72,10 @@ for all the pages the user has "Page Role"
 <% end %>
 
 <h2>Facebook Access Token</h2>
-  <% opt=options_for_select(Account.all.map{|c| [c.name,c.id]}.unshift(['--Account--','']))
-     sel=FacebookAount.select("distinct email").
-       map{|c| [c.email]}.unshift(['--Email--',''])     
-     emails=options_for_select(sel)
+  <%    
+     emails=options_for_select(@emails)
   %>
-  
   <%= form_tag(new_facebook_path, :method=>'get') do %>
-  <%= select_tag('account[name]', opt,:multiple => false,:readonly=>true) %>
-  <br /><br />
   <%= select_tag('account[email]', emails,:multiple => false,:readonly=>true) %>
   <%= submit_tag "Submit" %>
   <% end %>

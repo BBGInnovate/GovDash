@@ -16,12 +16,13 @@
 # Short-Description: Enable AMQP rabbitmq-receiver
 ### END INIT INFO
 
-ROOT_PATH=/home/lliu/socialdash/current
+# this script works as init.d
+ROOT_PATH=/home/oddev/cxp/current
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 NAME=rabbitmq-receiver
 DAEMON=$ROOT_PATH/${NAME}
 DESC="daemon "
-USER=lliu
+USER=oddev
 INIT_LOG_DIR=$ROOT_PATH/tmp
 PID_FILE=$ROOT_PATH/tmp/receiver.id
 
@@ -53,14 +54,18 @@ remove_pid () {
 
 start_receiver () {
   stop_receiver
-  touch ${PID_FILE}
-  start-stop-daemon --start --quiet --oknodo --pidfile $PID_FILE --exec $DAEMON > /dev/null 2>&1 &
+  # touch ${PID_FILE}
+  start-stop-daemon --start --chuid oddev --quiet --oknodo --pidfile $PID_FILE --exec $DAEMON > /tmp/mq-init.d.log 2>&1 &  
   log_daemon_msg "Started"
   true
 }
 stop_receiver () {
   # pid=`pidof RabbitReceiver.receive`
   pid=`pgrep -f RabbitReceiver`
+  if [ "$pid" != "" ]; then
+    kill -15 $pid
+  fi
+  pid=`pgrep -f script/run_receiver.rb`
   if [ "$pid" != "" ]; then
     kill -15 $pid
   fi

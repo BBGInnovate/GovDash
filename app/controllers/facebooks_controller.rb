@@ -6,7 +6,7 @@ class FacebooksController < ApplicationController
 
   layout 'facebook'
   before_filter :require_authentication, :only => :destroy
-  before_filter :get_account, :only=>[:new]
+  before_filter :get_accounts, :only=>[:edit,:index,:new]
   
   rescue_from FbGraph::Exception, :with => :fb_graph_exception
 
@@ -24,48 +24,14 @@ class FacebooksController < ApplicationController
   rescue_from Rack::OAuth2::Client::Error, :with => :oauth2_error
 
   def index
-    if session[:email]
-      email="email='#{session[:email]}'"
-    else
-      email=""
-    end
-    @uri = URI.parse Facebook.config[:canvas_url]
-    records = ApiToken.includes(:facebook_account).
-      where("canvas_url='#{@uri.host}'").
-      where(email).
-      references(:facebook_account).to_a
-     
-    @accounts = []
-    hsh = Hash.new {|h,k| h[k] = [] }
-    # deduplicate account_id
-    # each account_id appears max 2 times
-    records.each do |a|
-      if hsh[a.account_id].size == 0
-        hsh[a.account_id] << a.account_id
-        @accounts << a
-      end
-    end
-    @user = @accounts[0].api_user_email rescue "N/A"
-    @token_count = ApiToken.where("app_user_email='#{@user}' and page_access_token is not null").
-       group("account_id").to_a.size
+    uri = URI.parse Facebook.config[:canvas_url] 
+    @emails = AppToken.select("distinct api_user_email").
+       where("api_user_email is not null").
+       where("canvas_url='#{uri.host}'").to_a.
+       map{|c| [c.api_user_email]}.unshift(['--Email--',''])
   end
   
   def edit
-    email="email='#{params[:email]}'"
-    session[:email] = email
-    records = FacebookAccount).where(email).to_a
-  
-    @accounts = []
-    hsh = Hash.new {|h,k| h[k] = [] }
-    records.each do |a|
-      if hsh[a.account_id].size == 0
-        hsh[a.account_id] << a.account_id
-        @accounts << a
-      end
-    end
-    @user = @accounts[0].email rescue "N/A"
-    @token_count = FacebookAccount.where("email='#{@user}' and page_access_token is not null").
-       group("account_id").to_a.size
     render :partial=>"account"
   end
   
@@ -84,29 +50,32 @@ class FacebooksController < ApplicationController
     )
   end
 
+  def get_records email
+    uri = URI.parse Facebook.config[:canvas_url]
+    records = AppToken.includes(:facebook_accounts).
+      where("canvas_url='#{uri.host}'").
+      where(email).
+      references(:facebook_accounts).to_a
+  end
+
   # handle Normal OAuth flow: callback
   def create
-    client = Facebook.auth(callback_facebook_url).client
-    uri = URI.parse client.redirect_uri
-    client.authorization_code = params[:code]
-    access_token = client.access_token! :client_auth_body
-    user = FbGraph::User.me(access_token).fetch
-    authenticate Facebook.identify(user)
-    if session[:account_id]
-      app = FacebookAccount.find_by account_id: session[:account_id]
-      if app
-        app.update_attribute :user_access_token, access_token.access_token
-        app.exchange_page_access_token
-        
-        app.facebook_account.update_attributes :user_access_token=>access_token.access_token,
-          :page_access_token=>app.page_access_token
-
-        # update other account sharing the same email
-        FacebookAccount.where("id != #{app.id}").
-          where("email='#{app.email}'").to_a.each do |a|
-            a.exchange_page_access_token access_token.access_token
+    if session[:email]
+      apps = AppToken.where(api_user_email: session[:email] ).to_a
+      unless apps.empty?
+        Facebook.app_token = apps[0]
+        client = Facebook.auth(callback_facebook_url).client
+        uri = URI.parse client.redirect_uri
+        client.authorization_code = params[:code]
+        access_token = client.access_token! :client_auth_body
+        user = FbGraph::User.me(access_token).fetch
+        authenticate Facebook.identify(user)
+        apps.each do |app|
+          if !app.page_access_token
+            app.update_attribute :user_access_token, access_token.access_token
+            app.exchange_page_access_token
           end
-        end
+        end 
       end
     end
     redirect_to '/facebooks/index' # dashboard_url
@@ -118,23 +87,33 @@ class FacebooksController < ApplicationController
   end
 
   private
-
-  def get_account
-    @account = Account.find_by_id params[:account][:name]
-    email=params[:account][:email]
-    if email
-      session[:email] = email
-    else
-      uri = URI.parse Facebook.config[:canvas_url]
-      email=ApiToken.find_by canvas_url: uri.host
-      session[:email] = email.api_user_email
+  
+  def get_accounts
+    Facebook.app_token = nil
+    session[:email] = nil
+    @token_count = 0
+    @accounts = []
+    email = nil
+    if params[:email]
+      email=params[:email] 
+    elsif params[:account] && params[:account][:email]
+      email = params[:account][:email]
     end
-    if @account
-      session[:account_id] = @account.id
-      Facebook.account = @account
+    @user = email || ''
+    if email
+      app_token = AppToken.find_by api_user_email: email
+      if app_token
+        Facebook.app_token = app_token
+        session[:email] = email
+        @accounts = app_token.facebook_accounts
+      end
     else
-      Facebook.account = nil
-      session[:account_id] = nil
+      @accounts = FacebookAccount.all
+    end
+    @accounts.each do |ac|
+      if !!ac.app_token && ac.app_token.page_access_token
+         @token_count += 1
+      end
     end
   end
   
@@ -145,4 +124,5 @@ class FacebooksController < ApplicationController
     }
     redirect_to root_url
   end
+
 end

@@ -1,7 +1,9 @@
-# this model is to be replaced by AppToken
-class ApiToken < ActiveRecord::Base
- 
-  belongs_to :facebook_account, foreign_key: :account_id
+class AppToken < ActiveRecord::Base
+
+  self.table_name = "app_tokens"
+#  has_many :twitter_accounts, :foreign_key=> :api_user_email
+  has_many :facebook_accounts, foreign_key: :contact, primary_key: :api_user_email,
+    inverse_of: :app_token
   
   def graph_api(access_token=nil)
     access_token = access_token || page_access_token || user_access_token

@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# check if rvm_path var is empty and should be sourced
+if [ "x$rvm_path" = "x" ]; then
+  source $HOME/.bashrc
+fi
+
+# load  rvm
+if [[ -s "$HOME/.rvm/gems/ruby-2.2.0/environment" ]] ; then
+  source "$HOME/.rvm/gems/ruby-2.2.0/environment"
+else
+  printf "ERROR: An RVM installation was not found.\n"
+  exit
+fi
+
+# this works in command line
+# /home/oddev/cxp/current/rabbitmq-receiver
+#
+PATH="/home/oddev/.rvm/gems/ruby-2.2.0/bin:/home/oddev/.rvm/gems/ruby-2.2.0@global/bin:/usr/local/rvm/rubies/ruby-2.2.0/bin:/home/oddev/.rvm/gems/ruby-2.2.0/bin:/home/oddev/.rvm/gems/ruby-2.2.0@global/bin:/usr/local/rvm/rubies/ruby-2.2.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/local/rvm/bin"
+GEM_HOME='/home/oddev/.rvm/gems/ruby-2.2.0'
+GEM_PATH='/home/oddev/.rvm/gems/ruby-2.2.0:/home/oddev/.rvm/gems/ruby-2.2.0@global'
+MY_RUBY_HOME='/usr/local/rvm/rubies/ruby-2.2.0'
+IRBRC='/usr/local/rvm/rubies/ruby-2.2.0/.irbrc'
+RUBY_VERSION='ruby-2.2.0'
+export RAILS_ENV=production
+source /home/oddev/.rvm/gems/ruby-2.2.0/environment
+cd /home/oddev/cxp/current
+# source .rvmrc file
+source /home/oddev/.rvmrc
+
+# /home/oddev/.rvm/wrappers/ruby-2.2.0/ruby script/run_receiver.rb
+#
+# rvm alias create rabbit_receiver ruby-2.2.0
+# the above creates a wrapper. So 
+/home/oddev/.rvm/wrappers/rabbit_receiver/ruby script/run_receiver.rb
+
+echo $HOME
+

@@ -1,7 +1,7 @@
 class Facebook < ActiveRecord::Base
   has_many :subscriptions
 
-  cattr_accessor :account
+  cattr_accessor :app_token
   
   def profile
     @profile ||= FbGraph::User.me(self.access_token).fetch
@@ -12,31 +12,21 @@ class Facebook < ActiveRecord::Base
       !!text && !text.strip.empty?
     end
     
-    def config
+    def config(env=Rails.env)
       @config = 
-       if ENV['fb_client_id'] && ENV['fb_client_secret'] && ENV['fb_scope'] && ENV['fb_canvas_url']
-        {
-          :client_id     => ENV['fb_client_id'],
-          :client_secret => ENV['fb_client_secret'],
-          :scope         => ENV['fb_scope'],
-          :canvas_url    => ENV['fb_canvas_url']
-        }
-      else
-        cnf = YAML.load_file("#{Rails.root}/config/facebook.yml")[Rails.env].symbolize_keys
-
+        cnf = YAML.load_file("#{Rails.root}/config/facebook.yml")[env].symbolize_keys
         # add email, client_id, client_secret, canvas_url to Accounts table
-        if account
-           client_id=account.client_id if not_empty?(account.client_id) 
-           client_secret=account.client_secret if not_empty?(account.client_secret)
-           canvas_url = account.canvas_url || 'ads.localhost.com'
+        if app_token
+           client_id=app_token.client_id if not_empty?(app_token.client_id) 
+           client_secret=app_token.client_secret if not_empty?(app_token.client_secret)
+           canvas_url = app_token.canvas_url || 'ads.localhost.com'
            cnf = {:client_id=>client_id,
                   :client_secret=>client_secret,
-                  :name=>account.name,
+                  :name=>app_token.facebook_accounts[0].name,
+                  :scope=> cnf[:scope],
                   :canvas_url=>canvas_url}
         end
-
         cnf
-      end
     rescue Errno::ENOENT => e
       raise StandardError.new("config/facebook.yml could not be loaded.")
     end

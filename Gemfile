@@ -1,0 +1,85 @@
+source 'https://rubygems.org'
+ruby '2.1.1'
+
+gem 'rake'
+gem 'rack-oauth2'
+gem 'rails', '4.2.0'
+# gem 'pg'
+gem 'thin'
+gem 'mysql2'
+gem 'activerecord4-redshift-adapter', github: 'aamine/activerecord4-redshift-adapter'
+# download http://postgresapp.com/ and add it to Applications
+# gem install pg -- --with-pg-config=/Applications/Postgres.app/Contents/Versions/9.4/bin/pg_config
+gem 'pg'
+
+gem 'fb_graph'
+gem "koala"
+gem "aws-s3", github: 'bartoszkopinski/aws-s3'
+gem 'language_list'
+gem 'twitter', '>= 5.10.0'
+gem 'oauth'
+gem 'twitter_oauth'
+# gem 'roo' # Open Office
+gem 'therubyracer'
+gem 'bunny'
+gem 'amqp'
+gem 'rails-observers'
+
+gem 'daemons'
+gem 'delayed_job_active_record'
+# rails generate delayed_job
+# RAILS_ENV=production bin/delayed_job restart
+#
+
+# gem 'clockwork'
+# gem 'stalker'
+
+# gem 'rabbit_jobs'
+
+gem 'active_scaffold', '>= 3.4.0.rc', :path => "vendor/plugins/active_scaffold"
+gem 'sass-rails'
+# undefined method `environment' for nil:NilClass
+# force sprockets version by adding this to gem file: 
+gem 'sprockets', '=2.11.0'
+
+#ROmniture Sitecatalyst client
+#Required by custom lib/omniture.rb
+gem 'romniture'
+
+# The culprit was Heroku's rails_12factor gem
+# Removing that gem from the Gemfile, now the logs are working as expected.
+# group :production do
+#  gem 'rails_12factor'
+# end
+
+group :assets do
+  gem 'uglifier', '>= 1.3.0'
+end
+
+gem 'jquery-rails'
+gem 'twitter-bootstrap-rails'
+gem 'nokogiri', '>= 1.6.2.1'
+gem 'devise', '~> 3.2'
+gem 'json'
+
+gem 'raddocs'
+
+group :development, :test do
+  gem 'rspec-rails', '~> 2.0'
+  gem 'factory_girl_rails', '4.2.1'
+  gem 'rspec_api_documentation'
+  gem 'better_errors'
+  gem 'binding_of_caller'
+  gem "letter_opener"
+#  gem 'brakeman', :require => false
+end
+
+group :test do
+  gem 'faker'
+  gem 'rack-test'
+  gem 'turn', :require => false
+  gem 'database_cleaner'
+  gem 'shoulda-matchers'
+  gem 'shoulda-callback-matchers', '>=0.3.0'
+  gem 'json_spec'
+end

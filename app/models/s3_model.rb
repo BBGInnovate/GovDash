@@ -1,17 +1,12 @@
 require 'aws-sdk'
 
 =begin
-s3 = S3Model.client
-resp = s3.list_buckets
-resp.buckets.map(&:name)
 
-# list the first two objects in a bucket
-# object.key is the file_path
-bucket = 'uber-dashboard-socialscraper'
-resp = s3.list_objects(bucket: bucket, max_keys: 12)
-resp.contents.each do |object|
-  puts "#{object.key} => #{object.etag}"
-end
+key="hello"
+obj = mybucket.object(key)
+obj.put(body:'Hello World!')
+obj.get.body.read
+obj.delete
 
 =end
 
@@ -19,17 +14,41 @@ class S3Model < Object
   attr_accessor :file_path_name
   def initialize
     Aws.config[:region] = 'us-east-1'
+    client
+  end
+  
+  def client
     Aws::S3::Client.new(
       access_key_id: config[:s3_credentials][:access_key_id],
       secret_access_key: config[:s3_credentials][:secret_access_key]
     )
   end
   
+  def get file_path_name
+    obj = get_object file_path_name
+    if obj
+      str = obj.get.body.read
+      JSON.parse str
+    else
+     "{}"
+    end
+  end
+  
   def store(file_path, content)
-    s3 = Aws::S3.new
-    s3.buckets[bucket].objects[file_path].write(content)
+    obj = get_object file_path
+    obj.put(body: content) if obj
   end
 
+  def get_object file_path_name
+    begin
+      s3 = Aws::S3::Resource.new
+      mybucket = s3.bucket(self.bucket_name)
+      obj = mybucket.object(file_path_name)
+    rescue
+      nil
+    end
+  end
+  
   def download_insights(account)
     path = account.s3_filepath(date) + "insights.json"
     puts "Download from S3 #{path}. All dates are end date"
@@ -40,21 +59,21 @@ class S3Model < Object
       # get 1.month.ago insights.json file
       path1 = account.s3_filepath(date.months_ago(1)) + "insights.json"
       begin
-        result2 = json_obj path1
+        result2 = get path1
         results << result2
       rescue
          puts "ERROR #{$!} - #{path1}"
       end
       
       begin
-        result1 = json_obj path
+        result1 = get path
         results << result1
       rescue
          puts "ERROR #{$!} - #{path}"
       end
     else
       begin
-        result = json_obj path
+        result = get path
         results << result
       rescue
         puts "ERROR #{$!} - #{path}"
@@ -108,17 +127,8 @@ class S3Model < Object
   
   protected
   
-  def bucket
-    @bucket ||= config[:bucket]
-  end
-  
-  def json_obj file_path_name
-    begin
-      resp = s3.get_object(bucket: bucket, key: file_path_name)
-      JSON.parse resp.body.read
-    rescue
-     "{}"
-    end
+  def bucket_name
+    @bucket_name ||= config[:bucket]
   end
   
   def config
@@ -200,6 +210,7 @@ end
     puts "#{file_path} Uploaded!"
 
   end
-end
+=end
+
 
 

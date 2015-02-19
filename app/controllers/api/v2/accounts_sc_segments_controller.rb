@@ -1,4 +1,4 @@
-class Api::V1::AccountsScSegmentsController < Api::V1::BaseController
+class Api::V2::AccountsScSegmentsController < Api::V2::BaseController
   # before_filter :authenticate_user!
 
   private

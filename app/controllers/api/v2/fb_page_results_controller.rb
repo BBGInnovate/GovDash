@@ -1,4 +1,4 @@
-class Api::V1::FbPageResultsController < Api::V1::BaseController
+class Api::V2::FbPageResultsController < Api::V2::BaseController
   # before_filter :authenticate_user!
   #before_filter :is_analyst?
 

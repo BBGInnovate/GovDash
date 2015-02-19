@@ -1,4 +1,4 @@
-class Api::V1::RecordController < Api::V1::BaseController
+class Api::V2::RecordController < Api::V2::BaseController
   before_filter :authenticate_user!
 
 

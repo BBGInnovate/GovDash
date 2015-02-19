@@ -1,4 +1,4 @@
-class Api::V1::FacebooksController < Api::V1::BaseController
+class Api::V2::FacebooksController < Api::V2::BaseController
   skip_before_filter :authenticate_user!
   #before_filter :is_analyst?
 

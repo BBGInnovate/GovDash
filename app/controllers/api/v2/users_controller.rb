@@ -1,5 +1,5 @@
 require 'ostruct'
-class Api::V1::UsersController < Api::V1::BaseController
+class Api::V2::UsersController < Api::V2::BaseController
    before_filter :authenticate_user!, :except => [:create, :show]
    skip_before_filter :is_admin?,:only => [:create, :show]
    skip_before_filter :is_service_chief?,:only => [:create, :show]

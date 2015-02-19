@@ -1,4 +1,4 @@
-class Api::V1::BaseController <  ActionController::Base
+class Api::V2::BaseController <  ActionController::Base
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :null_session, :if => Proc.new { |c| c.request.format == 'application/vnd.radd.v1' }
@@ -7,7 +7,7 @@ class Api::V1::BaseController <  ActionController::Base
 #  before_filter :authenticate_user!
 #  before_filter :is_service_chief?
   
-  append_view_path ["#{Rails.root}/app/views/api/v1/#{controller_name}", "#{Rails.root}/app/views/default"]
+  append_view_path ["#{Rails.root}/app/views/api/v2/#{controller_name}", "#{Rails.root}/app/views/default"]
   
   respond_to :json
   respond_to :html

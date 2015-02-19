@@ -7,14 +7,20 @@ gem 'rails', '4.2.0'
 # gem 'pg'
 gem 'thin'
 gem 'mysql2'
-gem 'activerecord4-redshift-adapter', github: 'aamine/activerecord4-redshift-adapter'
+# gem 'activerecord4-redshift-adapter', github: 'aamine/activerecord4-redshift-adapter'
+# gem 'activerecord4-redshift-adapter', github: 'khwangster/activerecord4-redshift-adapter'
+# gem 'activerecord-redshift-adapter', '~> 0.9.4'
+
 # download http://postgresapp.com/ and add it to Applications
 # gem install pg -- --with-pg-config=/Applications/Postgres.app/Contents/Versions/9.4/bin/pg_config
 gem 'pg'
 
+
 gem 'fb_graph'
 gem "koala"
-gem "aws-s3", github: 'bartoszkopinski/aws-s3'
+# gem "aws-s3", github: 'bartoszkopinski/aws-s3'
+gem 'aws-sdk', '~> 2'
+
 gem 'language_list'
 gem 'twitter', '>= 5.10.0'
 gem 'oauth'
@@ -36,7 +42,7 @@ gem 'delayed_job_active_record'
 
 # gem 'rabbit_jobs'
 
-gem 'active_scaffold', '>= 3.4.0.rc', :path => "vendor/plugins/active_scaffold"
+gem 'active_scaffold' #, '>= 3.4.0.rc', :path => "vendor/plugins/active_scaffold"
 gem 'sass-rails'
 # undefined method `environment' for nil:NilClass
 # force sprockets version by adding this to gem file: 

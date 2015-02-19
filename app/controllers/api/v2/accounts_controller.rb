@@ -1,4 +1,4 @@
-class Api::V1::AccountsController < Api::V1::BaseController
+class Api::V2::AccountsController < Api::V2::BaseController
   before_filter :authenticate_user!, :is_analyst?, only: [:new, :create, :edit, :update, :destroy]
   #before_filter :is_admin?
   #Current user is Admin or Analyst (except for simple listing accounts)

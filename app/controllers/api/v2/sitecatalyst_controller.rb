@@ -1,7 +1,7 @@
 require 'yaml'
 require 'json'
 
-class Api::V1::SitecatalystController < Api::V1::BaseController
+class Api::V2::SitecatalystController < Api::V2::BaseController
 
 	#Report = Struct.new(:reportSuiteID, :dateFrom, :dateTo, :dateGranularity, :metrics, :elements, :segments)
 

@@ -86,7 +86,7 @@ Radd::Application.routes.draw do
     end
   end
   namespace :api, defaults: {format: :json} do
-    scope module: :v1, constraints: ApiConstraints.new(version: 1, default: :true) do
+    scope module: :v2, constraints: ApiConstraints.new(version: 1, default: :true) do
 
       devise_scope :user do
         match '/sessions' => 'sessions#create', :via => :post

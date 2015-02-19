@@ -1,4 +1,4 @@
-class Api::V1::ReportsController < Api::V1::BaseController
+class Api::V2::ReportsController < Api::V2::BaseController
   include Api::ReportsHelper
     
   skip_before_filter :authenticate_user!

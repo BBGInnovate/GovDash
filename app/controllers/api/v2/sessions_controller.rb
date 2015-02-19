@@ -1,4 +1,4 @@
-class Api::V1::SessionsController < Devise::SessionsController
+class Api::V2::SessionsController < Devise::SessionsController
   protect_from_forgery with: :null_session, :if => Proc.new { |c| c.request.format == 'application/vnd.radd.v1' }
 
   def create

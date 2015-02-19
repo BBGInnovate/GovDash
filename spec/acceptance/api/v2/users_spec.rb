@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'rspec_api_documentation/dsl'
 
 resource 'User' do
-  header "Accept", "application/vnd.radd.v1"
+  header "Accept", "application/vnd.radd.v2"
 
   let(:user) { create(:user) }
 

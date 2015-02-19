@@ -1,4 +1,4 @@
-class Api::V1::AccountsCountriesController < Api::V1::BaseController
+class Api::V2::AccountsCountriesController < Api::V2::BaseController
   # before_filter :authenticate_user!
 
   private

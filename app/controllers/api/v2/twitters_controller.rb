@@ -1,4 +1,4 @@
-class Api::V1::TwittersController < Api::V1::BaseController
+class Api::V2::TwittersController < Api::V2::BaseController
   skip_before_filter :authenticate_user!
   #before_filter :is_analyst?
 

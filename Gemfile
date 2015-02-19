@@ -8,7 +8,7 @@ gem 'rails', '4.2.0'
 gem 'thin'
 gem 'mysql2'
 # gem 'activerecord4-redshift-adapter', github: 'aamine/activerecord4-redshift-adapter'
-# gem 'activerecord4-redshift-adapter', github: 'khwangster/activerecord4-redshift-adapter'
+gem 'activerecord4-redshift-adapter', github: 'khwangster/activerecord4-redshift-adapter'
 # gem 'activerecord-redshift-adapter', '~> 0.9.4'
 
 # download http://postgresapp.com/ and add it to Applications

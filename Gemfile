@@ -62,6 +62,7 @@ group :assets do
   gem 'uglifier', '>= 1.3.0'
 end
 
+gem 'bower-rails'
 gem 'jquery-rails'
 gem 'twitter-bootstrap-rails'
 gem 'nokogiri', '>= 1.6.2.1'

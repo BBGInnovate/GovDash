@@ -22,7 +22,10 @@ module Radd
 
     # config.autoload_paths += Dir["#{config.root}/lib/**/"]
     config.autoload_paths += %W(#{config.root}/lib)
-    
+
+    #add bower components to rails assets pipeline
+    config.assets.paths << Rails.root.join('vendor', 'assets', 'bower_components')
+
     # Enable escaping HTML in JSON.
     config.active_support.escape_html_entities_in_json = true
 

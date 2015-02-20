@@ -5,6 +5,7 @@
 //= require angular-strap.min
 //= require angular-route
 //= require angular-resource
+//= require angular-devise/lib/devise
 //= require ui-bootstrap-tpls.min
 //= require angucomplete
 //= require ng-google-chart

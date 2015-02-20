@@ -611,7 +611,7 @@ class FbStat
           :comments=>ch,
           :totals=>ch}
     results << result.data
-    msg = "Data missing in #{rec.name} #{previous_period}"
+    msg = "#{self.class.name} Data missing in #{rec.name} #{previous_period}"
     ErrorLog.logger.error msg
     ErrorLog.to_error msg,msg,3
     results

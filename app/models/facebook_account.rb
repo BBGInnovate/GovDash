@@ -2,7 +2,7 @@ require Rails.root.to_s + '/lib/write_fb_page'
 
 class FacebookAccount < Account
   include WriteFbPage
-  attr_accessor :graph_api, :insights, :show_raw, :token_count
+  attr_accessor :graph_api, :insights, :show_raw
   
   has_many :fb_pages, -> { order 'post_created_time desc' }, :foreign_key=>:account_id
   has_many :fb_posts, -> { order 'post_created_time desc' }, :foreign_key=>:account_id
@@ -25,10 +25,6 @@ class FacebookAccount < Account
   QUERY_LIMIT = 250
   SCHEDULED_DELAY = 1.hour.from_now
   def self.archive
-     arr = ApiToken.select("distinct api_user_email").
-       where("api_user_email is not null").
-       map{|a| [a.api_user_email,0]}
-     @token_count = Hash[*arr.flatten] 
      started = Time.zone.now
      count = 0
      no_count = 0
@@ -107,11 +103,7 @@ class FacebookAccount < Account
     logger.info "   finished retrieve #{started} - #{ended}"
   end
   
-  def self.retrieve
-     arr = ApiToken.select("distinct api_user_email").
-       where("api_user_email is not null").
-       map{|a| [a.api_user_email,0]}     
-     @token_count = Hash[*arr.flatten] 
+  def self.retrieve 
      started = Time.zone.now
      count = 0
      no_count = 0
@@ -120,12 +112,6 @@ class FacebookAccount < Account
      records.each_with_index do |a,i|
        if !!a.graph_api
          if a.retrieve
-           count += 1
-           @token_count.keys.each do |key|
-             if a.token_count[key].to_i > 0
-               @token_count[key] += 1
-             end
-           end
            logger.debug "Sleep #{SLEEP} seconds for next account"
            sleep SLEEP
          else
@@ -145,12 +131,7 @@ class FacebookAccount < Account
      msg = "#{server} : #{count} out of #{size} Facebook accounts fetched. Started: #{started.to_s(:db)} Duration: #{duration}"
      level = ((size-count)/2.0).round % size
      log_error msg,level
-     @token_count.keys.each do |key|
-       # this count only the page access token available for
-       # the environment. The App can use access token from
-       # the other environment
-       puts " page access token counts: #{key} - #{@token_count[key]}"
-     end
+     
   end
   #
   # finish 1 years data for voiceofamerica: 1.5hours

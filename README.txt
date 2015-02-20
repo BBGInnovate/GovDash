@@ -66,4 +66,18 @@ rabbit.yml
     -- api_tokens is replaced by app_tokens
     DROP TABLE api_tokens;
 
-  
+5. Add custom cookbook to override OpsWorks default Apache, Passenger
+   configurations and set up cron jobs.
+   Repository:
+   bitbucket.org/bbginnovate-ondemand/cookbooks.git
+   
+6. For cron jobs
+   1. Add to custom cookbook directory
+      socialdash/recipes/cronjob.rb
+   2. In GovDash Stack, Run Command "Update Custom Cookbook"
+      and run "Execute Recipes", add to "Recipes to execute" with
+      socialdash::crontab
+   3. Click "govdash-24-7" instance
+   4. Click "Execute Recipes"
+
+

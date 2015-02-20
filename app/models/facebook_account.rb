@@ -16,7 +16,7 @@ class FacebookAccount < Account
   after_initialize :do_this_after_initialize
   
    def do_this_after_initialize
-     if self.new_item?
+     if self.new_item && self.new_item?
        @since_date = 3.months.ago
      end
    end

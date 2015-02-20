@@ -35,7 +35,16 @@ class Api::V2::ReportsController < Api::V2::BaseController
   private
    
   def get_facebooks
-    names = fb_account_names
+    begin
+      names = fb_account_names
+    rescue Exception=>error
+      logger.error error.message
+      # error.backtrace.each do |m|
+      #  logger.error "#{m}"
+      #end
+      return nil
+    end
+    
     if names.empty?
       return nil
     end

@@ -21,6 +21,8 @@ class TwitterAccount < Account
      total_seconds=(ended-started).to_i
      duration=Time.at(total_seconds).utc.strftime("%H:%M:%S")
      msg = "#{count} out of #{size} Twitter accounts fetched. Started: #{started.to_s(:db)} Duration: #{duration}"
+     # for cronjob log:          
+     puts msg     
      level = ((size-count)/2.0).round % size
      log_error msg,level
   end

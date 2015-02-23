@@ -5,7 +5,6 @@
 //= require angular-strap.min
 //= require angular-route
 //= require angular-resource
-//= require angular-devise/lib/devise
 //= require ui-bootstrap-tpls.min
 //= require angucomplete
 //= require ng-google-chart
@@ -60,8 +59,7 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
             function error(response) {
                 if (response.status == 401) {
                     $rootScope.$broadcast('event:unauthorized');
-                    //$location.path('/users/login');
-                  //  $location.path('/home/index.html');
+                    $location.path('/users/login');
                     return response;
                 };
                 return $q.reject(response);
@@ -100,31 +98,14 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
       .when('/users', {templateUrl:'/users/list.html', controller:UsersCtrl})
       .when('/users/edit/:userId', {templateUrl:'/users/edit.html', controller:UsersCtrl});
   }])
-
-/*
-  .run(function($rootScope, $location) {
-  	 // copied from http://fdietz.github.io/recipes-with-angular-js/urls-routing-and-partials/listening-on-route-changes-to-implement-a-login-mechanism.html
-     $rootScope.$on( "$routeChangeStart", function(event, next, current) {
-      if ($rootScope.loggedInUser == null) {
-        // no logged user, redirect to /login
-        if (next.templateUrl === "/users/login.html" || next.templateUrl === "/users/register.html") {
-       
-        } else {
-          	$location.path("/users/login");
-        }
-      }
-    });
-  });
-  */
   
    // register listener to watch for route changes
   .run(function ($rootScope, $location, Session, $timeout) {   
   		  
 	Session.checkUserLoggedIn()
 		.then(function(response) {
-		   
 		   if (response.info == null) {
-				$location.path("/");
+				$location.path("/users/login");
 				$rootScope.loggedInUser = false;
 				$rootScope.email = null;
 		   } else if (response.info == 'Logged in') {
@@ -134,19 +115,19 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 	   
 		   // this event will fire every time the route changes
 		   $rootScope.$on("$routeChangeStart", function (event, next, current) {
-			 
+			           console.log('inside loggedin');
+                 console.log($rootScope.loggedInUser);
+
 			    if (!$rootScope.loggedInUser) {
-				
-					// no logged user, we should be going to the login route
-					if (next.templateUrl === "/users/login.html" || next.templateUrl === "/users/register.html" || 
-						'/home/index.html' || next.templateUrl === '/accounts/list.html') {	// account is now a public page
-						// already going to the login route, no redirect needed
-					} else {
-						// not going to the login route, we should redirect now
-						$location.path("/users/login");
-					}
-				
-				} 
+  					// no logged user, we should be going to the login route
+  					if (next.templateUrl === "/users/login.html" || next.templateUrl === "/users/register.html") {
+            	// don't redirect anon users on the login or register routes
+  					} else {
+  						// redirect all dashboard routes to login
+  						$location.path("/users/login");
+  					}
+  				
+  				} 
 				
 				// Only ADMIN users can access user based pages
 				if (next.templateUrl) {

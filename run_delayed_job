@@ -5,5 +5,5 @@ if [ -z "$pid" ]; then
   echo "Process not running." 1>&2
   RAILS_ENV=production bin/delayed_job restart   
 else
-  echo "Process is running" 1>&2
+#  echo "Process is running" 1>&2
 fi

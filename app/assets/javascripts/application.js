@@ -115,8 +115,6 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 	   
 		   // this event will fire every time the route changes
 		   $rootScope.$on("$routeChangeStart", function (event, next, current) {
-			           console.log('inside loggedin');
-                 console.log($rootScope.loggedInUser);
 
 			    if (!$rootScope.loggedInUser) {
   					// no logged user, we should be going to the login route

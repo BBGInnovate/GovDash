@@ -1,11 +1,17 @@
 #!/bin/bash
 
-RESULT=`pgrep delayed_job`
-if [ "${RESULT:-null}" = null ]; then
-  echo "not running"
-  RAILS_ENV=production bin/delayed_job restart
+# Check if your script's name doesn't contain $SERVICE
+# works
+#
+CHECK=$0
+SERVICE=delayed_job
+DATE=`date`
+OUTPUT=$(ps aux | grep -v grep | grep -v $CHECK |grep $1)
+echo $OUTPUT
+if [ "${#OUTPUT}" -gt 0 ] ;
+then
+  echo "$DATE: $SERVICE service running, everything is fine"
 else
-   echo "running"
+  echo "$DATE: $SERVICE is not running"
+  RAILS_ENV=production bin/delayed_job restart
 fi
-
-

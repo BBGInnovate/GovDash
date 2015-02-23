@@ -1,9 +1,10 @@
 #!/bin/bash
 
-pid=`pgrep delayed_job`
-if [ -z "$pid" ]; then
-  echo "Process not running." 1>&2
-  RAILS_ENV=production bin/delayed_job restart   
+if pgrep delayed_job >/dev/null 2>&1
+then
+  echo "Process is running" 1>&2
 else
-#  echo "Process is running" 1>&2
+  echo "Process not running." 1>&2
+  RAILS_ENV=production bin/delayed_job restart
 fi
+

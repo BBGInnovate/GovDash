@@ -5,7 +5,7 @@ gem 'rake'
 gem 'rack-oauth2'
 gem 'rails', '4.2.0'
 gem  "activesupport"
-# gem 'pg'
+
 gem 'thin'
 gem 'mysql2'
 # gem 'activerecord4-redshift-adapter', github: 'aamine/activerecord4-redshift-adapter'

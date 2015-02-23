@@ -4,6 +4,7 @@ ruby '2.1.5'
 gem 'rake'
 gem 'rack-oauth2'
 gem 'rails', '4.2.0'
+gem  "activesupport"
 # gem 'pg'
 gem 'thin'
 gem 'mysql2'

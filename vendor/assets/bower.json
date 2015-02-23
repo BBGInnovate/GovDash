@@ -2,5 +2,7 @@
   "name": "dsl-generated dependencies",
   "dependencies": {
     "angular-devise": "latest"
+  },
+  "resolutions": {
   }
 }

@@ -1,6 +1,6 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
-  
+  respond_to :html, :json
   protected
   def is_admin?
     unless !!current_user && current_user.role_id.to_i == 1

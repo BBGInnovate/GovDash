@@ -3,9 +3,13 @@
 All configurations below are overriden by OpsWorks
 to provide real auth parameters
 
-application.rb database.yml email.yml facebook.yml
-s3.yml sitecatalyst.yml twitter.yml twitter.yml
+database.yml 
+email.yml
+facebook.yml
 rabbit.yml
+s3.yml 
+sitecatalyst.yml 
+twitter.yml
 
 1. MySQL database $db_name installation
   $db_name=govdash_app
@@ -68,13 +72,14 @@ rabbit.yml
 
 5. Add custom cookbook to override OpsWorks default Apache, Passenger
    configurations and set up cron jobs.
-   Repository:
-   bitbucket.org/****/cookbooks.git
-   Branch: uberdashboard
    
-6. Custom JSON applied to GovDash Stack settings
+   In GovDash Stack Settings
+   Use custom Chef cookbooks: Yes
+   Repository URL: bitbucket.org/****/cookbooks.git
+   Branch: uberdashboard
+   Custom JSON:
    {
-  "deploy": {
+     "deploy": {
        "socialdash_app": {
          "database": {
               "redshift_host": "facebook-results.*****.amazonaws.com",
@@ -97,20 +102,24 @@ rabbit.yml
             "config/sitecatalyst.yml": "config/sitecatalyst.yml",
             "config/twitter.yml": "config/twitter.yml"
          }
-      }
+       }
+     }
    }
-}
-7. Add to <rails root>/deploy/after_restart.rb
+
+    
+6. Add Chef after_restart hook to <rails root>/deploy/after_restart.rb
    to run bin/delayed_job restart
    
-8. For cron jobs
+7. For cron jobs
    1. Add to custom cookbook directory
       socialdash/recipes/cronjob.rb
-   2. In GovDash Stack, Run Command "Update Custom Cookbook"
-      and run "Execute Recipes", add to "Recipes to execute" with
-      socialdash::crontab
-   3. Click "govdash-24-7" instance
-   4. Click "Execute Recipes"
+
+   2. In Layer Rails App Server
+    Custom Chef Recipes
+      Repository URL: git@bitbucket.org:****/cookbooks.git
+      Deploy:         socialdash::cronjob
+      
+    OS Packages:  rabbitmq-server
 
 References:
    Chef Resources:

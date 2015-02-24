@@ -112,4 +112,7 @@ rabbit.yml
    3. Click "govdash-24-7" instance
    4. Click "Execute Recipes"
 
+References:
+   Chef Resources:
+   http://support.rightscale.com/12-Guides/Chef_Cookbooks_Developer_Guide/04-Developer/06-Development_Resources/Chef_Resources
 

@@ -13,4 +13,4 @@ execute "deplayed_job start" do
   environment "RAILS_ENV" => rails_env
   action :run
 end
-<
+

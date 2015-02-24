@@ -11,6 +11,6 @@ execute "deplayed_job start" do
   cwd release_path
   command "bin/delayed_job restart"
   environment "RAILS_ENV" => rails_env
-  action :nothing
+  action :run
 end
 

@@ -69,9 +69,41 @@ rabbit.yml
 5. Add custom cookbook to override OpsWorks default Apache, Passenger
    configurations and set up cron jobs.
    Repository:
-   bitbucket.org/bbginnovate-ondemand/cookbooks.git
+   bitbucket.org/****/cookbooks.git
+   Branch: uberdashboard
    
-6. For cron jobs
+6. Custom JSON applied to GovDash Stack settings
+   {
+  "deploy": {
+       "socialdash_app": {
+         "database": {
+              "redshift_host": "facebook-results.*****.amazonaws.com",
+              "redshift_port": "5439",
+              "redshift_pool": "10",
+              "redshift_timeout": "5000",
+              "redshift_database": "****",
+              "redshift_username": "****",
+              "redshift_password": "****"
+         },
+         "facebook": {
+              "client_id": "****",
+              "client_secret": "****"
+         },
+         "symlink_before_migrate": {
+            "config/email.yml": "config/email.yml",
+            "config/facebook.yml": "config/facebook.yml",
+            "config/rabbit.yml": "config/rabbit.yml",
+            "config/s3.yml": "config/s3.yml",
+            "config/sitecatalyst.yml": "config/sitecatalyst.yml",
+            "config/twitter.yml": "config/twitter.yml"
+         }
+      }
+   }
+}
+7. Add to <rails root>/deploy/after_restart.rb
+   to run bin/delayed_job restart
+   
+8. For cron jobs
    1. Add to custom cookbook directory
       socialdash/recipes/cronjob.rb
    2. In GovDash Stack, Run Command "Update Custom Cookbook"

@@ -9,7 +9,7 @@ links << "rm config/database.yml;ln -s ../shared/config/database.yml config/data
 Chef::Log.info("Start deplayed_job for RAILS_ENV=#{rails_env}...")
 execute "deplayed_job start" do
   cwd release_path
-  command "#{links} bin/delayed_job restart"
+  command "bin/delayed_job restart"
   environment "RAILS_ENV" => rails_env
   action :run
 end

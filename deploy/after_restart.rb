@@ -18,8 +18,9 @@ end
 
 current_path = "#{release_path}"
 shared_path = "#{release_path}/../../shared"
-  
+
 Chef::Log.info("Create sym links")
+Chef::Log.info(node[:deploy].inspect)
 run <<-END
   cwd release_path
   rm '#{current_path}/config/email.yml'

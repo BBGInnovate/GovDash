@@ -70,9 +70,17 @@ twitter.yml
     -- api_tokens is replaced by app_tokens
     DROP TABLE api_tokens;
 
-5. Add custom cookbook to override OpsWorks default Apache, Passenger
-   configurations and set up cron jobs.
-   
+5. Create custom cookbook and host in bitbucket.org/****/cookbooks.git
+   Strucure of cookbooks:
+     apache2/attributes/customize.rb  #=> override Apache conf parameters
+     passenger_apache2/attributes/customize.rb #=> override Passenger parameters
+     rails/attributes/customize.rb #=> override database connection pool size
+     rails/recipes/myconfigure.rb #=> create conf files in shared/config/
+     rails/templates/default/ #=> templates for all required config files
+     socialdash/recipes/cronjob.rb
+     
+6. Add custom cookbook to OpsWorks stack
+
    In GovDash Stack Settings
    Use custom Chef cookbooks: Yes
    Repository URL: bitbucket.org/****/cookbooks.git
@@ -93,35 +101,36 @@ twitter.yml
          "facebook": {
               "client_id": "****",
               "client_secret": "****"
-         },
-         "symlink_before_migrate": {
-            "config/email.yml": "config/email.yml",
-            "config/facebook.yml": "config/facebook.yml",
-            "config/rabbit.yml": "config/rabbit.yml",
-            "config/s3.yml": "config/s3.yml",
-            "config/sitecatalyst.yml": "config/sitecatalyst.yml",
-            "config/twitter.yml": "config/twitter.yml"
          }
        }
      }
    }
 
-    
-6. Add Chef after_restart hook to <rails root>/deploy/after_restart.rb
-   to run bin/delayed_job restart
+7. Layer Rails App Server Recipes
+     Repository URL: git@bitbucket.org:****/cookbooks.git
+     Configure: socialdash::cronjob rails::myconfigure 
+     DeployL    socialdash::cronjob 
+
+     OS Packages:  rabbitmq-server
+     
+8. Create Chef before_migrate hook
+   <rails root>/deploy/before_migrate.rb
    
-7. For cron jobs
-   1. Add to custom cookbook directory
-      socialdash/recipes/cronjob.rb
+9. Create Chef after_restart hook
+   <rails root>/deploy/after_restart.rb
+   to run bin/delayed_job restart
 
-   2. In Layer Rails App Server
-    Custom Chef Recipes
-      Repository URL: git@bitbucket.org:****/cookbooks.git
-      Deploy:         socialdash::cronjob
-      
-    OS Packages:  rabbitmq-server
-
+10. Start instance
+   When the instance is up
+   1. user deploy's cronjobs are created for Facebook, Twitter etc. retrieval
+   2. <rails-app>/current/config/ symbalic links are created
+   3. delayed_job daemon is ruuning
+   
 References:
    Chef Resources:
    http://support.rightscale.com/12-Guides/Chef_Cookbooks_Developer_Guide/04-Developer/06-Development_Resources/Chef_Resources
 
+   Use Social Media Registry
+   http://www.usa.gov/About/developer-resources/social-media-registry.shtml
+   https://github.com/measuredvoice/estuary/tree/master/lib/services
+   

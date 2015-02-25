@@ -19,13 +19,18 @@ end
 Chef::Log.info("Create sym links")
 run <<-END
   cwd release_path
-  ln -s ../shared/config/email.yml config/email.yml;
-  ln -s ../shared/config/facebook.yml config/facebook.yml;
-  ln -s ../shared/config/rabbit.yml config/rabbit.yml;
-  ln -s ../shared/config/twitter.yml config/twitter.yml;
-  ln -s ../shared/config/s3.yml config/s3.yml;
-  ln -s ../shared/config/sitecatalyst.yml config/sitecatalyst.yml;
-  ln -s ../shared/config/database.yml config/database.yml;
+  rm '#{current_path}/config/email.yml'
+  rm '#{current_path}/config/facebook.yml'
+  rm '#{current_path}/config/rabbit.yml'
+  rm '#{current_path}/config/twitter.yml'
+  rm '#{current_path}/config/s3.yml'
+  rm '#{current_path}/config/sitecatalyst.yml'
+  ln -s '#{shared_path}/config/email.yml #{current_path}/config/email.yml'
+  ln -s '#{shared_path}/config/facebook.yml #{current_path}/config/facebook.yml'
+  ln -s '#{shared_path}/config/rabbit.yml #{current_path}/config/rabbit.yml'
+  ln -s '#{shared_path}/config/twitter.yml #{current_path}/config/twitter.yml'
+  ln -s '#{shared_path}/config/s3.yml #{current_path}/config/s3.yml'
+  ln -s '#{shared_path}/config/sitecatalyst.yml #{current_path}/config/sitecatalyst.yml'
   bin/delayed_job restart
 END
 

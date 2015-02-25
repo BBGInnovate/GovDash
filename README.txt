@@ -129,7 +129,8 @@ twitter.yml
 References:
    Chef Resources:
    http://support.rightscale.com/12-Guides/Chef_Cookbooks_Developer_Guide/04-Developer/06-Development_Resources/Chef_Resources
-
+   https://docs.chef.io/resource_examples.html
+   
    Use Social Media Registry
    http://www.usa.gov/About/developer-resources/social-media-registry.shtml
    https://github.com/measuredvoice/estuary/tree/master/lib/services

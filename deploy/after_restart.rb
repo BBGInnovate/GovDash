@@ -17,7 +17,7 @@ end
 =end
 
 current_path = "#{release_path}"
-shared_path = "#{release_path}/../../shared"
+# shared_path = "#{release_path}/../../shared"
 
 Chef::Log.info("Create sym links")
 Chef::Log.info(node[:deploy].inspect)

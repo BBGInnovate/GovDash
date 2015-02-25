@@ -16,7 +16,7 @@ execute "deplayed_job start" do
 end
 =end
 
-current_path = "#{release_path}/current"
+current_path = "#{release_path}"
 shared_path = "#{release_path}/../../shared"
   
 Chef::Log.info("Create sym links")

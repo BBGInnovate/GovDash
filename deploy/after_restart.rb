@@ -16,11 +16,12 @@ execute "deplayed_job start" do
 end
 =end
 
+current_path = "#{release_path}/current"
+shared_path = "#{release_path}/shared"
+  
 Chef::Log.info("Create sym links")
 run <<-END
   cwd release_path
-  current_path = '#{release_path}/current'
-  shared_path = '#{release_path}/shared'
   rm '#{current_path}/config/email.yml'
   rm '#{current_path}/config/facebook.yml'
   rm '#{current_path}/config/rabbit.yml'

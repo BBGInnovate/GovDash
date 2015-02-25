@@ -28,12 +28,12 @@ run <<-END
   rm '#{current_path}/config/twitter.yml'
   rm '#{current_path}/config/s3.yml'
   rm '#{current_path}/config/sitecatalyst.yml'
-  ln -s '#{shared_path}/config/email.yml #{current_path}/config/email.yml'
-  ln -s '#{shared_path}/config/facebook.yml #{current_path}/config/facebook.yml'
-  ln -s '#{shared_path}/config/rabbit.yml #{current_path}/config/rabbit.yml'
-  ln -s '#{shared_path}/config/twitter.yml #{current_path}/config/twitter.yml'
-  ln -s '#{shared_path}/config/s3.yml #{current_path}/config/s3.yml'
-  ln -s '#{shared_path}/config/sitecatalyst.yml #{current_path}/config/sitecatalyst.yml'
+  ln -s '#{shared_path}/config/email.yml' '#{current_path}/config/email.yml'
+  ln -s '#{shared_path}/config/facebook.yml' '#{current_path}/config/facebook.yml'
+  ln -s '#{shared_path}/config/rabbit.yml' '#{current_path}/config/rabbit.yml'
+  ln -s '#{shared_path}/config/twitter.yml' '#{current_path}/config/twitter.yml'
+  ln -s '#{shared_path}/config/s3.yml' '#{current_path}/config/s3.yml'
+  ln -s '#{shared_path}/config/sitecatalyst.yml' '#{current_path}/config/sitecatalyst.yml'
   bin/delayed_job restart
 END
 

@@ -16,11 +16,14 @@ execute "deplayed_job start" do
 end
 =end
 
-current_path = "#{release_path}"
 # shared_path = "#{release_path}/../../shared"
 
 Chef::Log.info("Create sym links")
-Chef::Log.info(node[:deploy].inspect)
+
+application=node[:deploy].keys[0]
+deploy = node[:deploy][application]
+current_path = "#{release_path}"
+
 run <<-END
   cwd release_path
   rm '#{current_path}/config/email.yml'

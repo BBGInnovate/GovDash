@@ -35,5 +35,5 @@ run <<-END
   ln -s '#{shared_path}/config/sitecatalyst.yml #{current_path}/config/sitecatalyst.yml'
   bin/delayed_job restart
 END
-end
+
 

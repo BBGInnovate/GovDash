@@ -113,7 +113,7 @@ class FacebookAccount < Account
        records[eval retrieve_range].each_with_index do |a,i|
          if !!a.graph_api
            if a.retrieve
-             logger.debug "Sleep #{SLEEP} seconds for next account"
+             Rails.logger.debug "Sleep #{SLEEP} seconds for next account"
              sleep SLEEP
            else
              # delayed_retrieve
@@ -124,7 +124,7 @@ class FacebookAccount < Account
          end
        end
      rescue Exception => ex
-       logger.error "  FacebookAccount#retrieve  #{ex.message}"  
+       Rails.logger.error "  FacebookAccount#retrieve  #{ex.message}"  
      end
      server = ActionMailer::Base.default_url_options[:server]
      ended = Time.zone.now
@@ -318,7 +318,7 @@ class FacebookAccount < Account
        data = {}
        begin
          @num_attempts += 1   
-         insights = graph_api.graph_call("v2.1/#{post.post_id}/insights/post_story_adds_by_action_type")
+         insights = graph_api.graph_call("v2.2/#{post.post_id}/insights/post_story_adds_by_action_type")
          data=insights[0]['values'][0]['value'] rescue {}
        rescue Koala::Facebook::ClientError, Timeout::Error=>error
          if @num_attempts < self.max_attempts
@@ -362,7 +362,7 @@ class FacebookAccount < Account
       @num_attempts = 0
       begin
         @num_attempts += 1
-        @insights=graph_api.graph_call("v2.1/#{self.obj_name}/insights")
+        @insights=graph_api.graph_call("v2.2/#{self.obj_name}/insights")
       rescue Timeout::Error=>error
         logger.error "Error: get_insights #{error.message}"
         if @num_attempts < self.max_attempts
@@ -384,7 +384,7 @@ class FacebookAccount < Account
     @num_attempts = 0
     begin
      @num_attempts += 1
-     @insight_fans=graph_api.graph_call("v2.1/#{self.obj_name}/insights/page_fan_adds/day?since=#{duration.to_i}")
+     @insight_fans=graph_api.graph_call("v2.2/#{self.obj_name}/insights/page_fan_adds/day?since=#{duration.to_i}")
     rescue Timeout::Error=>error
       logger.error "Error: upload_insights #{error.message}"
       if @num_attempts < self.max_attempts
@@ -517,7 +517,7 @@ class FacebookAccount < Account
   
   # oauth = Koala::Facebook::OAuth.new id, secret
   # app_access_token = oauth.get_app_access_token
-  # Koala.config.api_version = "v2.1"
+  # Koala.config.api_version = "v2.2"
   # graph = Koala::Facebook::API.new app_access_token
   # urls = ['http://www.ruhanirabin.com/easy-steps-to-facebook-connect-comment-box-how-to/']
   # comments = graph.get_comments_for_urls(urls)
@@ -853,7 +853,7 @@ class FacebookAccount < Account
   end
   
   def me  
-    feeds=graph_api.graph_call("v2.1/me")
+    feeds=graph_api.graph_call("v2.2/me")
   end
   
   # period 1.day or 1.week or 1.month

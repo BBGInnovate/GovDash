@@ -3,7 +3,7 @@
 # first get top level likes, all posts
 class FbPost < ActiveRecord::Base
    
-  # after_save :sync_redshift
+  after_save :sync_redshift
   
   def sync_redshift
     attr = self.attributes

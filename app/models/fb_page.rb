@@ -5,6 +5,7 @@
 class FbPage < ActiveRecord::Base
   belongs_to :account
 
+  after_save :sync_redshift
   def save_lifetime_data
     today = Time.zone.now
     if post_created_time > today.beginning_of_day &&

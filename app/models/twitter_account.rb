@@ -7,13 +7,19 @@ class TwitterAccount < Account
   def self.retrieve
      started = Time.zone.now
      count = 0
-     records = where(:is_active=>true).all
-     records.each_with_index do |a, i|
-       if a.retrieve
-         count += 1
+     
+     begin
+       records = where(:is_active=>true).all
+       retrieve_range = TwitterApp.config[:retrieve_range] || records.size
+       records[eval retrieve_range].each_with_index do |a, i|
+         if a.retrieve
+           count += 1
+         end
+         logger.debug "Sleep 30 seconds for next account"
+         sleep 30
        end
-       logger.debug "Sleep 30 seconds for next account"
-       sleep 30
+     rescue Exception=>ex
+       logger.error "  TwitterAccount#retrieve #{ex.message}"
      end
      
      ended = Time.zone.now

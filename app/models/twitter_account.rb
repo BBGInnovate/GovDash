@@ -15,7 +15,7 @@ class TwitterAccount < Account
          if a.retrieve
            count += 1
          end
-         logger.debug "Sleep 30 seconds for next account"
+         Rails.logger.debug "Sleep 30 seconds for next account"
          sleep 30
        end
      rescue Exception=>ex
@@ -142,7 +142,11 @@ class TwitterAccount < Account
     end
     
     unless @bulk_tweets.empty?
-      TwTweet.import!(@bulk_tweets)
+      last_id = TwTweet.import!(@bulk_tweets)
+      from_id = last_id - @bulk_tweets.size
+      # sync to Redshif database
+      RedshiftTwTweet.upload from_id
+      @bulk_tweets = []
       reload_tw_tweets
     end
     last_tweet = timelines.last 
@@ -184,7 +188,11 @@ class TwitterAccount < Account
       current_date = current_date - 1.day
     end
     unless @bulk_timelines.empty?
-       TwTimeline.import! @bulk_timelines
+      last_id = TwTimeline.import! @bulk_timelines
+      from_id = last_id - @bulk_timelines.size
+      # sync to Redshif database
+      RedshiftTwTimeline.upload from_id
+      @bulk_timelines = []
     end
     create_today_timeline
   end

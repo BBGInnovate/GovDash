@@ -271,7 +271,11 @@ class FacebookAccount < Account
       end
     end
     unless @bulk_insert.empty?
-      FbPost.import!(@bulk_insert)
+      last_id = FbPost.import!(@bulk_insert)
+      from_id = last_id - @bulk_insert.size
+      # sync to Redshif database
+      RedshiftFbPost.upload from_id
+      @bulk_insert = []
     end
     
     unless posts.size < QUERY_LIMIT 

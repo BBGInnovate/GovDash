@@ -107,21 +107,24 @@ class FacebookAccount < Account
      started = Time.zone.now
      count = 0
      no_count = 0
-     records = includes(:api_tokens).where("is_active=1").
-       references(:api_tokens).to_a
-     records.each_with_index do |a,i|
-       if !!a.graph_api
-         if a.retrieve
-           logger.debug "Sleep #{SLEEP} seconds for next account"
-           sleep SLEEP
+     begin
+       records = where("is_active=1").to_a 
+       retrieve_range = Facebook.config[:retrieve_range] || records.size
+       records[eval retrieve_range].each_with_index do |a,i|
+         if !!a.graph_api
+           if a.retrieve
+             logger.debug "Sleep #{SLEEP} seconds for next account"
+             sleep SLEEP
+           else
+             # delayed_retrieve
+             # logger.info "   retrieve scheduled deplayed_job in one hour"
+           end
          else
-           # delayed_retrieve
-           # logger.info "   retrieve scheduled deplayed_job in one hour"
+           no_count += 1
          end
-       else
-         no_count += 1
        end
-       
+     rescue Exception => ex
+       logger.error "  FacebookAccount#retrieve  #{ex.message}"  
      end
      server = ActionMailer::Base.default_url_options[:server]
      ended = Time.zone.now
@@ -512,22 +515,40 @@ class FacebookAccount < Account
     !arr.empty?
   end
   
+  # oauth = Koala::Facebook::OAuth.new id, secret
+  # app_access_token = oauth.get_app_access_token
+  # Koala.config.api_version = "v2.1"
+  # graph = Koala::Facebook::API.new app_access_token
+  # urls = ['http://www.ruhanirabin.com/easy-steps-to-facebook-connect-comment-box-how-to/']
+  # comments = graph.get_comments_for_urls(urls)
+
   def graph
-    if !@graph
-      token = self.api_tokens.
-        select('account_id,page_access_token').
-        where("api_user_email='odditech@bbg.gov' AND page_access_token is not null").first
-      if token
-        @graph = Koala::Facebook::API.new(token.page_access_token)
-      else
-        return nil
-      end
-    end
-    @graph
+    graph_api
   end
 
   def graph_api(access_token=nil)
-    access_token = access_token || page_access_token || user_access_token
+    if @graph_api
+      return @graph_api
+    end
+    Koala.config.api_version = "v2.2"
+    if self.app_token
+      if self.app_token.page_access_token
+        access_token = self.app_token.page_access_token
+      elsif self.app_token.user_access_token
+        access_token = self.app_token.user_access_token
+      end
+    else
+      # get app access token
+      client_id = Facebook.config[:client_id]
+      client_secret = Facebook.config[:client_secret]
+      callback_url = Facebook.config[:canvas_url]
+      @oauth = Koala::Facebook::OAuth.new(client_id, client_secret, callback_url)
+      access_token = @oauth.get_app_access_token 
+      if self.app_token
+        self.build_app_token :user_access_token => access_token
+        self.save
+      end   
+    end
     @graph_api = Koala::Facebook::API.new(access_token)
   end
   
@@ -666,7 +687,7 @@ class FacebookAccount < Account
     begin
       token = self.app_token.page_access_token
       if token
-        end_point = "v2.1/debug_token?input_token=#{token}&access_token=#{token}"
+        end_point = "v2.2/debug_token?input_token=#{token}&access_token=#{token}"
         re = graph_api.graph_call end_point
         expiry = re['data']['expires_at']
         if expiry == 0

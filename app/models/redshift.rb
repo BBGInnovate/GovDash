@@ -1,6 +1,6 @@
 class Redshift < ActiveRecord::Base
   self.abstract_class = true
-  establish_connection "redshift_#{Rails.env}"
+  establish_connection "redshift_#{Rails.env}".to_sym
   
   @@existing_fb_pages = []
   @@existing_fb_posts = []
@@ -28,10 +28,14 @@ class << self
     
     account_ids = []
     if conditions.empty?
-      account_ids = mysql_klass.select("distinct account_id").
-         map{|a| a.account_id}
+      account_ids = mysql_klass.select("distinct account_id").map{|a| a.account_id}
     elsif conditions[:account_id]
-      account_ids << conditions[:account_id].delete(:account_id).split(',') 
+      aid = conditions[:account_id]
+      if Array === aid
+        account_ids << aid.split(',') 
+      else
+        account_ids << aid
+      end
     end
     
     account_ids.each do | acc_id |
@@ -65,7 +69,8 @@ class << self
     end
 
   end
-
+  handle_asynchronously :upload, :run_at => Proc.new {5.seconds.from_now }
+  
   def create_or_update(attr)
      id = attr.delete('id')
      rec = where(:original_id=>id).first

@@ -100,8 +100,19 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
   }])
   
    // register listener to watch for route changes
-  .run(function ($rootScope, $location, Session, $timeout) {   
-  		  
+  .run(function ($rootScope, $location, Session, $timeout) {
+	$rootScope.headerRedirect = '';
+
+	// watch loggedInUser and control headerRedirect which is the header logo's redirect anchor reference
+	// used in angular.html.erb file
+	$rootScope.$watch('loggedInUser', function () {
+		if ($rootScope.loggedInUser === true) {
+			$rootScope.headerRedirect = '#';
+		} else {
+			$rootScope.headerRedirect = '#/users/login'
+		}
+	});
+
 	Session.checkUserLoggedIn()
 		.then(function(response) {
 		   if (response.info == null) {

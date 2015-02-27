@@ -10,6 +10,11 @@ class FacebookAccount < Account
   belongs_to :app_token, foreign_key: :contact, primary_key: :api_user_email,
     inverse_of: :facebook_accounts
   
+  alias_method :original_app_token, :app_token
+  def app_token
+    @rec ||= AppToken.where(api_user_email: self.contact).to_a.last
+  end
+  
   # below to be removed
   has_many :api_tokens, :foreign_key=>"account_id"
   
@@ -535,12 +540,8 @@ class FacebookAccount < Account
       return @graph_api
     end
     Koala.config.api_version = "v2.2"
-    if self.app_token
-      if self.app_token.page_access_token
-        access_token = self.app_token.page_access_token
-      elsif self.app_token.user_access_token
-        access_token = self.app_token.user_access_token
-      end
+    if self.page_access_token
+      access_token = self.page_access_token
     else
       # get app access token
       client_id = Facebook.config[:client_id]
@@ -548,10 +549,8 @@ class FacebookAccount < Account
       callback_url = Facebook.config[:canvas_url]
       @oauth = Koala::Facebook::OAuth.new(client_id, client_secret, callback_url)
       access_token = @oauth.get_app_access_token 
-      if self.app_token
-        self.build_app_token :user_access_token => access_token
-        self.save
-      end   
+      self.user_access_token = access_token
+      self.save  
     end
     @graph_api = Koala::Facebook::API.new(access_token)
   end
@@ -668,12 +667,17 @@ class FacebookAccount < Account
     end
   end
   
-  def exchange_page_access_token(access_token=nil)
-    token = access_token || user_access_token
+  def exchange_page_access_token(access_token)
+    if !access_token
+      raise "  FacebookAccount#exchange_page_access_token access_token is null"
+    end
+    self.user_access_token = access_token
+    token = access_token
     begin
-      page_token = graph_api(token).graph_call("v2.0/#{self.send(:obj_name)}?fields=access_token&access_token=#{token}")
+      page_token = graph_api(token).graph_call("v2.2/#{self.send(:obj_name)}?fields=access_token&access_token=#{token}")
       if page_token['access_token']
-        self.update_attribute :page_access_token, page_token['access_token']
+        self.page_access_token = page_token['access_token']
+        self.save!
       else
         logger.info "FacebookAccount: #{self.object_name} : no page_token['access_token']"
       end
@@ -683,13 +687,12 @@ class FacebookAccount < Account
   end
   
   def token?
-    !!app_token && !!app_token.page_access_token
+    !!page_access_token
   end
   
   def debug_token
-     
     begin
-      token = self.app_token.page_access_token
+      token = self.page_access_token
       if token
         end_point = "v2.2/debug_token?input_token=#{token}&access_token=#{token}"
         re = graph_api.graph_call end_point

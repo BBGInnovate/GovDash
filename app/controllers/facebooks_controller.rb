@@ -61,21 +61,23 @@ class FacebooksController < ApplicationController
   # handle Normal OAuth flow: callback
   def create
     if session[:email]
+      # api_user_email should be unique if app_tokens table
+      # this makes the code compatible with the old api_tokens
       apps = AppToken.where(api_user_email: session[:email] ).to_a
       unless apps.empty?
-        Facebook.app_token = apps[0]
+        app = apps.last
+        Facebook.app_token = app
         client = Facebook.auth(callback_facebook_url).client
         uri = URI.parse client.redirect_uri
         client.authorization_code = params[:code]
         access_token = client.access_token! :client_auth_body
+        puts "   user token: #{access_token.access_token}"
+        sleep 5
         user = FbGraph::User.me(access_token).fetch
         authenticate Facebook.identify(user)
-        apps.each do |app|
-          if !app.page_access_token
-            app.update_attribute :user_access_token, access_token.access_token
-            app.exchange_page_access_token
-          end
-        end 
+        app.facebook_accounts.each do |fb|
+          fb.exchange_page_access_token access_token.access_token
+        end
       end
     end
     redirect_to '/facebooks/index' # dashboard_url
@@ -111,7 +113,7 @@ class FacebooksController < ApplicationController
       @accounts = FacebookAccount.all
     end
     @accounts.each do |ac|
-      if !!ac.app_token && ac.app_token.page_access_token
+      if !!ac.page_access_token
          @token_count += 1
       end
     end

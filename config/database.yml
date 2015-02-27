@@ -4,7 +4,7 @@ development: &default
   encoding: utf8
   database: dash_development
   username: root
-  password: root
+  password:
   port: 3306
   socket: /tmp/mysql.sock
 

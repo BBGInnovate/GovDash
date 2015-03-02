@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140924172829) do
+ActiveRecord::Schema.define(version: 20150227141640) do
 
   create_table "account_types", force: :cascade do |t|
     t.string   "name",       limit: 20
@@ -33,7 +33,6 @@ ActiveRecord::Schema.define(version: 20140924172829) do
     t.integer  "language_id",       limit: 4
     t.string   "contact",           limit: 255
     t.string   "user_access_token", limit: 255
-    t.string   "page_access_token", limit: 255
     t.boolean  "is_active",         limit: 1,   default: true
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -77,13 +76,12 @@ ActiveRecord::Schema.define(version: 20140924172829) do
     t.datetime "updated_at"
   end
 
-  create_table "api_tokens", force: :cascade do |t|
-    t.string   "platform",          limit: 20
-    t.integer  "account_id",        limit: 4
-    t.string   "canvas_url",        limit: 255
-    t.string   "api_user_email",    limit: 40
-    t.string   "user_access_token", limit: 255
-    t.string   "page_access_token", limit: 255
+  create_table "app_tokens", force: :cascade do |t|
+    t.string   "platform",       limit: 20
+    t.string   "canvas_url",     limit: 255
+    t.string   "api_user_email", limit: 40
+    t.string   "client_id",      limit: 255
+    t.string   "client_secret",  limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
   end

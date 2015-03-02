@@ -1,7 +1,7 @@
 <!-- user comes from $scope.user -->
 <div>
 	<div style="float:left" class="page-header">
-		<h1>Create a Group</h1>
+		<h1>Create an Organization</h1>
 	</div>
 	<!--<p style="float:right">{{user.email}} <a class="btn btn-primary" ng-click="logout('/users/login')">Logout</a></p>-->
 </div>
@@ -14,20 +14,6 @@
 			<label for="name" class="col-md-2 control-label">Name</label>
 			<div class="col-md-10">
 				<input type="text" class="form-control" data-ng-model="name" id="name" placeholder="Name" required>
-			</div>
-		</div>
-		<div class="form-group">
-			<label for="description" class="col-md-2 control-label">Description</label>
-			<div class="col-md-10">
-				<input type="text" class="form-control" data-ng-model="description" id="description" placeholder="description" required>
-			</div>
-		</div>
-		<div class="form-group">
-			<label for="organization" class="col-md-2 control-label">Organization</label>
-			<div class="col-md-10">
-				<select ng-model="selectedOrganization" ng-options="organization.name for organization in organizations" id="organization">
-					<option value="">-- Choose Organization --</option>
-				</select>
 			</div>
 		</div>
 		<div class="form-group">

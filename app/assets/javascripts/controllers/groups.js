@@ -27,6 +27,8 @@ function GroupsCtrl($scope, Groups, Session, $routeParams, $rootScope, $location
   		Groups.getGroupById($routeParams.groupId)
             .then(function(response) {
                $scope.group = response.data[0];
+               //TODO: see accounts.js for examples populating the reference model
+               var organizationId = $scope.group.organization_id;
         });
   		
   	};

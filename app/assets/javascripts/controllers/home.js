@@ -1,4 +1,4 @@
-function HomeCtrl($scope, Languages, Regions, Countries, Networks, Session, Accounts, Reports, Dates, $routeParams, $filter, $parse, $rootScope) {"use strict";
+function HomeCtrl($scope, Languages, Regions, Countries, Groups, Session, Accounts, Reports, Dates, $routeParams, $filter, $parse, $rootScope) {"use strict";
 	//$scope.user = Session.requestCurrentUser();
 	
     $scope.logout = function() {
@@ -24,9 +24,9 @@ function HomeCtrl($scope, Languages, Regions, Countries, Networks, Session, Acco
          
         });
         
-        Networks.getAllNetworks()
+        Groups.getAllGroups()
             .then(function(response) {
-               $scope.networks = response.data;
+               $scope.groups = response.data;
         });
         
         
@@ -44,8 +44,8 @@ function HomeCtrl($scope, Languages, Regions, Countries, Networks, Session, Acco
   		$scope.selectedLanguage.splice( idx, 1 );
   	};
   	
-  	$scope.removeNetwork = function(idx) {
-  		$scope.selectedNetwork.splice( idx, 1 );
+  	$scope.removeGroup = function(idx) {
+  		$scope.selectedGroup.splice( idx, 1 );
   	};
   	
   	$scope.selectAllCountries = function() {
@@ -83,22 +83,22 @@ function HomeCtrl($scope, Languages, Regions, Countries, Networks, Session, Acco
 			}
   		}
   		
-  		var networks = [];
-  		if ($scope.selectedNetwork != null) {
-			for (var i = 0; i < $scope.selectedNetwork.length; i++) {
-				networks.push($scope.selectedNetwork[i].id);
-				$scope.filterText += $scope.selectedNetwork[i].name + ', ';
+  		var groups = [];
+  		if ($scope.selectedGroup != null) {
+			for (var i = 0; i < $scope.selectedGroup.length; i++) {
+				groups.push($scope.selectedGroup[i].id);
+				$scope.filterText += $scope.selectedGroup[i].name + ', ';
 			}
   		}
   
         Reports.getData(regions, countries, languages, 
-  		networks, null, null) // Last two nulls are startDate and endDate
+  		groups, null, null) // Last two nulls are startDate and endDate
             .then(function(response) {
         		// Call function to populate tables / charts
             	$scope.populateData(response);
             	
             	// Set the filters
-            	$scope.selectedNetworks = networks;
+            	$scope.selectedGroups = groups;
             	$scope.selectedCountries = countries;
             	$scope.selectedLanguages = languages;
             	$scope.selectedRegions = regions;
@@ -478,7 +478,7 @@ function HomeCtrl($scope, Languages, Regions, Countries, Networks, Session, Acco
 
 
         Reports.getData($scope.selectedRegions, $scope.selectedCountries, $scope.selectedLanguages,
-		$scope.selectedNetworks, dateReturned.startDate, dateReturned.endDate)
+		$scope.selectedGroups, dateReturned.startDate, dateReturned.endDate)
 			.then(function(response) {
 				$scope.populateData(response);
 

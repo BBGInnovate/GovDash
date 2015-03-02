@@ -5,7 +5,7 @@ class Account < ActiveRecord::Base
   
   RETRY_SLEEP = 15  # seconds
   SLEEP = 20
-  belongs_to :network
+  belongs_to :group
   belongs_to :service
   belongs_to :account_type
   belongs_to :language
@@ -52,7 +52,7 @@ class Account < ActiveRecord::Base
     end
   end
   
-  # options = {:network_ids=>[1,2,3], 
+  # options = {:group_ids=>[1,2,3], 
   #           :region_ids=>[1,2,3], 
   #           :service_ids=>[1,2,3],
   #           :country_ids=>[251],
@@ -65,7 +65,7 @@ class Account < ActiveRecord::Base
     ids = options.delete(:account_ids) || []
     options[:ids] = ids
     account_type_ids = options[:account_type_ids] || []
-    network_ids = options[:network_ids] || []
+    group_ids = options[:group_ids] || []
     service_ids = options[:service_ids] || []
     language_ids = options[:language_ids] || []
     
@@ -84,7 +84,7 @@ class Account < ActiveRecord::Base
       combined_account_ids << options[:account_ids]
     end
 
-    [:ids, :account_type_ids, :media_type_names, :network_ids, :service_ids].each do |opt|
+    [:ids, :account_type_ids, :media_type_names, :group_ids, :service_ids].each do |opt|
        if (options[opt] && options[opt].first)
          cond += ["#{opt.to_s.singularize} in (#{options[opt].join(',')})"]
        end
@@ -213,7 +213,7 @@ class Account < ActiveRecord::Base
   def info
     begin
     {:name=>self.name,:id=>self.id,
-      :entity=>self.network.name,
+      :entity=>self.group.name,
       :service=>self.service.name,
       :countries=>self.countries.map{|c| [c.id, c.name]}.to_h,
       :regions=>self.regions.map{|c| [c.id, c.name]}.to_h,

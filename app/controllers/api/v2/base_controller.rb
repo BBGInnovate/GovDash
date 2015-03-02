@@ -21,7 +21,7 @@ class Api::V2::BaseController <  ActionController::Base
     names = Language.common_names
     
     arrs = []
-    [Network, Service, Region, AccountType,MediaType, Country,Language, ScSegment].each do | p |
+    [Group, Service, Region, AccountType,MediaType, Country,Language, ScSegment].each do | p |
       arr = [{'lookup'=> p.name}]
       hsh = {}
       if p.respond_to? :is_active
@@ -155,7 +155,7 @@ class Api::V2::BaseController <  ActionController::Base
   def add_associate_name(record)
     attr = filter_attributes(record.attributes)
     if Account === record
-      attr['network_name']= record.network.name if !!record.respond_to?(:network) && record.network
+      attr['group_name']= record.group.name if !!record.respond_to?(:group) && record.group
       attr['service_name']= record.service.name
       attr['language_name']= record.language.name      
       

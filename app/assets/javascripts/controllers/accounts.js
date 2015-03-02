@@ -22,7 +22,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		
   						// name field				 // object_name field
   		Accounts.create(this.name, this.description, this.object_name, 
-  		this.selectedMediaType.name, this.selectedNetwork.id,  this.selectedService.id, 
+  		this.selectedMediaType.name, this.selectedGroup.id,  this.selectedService.id, 
   		this.selectedLanguage.id, regions, countries, this.selectedAccountType.id,
   		segments)
 			.then(function(response) {
@@ -58,7 +58,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		Accounts.getAccountById($routeParams.accountId)
             .then(function(response) {
                $scope.account = response.data[0];
-               var networkId = $scope.account.network_id;
+               var groupId = $scope.account.group_id;
                var serviceId = $scope.account.service_id;
                var regionIds = $scope.account.region_ids;
                var countryIds = $scope.account.country_ids;
@@ -82,17 +82,17 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 			   // The looping that occurs in the promise below is because the API
 			   // brings out the data in alphabetical order and the selected element
 			   // in the Angular dropdown needs to be found. The Ids are provided in the 
-			   // individual objects object (networkId, serviceId, etc.) 
+			   // individual objects object (groupId, serviceId, etc.) 
 				Accounts.getAllDataForAccounts()
 					.then(function(response) {
 					   $scope.allData = response.data;
 			  
-					   var networks = $scope.allData[0];
-					   networks.shift();
-					   $scope.networks = networks;
-					   for (var i = 0; i < $scope.networks.length; i++) {
-							if ($scope.networks[i].id == networkId) {
-								 $scope.selectedNetwork = $scope.networks[i];
+					   var groups = $scope.allData[0];
+					   groups.shift();
+					   $scope.groups = groups;
+					   for (var i = 0; i < $scope.groups.length; i++) {
+							if ($scope.groups[i].id == groupId) {
+								 $scope.selectedGroup = $scope.groups[i];
 							}
 					   }
 			   
@@ -226,7 +226,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		
   		Accounts.update($routeParams.accountId, $scope.account.name, 
   		$scope.account.description, $scope.account.object_name, $scope.media_type_name, 
-  		$scope.selectedNetwork.id, $scope.selectedService.id, $scope.selectedLanguage.id, 
+  		$scope.selectedGroup.id, $scope.selectedService.id, $scope.selectedLanguage.id, 
   		regions, countries, $scope.selectedAccountType.id, segments)
             .then(function(response) {
                $location.path('accounts');
@@ -241,10 +241,9 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 			.then(function(response) {
 			   $scope.allData = response.data;
 			  
-			   var networks = $scope.allData[0];
-			   networks.shift();
-			   $scope.networks = networks;
-//			   $scope.selectedNetwork = $scope.networks[0];
+			   var groups = $scope.allData[0];
+			   groups.shift();
+			   $scope.groups = groups;
 			   
 			   var services = $scope.allData[1];
 			   services.shift();
@@ -292,7 +291,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		
   		Accounts.setInactive(account.id, account.name, 
   		account.description, account.object_name, account.media_type_name, 
-  		account.network_id, account.service_id, account.language_id, 
+  		account.group_id, account.service_id, account.language_id, 
   		account.region_ids, account.country_ids, account.account_type_id)
             .then(function(response) {
                $scope.accounts.splice( $scope.accountIndex, 1 );

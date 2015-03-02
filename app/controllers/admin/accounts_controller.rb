@@ -20,7 +20,7 @@ class Admin::AccountsController < Admin::BaseController
     # config.columns = []
     
     config.list.columns = [:id,:media_type_name,:object_name, :status,:updated_at,
-    :network_id,:language_id,:regions,:countries,:sc_segments]
+    :group_id,:language_id,:regions,:countries,:sc_segments]
 
     config.list.columns.exclude :sc_segments
     config.update.columns.exclude :regions,:countries,:sc_segments

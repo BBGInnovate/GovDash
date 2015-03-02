@@ -113,7 +113,8 @@ Radd::Application.routes.draw do
           get 'segments'
         end
       end
-      resources :networks
+      resources :organizations
+      resources :groups
       resources :services
       resources :regions
       resources :countries
@@ -166,7 +167,7 @@ Radd::Application.routes.draw do
         get 'fetch'
       end
     end
-    resources :networks do
+    resources :groups do
       as_routes
     end
     

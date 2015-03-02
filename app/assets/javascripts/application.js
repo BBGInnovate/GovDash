@@ -16,7 +16,7 @@
 //= require services/sessionService
 //= require services/recordService
 //= require services/roleService
-//= require services/networkService
+//= require services/groupService
 //= require services/serviceService
 //= require services/accountService
 //= require services/regionService
@@ -31,7 +31,7 @@
 //= require controllers/record
 //= require controllers/home
 //= require controllers/users
-//= require controllers/networks
+//= require controllers/groups
 //= require controllers/services
 //= require controllers/accounts
 //= require controllers/regions
@@ -42,7 +42,7 @@
 
 
 angular.module('radd', ['sessionService','recordService', 'roleService', 'regionService', 
-'countryService', 'networkService', 'serviceService', 'accountService', 
+'countryService', 'groupService', 'serviceService', 'accountService', 
 'accountTypeService', 'mediaTypeService', 'languageService', 'reportService', 'userService', 
 'dateService', 'segmentService', '$strap.directives', 'directives', 'filters', 'ngRoute', 
 'angucomplete', 'googlechart', 'datePicker', 'ui.bootstrap'])
@@ -80,9 +80,9 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
       .when('/users/login', {templateUrl:'/users/login.html', controller:UsersCtrl})
       .when('/users/register', {templateUrl:'/users/register.html', controller:UsersCtrl})
       .when('/config', {templateUrl:'/config/index.html'})
-      .when('/networks/create/', {templateUrl:'/networks/create.html', controller:NetworksCtrl})
-      .when('/networks', {templateUrl:'/networks/list.html', controller:NetworksCtrl})
-      .when('/networks/edit/:networkId', {templateUrl:'/networks/edit.html', controller:NetworksCtrl})
+      .when('/groups/create/', {templateUrl:'/groups/create.html', controller:GroupsCtrl})
+      .when('/groups', {templateUrl:'/groups/list.html', controller:GroupsCtrl})
+      .when('/groups/edit/:groupId', {templateUrl:'/groups/edit.html', controller:GroupsCtrl})
       .when('/accounts', {templateUrl:'/accounts/list.html', controller:AccountsCtrl})
       .when('/accounts/create/', {templateUrl:'/accounts/create.html', controller:AccountsCtrl})
       .when('/accounts/edit/:accountId', {templateUrl:'/accounts/edit.html', controller:AccountsCtrl})

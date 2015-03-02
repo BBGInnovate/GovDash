@@ -23,6 +23,14 @@
 			</div>
 		</div>
 		<div class="form-group">
+			<label for="organization" class="col-md-2 control-label">Organization</label>
+			<div class="col-md-10">
+				<select ng-model="selectedOrganization" ng-options="organization.name for organization in organizations" id="organization">
+					<option value="">-- Choose Organization --</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
 			<div class="col-md-offset-2 col-md-10">
 				<button type="submit" class="btn btn-default">Submit</button>
 			</div>

@@ -16,6 +16,7 @@
 //= require services/sessionService
 //= require services/recordService
 //= require services/roleService
+//= require services/organizationService
 //= require services/groupService
 //= require services/serviceService
 //= require services/accountService
@@ -31,6 +32,7 @@
 //= require controllers/record
 //= require controllers/home
 //= require controllers/users
+//= require controllers/organizations
 //= require controllers/groups
 //= require controllers/services
 //= require controllers/accounts
@@ -42,7 +44,7 @@
 
 
 angular.module('radd', ['sessionService','recordService', 'roleService', 'regionService', 
-'countryService', 'groupService', 'serviceService', 'accountService', 
+'countryService', 'groupService', 'organizationService', 'serviceService', 'accountService', 
 'accountTypeService', 'mediaTypeService', 'languageService', 'reportService', 'userService', 
 'dateService', 'segmentService', '$strap.directives', 'directives', 'filters', 'ngRoute', 
 'angucomplete', 'googlechart', 'datePicker', 'ui.bootstrap'])
@@ -80,6 +82,9 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
       .when('/users/login', {templateUrl:'/users/login.html', controller:UsersCtrl})
       .when('/users/register', {templateUrl:'/users/register.html', controller:UsersCtrl})
       .when('/config', {templateUrl:'/config/index.html'})
+      .when('/organizations/create/', {templateUrl:'/organizations/create.html', controller:OrganizationsCtrl})
+      .when('/organizations', {templateUrl:'/organizations/list.html', controller:OrganizationsCtrl})
+      .when('/organizations/edit/:organizationId', {templateUrl:'/organizations/edit.html', controller:OrganizationsCtrl})
       .when('/groups/create/', {templateUrl:'/groups/create.html', controller:GroupsCtrl})
       .when('/groups', {templateUrl:'/groups/list.html', controller:GroupsCtrl})
       .when('/groups/edit/:groupId', {templateUrl:'/groups/edit.html', controller:GroupsCtrl})

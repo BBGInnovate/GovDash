@@ -48,11 +48,11 @@ module ApplicationHelper
       record.service.name
     end
   end
-  def network_id_column(record, input_name)
-    if Network === record
-      record.id
+  def group_id_column(record, input_name)
+    if Group === record
+      group.id
     else
-      record.network.name
+      record.group.name
     end
   end
   def region_id_column(record, input_name)
@@ -119,8 +119,8 @@ module ApplicationHelper
   def service_id_form_column(record, input_name)
       select_tag 'record[service_id]', options_for_select(Service.where(:is_active=>true).map{|c| ["#{c.name}",c.id]},record.service_id.to_s),:multiple => false,:readonly=>true
   end
-  def network_id_form_column(record, input_name)
-      select_tag 'record[network_id]', options_for_select(Network.where(:is_active=>true).map{|c| ["#{c.name}",c.id]},record.network_id.to_s),:multiple => false,:readonly=>true
+  def group_id_form_column(record, input_name)
+      select_tag 'record[group_id]', options_for_select(Group.where(:is_active=>true).map{|c| ["#{c.name}",c.id]},record.group_id.to_s),:multiple => false,:readonly=>true
   end
   def account_type_id_form_column(record, input_name)
     select_tag 'record[account_type_id]', options_for_select(AccountType.all.map{|c| ["#{c.name}",c.id]},record.account_type_id.to_s),:multiple => false,:readonly=>true

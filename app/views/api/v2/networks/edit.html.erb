@@ -1,11 +1,11 @@
 <script type='text/javascript'>
-  var network = {
+  var group = {
     init : function() {
       $("#submit").click(function() {
         var url = $('form[action]').attr('action');
         $('input[name="authenticity_token"]').remove();
-        var data = $('#new_network').serialize();
-        $.put(url, data, network.done);
+        var data = $('#new_group').serialize();
+        $.put(url, data, group.done);
         return false;
       });
     },
@@ -16,7 +16,7 @@
   }
 </script>
 
-<%= form_for @network, {:url=>api_network_path, :method=>"put"} do |f| %>
+<%= form_for @group, {:url=>api_group_path, :method=>"put"} do |f| %>
   <div id="notice"></div>
   <%= f.hidden_field :id %><br />
   <%= f.label :name %>
@@ -32,6 +32,6 @@
 <% end %>
 <script>
   jQuery(document).ready(function(){
-    network.init(); 
+    group.init(); 
   });
 </script>

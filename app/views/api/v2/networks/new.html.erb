@@ -1,4 +1,4 @@
-<%= form_for @network, {:url=>api_networks_path} do |f| %>
+<%= form_for @group, {:url=>api_groups_path} do |f| %>
   <div id="notice"></div>
   <%= f.label :name %>
   <%= f.text_field :name %><br />
@@ -13,6 +13,6 @@
 <% end %>
 <script>
   jQuery(document).ready(function(){
-     network.init(); 
+     group.init(); 
   });
 </script>

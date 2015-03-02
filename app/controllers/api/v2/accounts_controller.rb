@@ -64,7 +64,7 @@ class Api::V2::AccountsController < Api::V2::BaseController
   
   def condition1
     pam = {:is_active=>true}
-    [:network_id, :service_id, :account_type_id, :language_id].each do |p|
+    [:group_id, :service_id, :account_type_id, :language_id].each do |p|
       pam[p] = params[p] if params[p]
     end
     pam

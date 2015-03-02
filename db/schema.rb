@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150227141640) do
+ActiveRecord::Schema.define(version: 20150302175811) do
 
   create_table "account_types", force: :cascade do |t|
     t.string   "name",       limit: 20
@@ -27,7 +27,7 @@ ActiveRecord::Schema.define(version: 20150227141640) do
     t.boolean  "status",            limit: 1,   default: true
     t.boolean  "page_admin",        limit: 1,   default: false
     t.string   "media_type_name",   limit: 20,  default: "FacebookAccount"
-    t.integer  "network_id",        limit: 4
+    t.integer  "group_id",          limit: 4
     t.integer  "service_id",        limit: 4
     t.integer  "account_type_id",   limit: 4
     t.integer  "language_id",       limit: 4
@@ -39,6 +39,8 @@ ActiveRecord::Schema.define(version: 20150227141640) do
     t.integer  "sc_segment_id",     limit: 4
     t.boolean  "new_item",          limit: 1,   default: false
   end
+
+  add_index "accounts", ["group_id"], name: "index_accounts_on_group_id", using: :btree
 
   create_table "accounts_countries", force: :cascade do |t|
     t.integer  "account_id", limit: 4
@@ -170,6 +172,17 @@ ActiveRecord::Schema.define(version: 20150227141640) do
   add_index "fb_posts", ["post_created_time"], name: "index_fb_posts_on_post_created_time", using: :btree
   add_index "fb_posts", ["post_id"], name: "index_fb_posts_on_post_id", unique: true, using: :btree
 
+  create_table "groups", force: :cascade do |t|
+    t.string   "name",            limit: 128
+    t.string   "description",     limit: 255
+    t.boolean  "is_active",       limit: 1,   default: true
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "organization_id", limit: 4
+  end
+
+  add_index "groups", ["organization_id"], name: "index_groups_on_organization_id", using: :btree
+
   create_table "languages", force: :cascade do |t|
     t.string  "name",      limit: 30
     t.string  "iso_639_1", limit: 6
@@ -183,12 +196,10 @@ ActiveRecord::Schema.define(version: 20150227141640) do
     t.datetime "updated_at"
   end
 
-  create_table "networks", force: :cascade do |t|
-    t.string   "name",        limit: 10
-    t.string   "description", limit: 255
-    t.boolean  "is_active",   limit: 1,   default: true
-    t.datetime "created_at"
-    t.datetime "updated_at"
+  create_table "organizations", force: :cascade do |t|
+    t.string   "name",       limit: 255
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
   end
 
   create_table "records", force: :cascade do |t|
@@ -313,4 +324,5 @@ ActiveRecord::Schema.define(version: 20150227141640) do
   add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
   add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
 
+  add_foreign_key "groups", "organizations"
 end

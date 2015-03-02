@@ -3,9 +3,9 @@ angular.module('reportService', [])
        
         var report = {
           
-            getData: function(regionIds, countryIds, languageIds, networkIds, startDate, endDate) {
+            getData: function(regionIds, countryIds, languageIds, groupIds, startDate, endDate) {
             
-                return $http.post('/api/reports', {options: {source: "all", country_ids: countryIds, region_ids: regionIds, language_ids: languageIds, network_ids: networkIds, start_date: startDate, end_date: endDate } })
+                return $http.post('/api/reports', {options: {source: "all", country_ids: countryIds, region_ids: regionIds, language_ids: languageIds, group_ids: groupIds, start_date: startDate, end_date: endDate } })
                 .then(function(response) {
                 
                 	if (Object.getOwnPropertyNames(response.data).length > 0) {

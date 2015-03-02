@@ -1,6 +1,6 @@
-class Admin::NetworksController < Admin::BaseController
+class Admin::GroupsController < Admin::BaseController
   
-  active_scaffold :network do |config|
+  active_scaffold :group do |config|
     config.create.refresh_list = true
     config.update.refresh_list = true
     config.delete.refresh_list = true

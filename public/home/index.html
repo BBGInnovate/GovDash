@@ -108,7 +108,7 @@
 				
 				<div class="tab-pane" id="tabsleft-tab4" style="height: 220px">
 					<h3>Please select an entity: </h3>
-						<select multiple ng-model="selectedNetwork" ng-options="network.name for network in networks" style="height: 100px"></select>
+						<select multiple ng-model="selectedGroup" ng-options="group.name for group in groups" style="height: 100px"></select>
 						<p class="ctrl-key-text">Hold 'Ctrl' key to select multiple items</p>
 				</div>
 				
@@ -137,9 +137,9 @@
 										<button type="button" class="btn btn-success" data-ng-click="removeLanguage($index)">{{language.title}} <i class="icon-remove"></i></button>
 									</div><!-- /btn-group -->
 							</li>
-							<li data-ng-repeat="network in selectedNetwork">
+							<li data-ng-repeat="group in selectedGroup">
 								<div class="btn-group">
-									<button type="button" class="btn btn-success" data-ng-click="removeNetwork($index)">{{network.name}} <i class="icon-remove"></i></button>
+									<button type="button" class="btn btn-success" data-ng-click="removeGroup($index)">{{group.name}} <i class="icon-remove"></i></button>
 								</div><!-- /btn-group -->
 							</li>
 					  </ul>	

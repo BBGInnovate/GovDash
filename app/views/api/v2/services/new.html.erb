@@ -6,9 +6,9 @@
   <%= f.label :description %>
   <%= f.text_field :description %><br />
 
-  <%= f.label :network_id %>
-  <% opt = Network.all.map{|s| [s.name, s.id]} %>
-  <%= f.select :network_id, options_for_select(opt, :selected => :network_id) %>
+  <%= f.label :group_id %>
+  <% opt = Group.all.map{|g| [g.name, g.id]} %>
+  <%= f.select :group_id, options_for_select(opt, :selected => :group_id) %>
   
   <%= f.label :is_active %>
   <%= f.text_field :is_active %><br />

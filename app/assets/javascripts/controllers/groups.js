@@ -1,8 +1,12 @@
-function GroupsCtrl($scope, Groups, Session, $routeParams, $rootScope, $location) {"use strict";
+function GroupsCtrl($scope, Groups, Organizations, Session, $routeParams, $rootScope, $location) {"use strict";
+
+    Organizations.getAllOrganizations()
+      .then(function(response) {
+        $scope.organizations = response.data;
+    });
 
   	$scope.create = function() {
-  	
-  		Groups.create(this.name, this.description)
+  		Groups.create(this.name, this.description, this.selectedOrganization.id)
 			.then(function(response) {
 		   		$location.path('groups');
 		});
@@ -27,14 +31,23 @@ function GroupsCtrl($scope, Groups, Session, $routeParams, $rootScope, $location
   		Groups.getGroupById($routeParams.groupId)
             .then(function(response) {
                $scope.group = response.data[0];
-               //TODO: see accounts.js for examples populating the reference model
-               var organizationId = $scope.group.organization_id;
+               //get all organizations
+                Organizations.getAllOrganizations()
+                  .then(function(response) {
+                    $scope.organizations = response.data;
+                     for (var i = 0; i < $scope.organizations.length; i++) {
+                      //set the organization related to this group
+                      if ($scope.organizations[i].id == $scope.group.organization_id) {
+                         $scope.selectedOrganization = $scope.organizations[i];
+                      }
+                     }
+                });
         });
   		
   	};
   	
   	$scope.update = function() {
-  		Groups.update($routeParams.groupId, $scope.group.name, $scope.group.description)
+  		Groups.update($routeParams.groupId, $scope.group.name, $scope.group.description, $scope.selectedOrganization.id)
             .then(function(response) {
                $location.path('groups');
         });

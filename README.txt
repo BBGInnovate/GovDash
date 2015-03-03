@@ -124,8 +124,125 @@ twitter.yml
    When the instance is up
    1. user deploy's cronjobs are created for Facebook, Twitter etc. retrieval
    2. <rails-app>/current/config/ symbalic links are created
-   3. delayed_job daemon is ruuning
+   3. delayed_job daemon is runing
    
+11. Create Redshift Database tables
+
+create table fb_pages (
+  original_id integer,
+  account_id integer,
+  object_name varchar(40) ,
+  total_likes integer,
+  total_comments integer,
+  total_shares integer,
+  total_talking_about integer,
+  likes integer,
+  comments integer,
+  shares integer,
+  posts integer,
+  replies_to_comment integer,
+  fan_adds_day integer,
+  story_adds_day integer,
+  story_adds_by_story_type_day varchar(255),
+  consumptions_day integer,
+  consumptions_by_consumption_type_day varchar(255),
+  stories_week integer,
+  stories_day_28 integer,
+  stories_by_story_type_week varchar(255),
+  post_created_time timestamp,
+  created_at timestamp,
+  updated_at timestamp,
+  primary key(original_id)
+)
+distkey(account_id)
+sortkey(original_id, post_created_time, account_id)
+
+
+CREATE TABLE fb_posts (
+  original_id integer,
+  account_id integer NULL,
+  post_id varchar(40) UNIQUE,
+  likes integer NULL,
+  comments integer NULL,
+  shares integer NULL,
+  post_type varchar(20) NULL,
+  replies_to_comment integer NULL,
+  post_created_time timestamp NULL,
+  created_at timestamp NULL,
+  updated_at timestamp NULL,
+  primary key(original_id)
+)
+distkey(account_id)
+sortkey(account_id, post_created_time)
+
+CREATE TABLE tw_timelines (
+  original_id integer NOT NULL,
+  account_id integer NULL,
+  object_name varchar(40) NULL,
+  total_tweets integer NULL,
+  total_favorites integer NULL,
+  total_followers integer NULL,
+  tweets integer NULL,
+  favorites integer NULL,
+  followers integer NULL,
+  retweets integer NULL,
+  mentions integer NULL,
+  tweet_created_at timestamp NULL,
+  created_at timestamp NULL,
+  updated_at timestamp NULL,
+  PRIMARY KEY (original_id)
+)
+distkey(account_id)
+sortkey(original_id, tweet_created_at, account_id)
+
+CREATE TABLE tw_tweets (
+  original_id integer NOT NULL,
+  account_id integer NULL,
+  tweet_id bigint NULL,
+  retweets integer NULL,
+  favorites integer NULL,
+  mentions integer NULL,
+  tweet_created_at timestamp NULL,
+  created_at timestamp NULL,
+  updated_at timestamp NULL,
+  PRIMARY KEY (original_id)
+)
+distkey(account_id)
+sortkey(original_id, tweet_created_at, tweet_id)
+
+CREATE TABLE yt_channels (
+   original_id integer NOT NULL,
+   account_id integer NOT NULL,
+   channel_id varchar(255),
+   views integer,
+   comments integer,
+   videos integer,
+   subscribers integer,
+   published_at timestamp,
+   created_at timestamp,
+   updated_at timestamp,
+  PRIMARY KEY (original_id)
+)
+distkey(account_id)
+sortkey(original_id, channel_id, published_at)
+
+
+CREATE TABLE yt_videos (
+  original_id integer NOT NULL,
+  yt_channel_id integer NOT NULL,
+  video_id varchar(40),
+  likes integer,
+  comments integer,
+  favorites integer,
+  published_at timestamp,
+  created_at timestamp,
+  updated_at timestamp,
+  PRIMARY KEY (original_id)
+)
+distkey(video_id)
+sortkey(original_id, yt_channel_id, published_at)
+
+
 References:
    Chef Resources:
    http://support.rightscale.com/12-Guides/Chef_Cookbooks_Developer_Guide/04-Developer/06-Development_Resources/Chef_Resources

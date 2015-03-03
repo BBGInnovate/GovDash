@@ -2,16 +2,18 @@ class Redshift < ActiveRecord::Base
   self.abstract_class = true
   establish_connection "redshift_#{Rails.env}".to_sym
   
-  @@existing_fb_pages = []
-  @@existing_fb_posts = []
-  @@existing_tw_timelines = []
-  @@existing_tw_tweets = []
-  
-  RESOURCE = {"RedshiftFbPage"=>@@existing_fb_pages,
-              "RedshiftFbPost"=>@@existing_fb_posts,
-              "RedshiftTwTimeline"=>@@existing_tw_timelines,
-              "RedshiftTwTweet"=>[]}
-class << self       
+  RESOURCE = {"RedshiftFbPage"=>[],
+              "RedshiftFbPost"=>[],
+              "RedshiftTwTimeline"=>[],
+              "RedshiftTwTweet"=>[],
+              "RedshiftYtChannel"=>[],
+              "RedshiftYtVideo"=>[]}
+class << self
+
+  def say(text)
+    Delayed::Worker.logger.add(Logger::INFO, text)
+  end
+        
   def mysql_model_class
     if self.name =~ /Redshift(\w*)/
       $1.constantize
@@ -20,7 +22,7 @@ class << self
     end
   end
   
-  def upload last_id, conditions={} 
+  def upload last_id=0, conditions={} 
     klass = self
     # klass = RedshiftTwTweet
     klass_name = klass.name
@@ -59,15 +61,12 @@ class << self
       
       unless arr.empty?
         klass.send "import!", arr,''
-        Rails.logger.debug " Account #{acc_id} #{arr.size} rows uploaded"
+        say " Account #{acc_id} #{arr.size} rows uploaded"
       else
-        Rails.logger.debug " Account #{acc_id} Nothing to upload"
+        say " Account #{acc_id} Nothing to upload"
       end
-      
       sleep 3
-      
     end
-
   end
   handle_asynchronously :upload, :run_at => Proc.new {5.seconds.from_now }
   

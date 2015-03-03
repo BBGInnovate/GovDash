@@ -27,7 +27,7 @@ module Api::ReportsHelper
    
   def accounts
     @accounts ||=
-         Account.where("is_active=1").select("id,name, object_name, media_type_name, group_id, subgroup_id, contact").where(["id in (?)", @options[:account_ids]])
+         Account.where("is_active=1").select("id, name, object_name, media_type_name, contact").where(["id in (?)", @options[:account_ids]])
   end 
   # for countries
   def input_countries

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150302175811) do
+ActiveRecord::Schema.define(version: 20150303174911) do
 
   create_table "account_types", force: :cascade do |t|
     t.string   "name",       limit: 20
@@ -183,6 +183,11 @@ ActiveRecord::Schema.define(version: 20150302175811) do
 
   add_index "groups", ["organization_id"], name: "index_groups_on_organization_id", using: :btree
 
+  create_table "groups_subgroups", id: false, force: :cascade do |t|
+    t.integer "group_id",    limit: 4, null: false
+    t.integer "subgroup_id", limit: 4, null: false
+  end
+
   create_table "languages", force: :cascade do |t|
     t.string  "name",      limit: 30
     t.string  "iso_639_1", limit: 6
@@ -250,10 +255,9 @@ ActiveRecord::Schema.define(version: 20150302175811) do
     t.datetime "updated_at"
   end
 
-  create_table "services", force: :cascade do |t|
+  create_table "subgroups", force: :cascade do |t|
     t.string   "name",        limit: 40
     t.string   "description", limit: 255
-    t.string   "network_id",  limit: 255
     t.boolean  "is_active",   limit: 1,   default: true
     t.datetime "created_at"
     t.datetime "updated_at"

@@ -115,7 +115,7 @@ Radd::Application.routes.draw do
       end
       resources :organizations
       resources :groups
-      resources :services
+      resources :subgroups
       resources :regions
       resources :countries
       resources :sc_segments, :path => "segments"
@@ -171,7 +171,7 @@ Radd::Application.routes.draw do
       as_routes
     end
     
-    resources :services do
+    resources :subgroups do
       as_routes
     end
     

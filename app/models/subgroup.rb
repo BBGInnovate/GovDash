@@ -1,9 +1,9 @@
-class Service < ActiveRecord::Base
+class Subgroup < ActiveRecord::Base
   validates :name, length: { in: 2..40 }
 #  validates_numericality_of :group_id, :on => :create
   
-  belongs_to :group
   has_many :accounts
+  has_and_belongs_to_many :groups
 
   def self.populate
     # place holder

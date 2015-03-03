@@ -1,7 +1,7 @@
-class Admin::ServicesController < Admin::BaseController
+class Admin::SubgroupsController < Admin::BaseController
   layout "regular"
   
-  active_scaffold :service do |config|
+  active_scaffold :subgroup do |config|
     config.create.refresh_list = true
     config.update.refresh_list = true
     config.delete.refresh_list = true

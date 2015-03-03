@@ -6,7 +6,7 @@ class Account < ActiveRecord::Base
   RETRY_SLEEP = 15  # seconds
   SLEEP = 20
   belongs_to :group
-  belongs_to :service
+  belongs_to :subgroup
   belongs_to :account_type
   belongs_to :language
   has_and_belongs_to_many :countries

@@ -41,11 +41,11 @@ module ApplicationHelper
     record.media_type_name.match /(\w+)Account/
     $1
   end
-  def service_id_column(record, input_name)
-    if Service === record
-      record.id
+  def subgroup_id_column(record, input_name)
+    if Subgroup === record
+      subgroup.id
     else
-      record.service.name
+      record.subgroup.name
     end
   end
   def group_id_column(record, input_name)
@@ -116,8 +116,8 @@ module ApplicationHelper
   def account_id_form_column(record, input_name)
       select_tag 'record[account_id]', options_for_select(Account.where(:is_active=>true).map{|c| ["#{c.name}",c.id]},record.account_id.to_s),:multiple => false,:readonly=>true
   end
-  def service_id_form_column(record, input_name)
-      select_tag 'record[service_id]', options_for_select(Service.where(:is_active=>true).map{|c| ["#{c.name}",c.id]},record.service_id.to_s),:multiple => false,:readonly=>true
+  def subgroup_id_form_column(record, input_name)
+      select_tag 'record[subgroup_id]', options_for_select(Subgroup.where(:is_active=>true).map{|c| ["#{c.name}",c.id]},record.subgroup_id.to_s),:multiple => false,:readonly=>true
   end
   def group_id_form_column(record, input_name)
       select_tag 'record[group_id]', options_for_select(Group.where(:is_active=>true).map{|c| ["#{c.name}",c.id]},record.group_id.to_s),:multiple => false,:readonly=>true

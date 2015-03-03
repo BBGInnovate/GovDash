@@ -324,5 +324,38 @@ ActiveRecord::Schema.define(version: 20150302175811) do
   add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
   add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
 
+  create_table "yt_channels", force: :cascade do |t|
+    t.integer  "account_id",   limit: 4
+    t.string   "channel_id",   limit: 255
+    t.integer  "views",        limit: 4
+    t.integer  "comments",     limit: 4
+    t.integer  "videos",       limit: 4
+    t.integer  "subscribers",  limit: 4
+    t.datetime "published_at"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "yt_channels", ["account_id"], name: "index_yt_channels_on_account_id", using: :btree
+  add_index "yt_channels", ["channel_id"], name: "index_yt_channels_on_channel_id", using: :btree
+  add_index "yt_channels", ["published_at"], name: "index_yt_channels_on_published_at", using: :btree
+
+  create_table "yt_videos", force: :cascade do |t|
+    t.integer  "account_id",   limit: 4
+    t.string   "channel_id",   limit: 255
+    t.string   "video_id",     limit: 40
+    t.integer  "likes",        limit: 4
+    t.integer  "comments",     limit: 4
+    t.integer  "favorites",    limit: 4
+    t.datetime "published_at"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "yt_videos", ["account_id"], name: "index_yt_videos_on_account_id", using: :btree
+  add_index "yt_videos", ["channel_id"], name: "index_yt_videos_on_channel_id", using: :btree
+  add_index "yt_videos", ["published_at"], name: "index_yt_videos_on_published_at", using: :btree
+  add_index "yt_videos", ["video_id"], name: "index_yt_videos_on_video_id", unique: true, using: :btree
+
   add_foreign_key "groups", "organizations"
 end

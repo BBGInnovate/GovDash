@@ -27,9 +27,12 @@ class ActiveRecord::Base
       
     key_list, value_list = convert_record_list(record_list)       
     key_list = key_list | [:created_at, :updated_at]
-    value_list = value_list.map{|a| a += ["'#{Time.now}'", "'#{Time.now+1}'"]} 
-    sql = "INSERT #{ignore} INTO #{self.table_name} (#{key_list.join(", ")}) VALUES #{value_list.map {|rec| "(#{rec.join(", ")})" }.join(" ,")}"     
+    value_list = value_list.map{|a| a += ["'#{Time.now.to_s(:db)}'", "'#{Time.now.to_s(:db)}'"]} 
+    sql = %{INSERT #{ignore} INTO #{self.table_name} (#{key_list.join(", ")}) VALUES #{value_list.map {|rec| "(#{rec.join(", ")})" }.join(" ,")};}   
+    self.connection.insert_sql("set GLOBAL wait_timeout=28800;")   
+    self.connection.insert_sql("SET unique_checks=0;")    
     self.connection.insert_sql(sql)
+    self.connection.insert_sql("SET unique_checks=1;")
   end
   
   def self.convert_record_list(record_list)

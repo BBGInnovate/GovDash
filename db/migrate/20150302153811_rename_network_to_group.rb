@@ -1,5 +1,9 @@
 class RenameNetworkToGroup < ActiveRecord::Migration
   def change
-  	rename_table :networks, :groups
+    begin
+  	   rename_table :networks, :groups
+  	 rescue Exception=>ex
+  	   Rails.logger.error " RenameNetworkToGroup #{ex.message}"
+  	 end
   end
 end

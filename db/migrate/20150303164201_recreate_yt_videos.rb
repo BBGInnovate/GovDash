@@ -1,6 +1,9 @@
 class RecreateYtVideos < ActiveRecord::Migration
   def up
-    if ActiveRecord::Base.connection.table_exists? 'yt_videos'
+    if connection.table_exists? 'yt_videos'
+      remove_index :yt_videos, :account_id
+      remove_index :yt_videos, :video_id
+      remove_index :yt_videos, :published_at
       drop_table :yt_videos
     end
     create_table :yt_videos do |t|

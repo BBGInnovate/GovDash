@@ -1,8 +1,10 @@
 class CreateOrganizations < ActiveRecord::Migration
   def change
-    create_table :organizations do |t|
-      t.string :name      
-      t.timestamps null: false
+    unless connection.table_exists? 'organizations'
+      create_table :organizations do |t|
+        t.string :name      
+        t.timestamps null: false
+      end
     end
   end
 end

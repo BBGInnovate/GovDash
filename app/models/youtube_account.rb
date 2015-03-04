@@ -22,14 +22,8 @@ class YoutubeAccount < Account
     channel.videos.each do |v|
       i -= 1
       begin
-        video = Yt::Video.new id: v.id
-        # v = YtVideo.find_or_create_by video_id: v.id
-        hs = {:yt_channel_id => self.yt_channel.id,
-              :video_id => v.id,
-              :published_at => video.published_at.to_s(:db),
-              :likes => video.like_count - video.dislike_count,
-              :comments => video.comment_count,
-              :favorites => video.favorite_count}
+        # video = Yt::Video.new id: v.id
+        hs = construct_hash(v)
         # v.update_attributes hs
         @bulk_insert << hs
       rescue Exception=>ex
@@ -47,18 +41,46 @@ class YoutubeAccount < Account
   end
   
   def retrieve
-    init
+    # to prevent attack from the youtube.yml, such as
+    # YoutubeConf[:since_date] = "Account.destroy_all"
+    # 
+    arr = YoutubeConf[:since_date].split('.')
+    n = arr[0].to_i
+    if n == 0
+      raise "  YoutubeAccount#retrieve incorrect YoutubeConf[:since_date] format"
+    end
+    unit = arr[1].match(/days|months/)
+    unless unit
+      raise "  YoutubeAccount#retrieve incorrect YoutubeConf[:since_date] format"
+    end
+    sincedate = eval("#{n}.#{unit}.#{arr[2]}")
+    
     @bulk_insert = []
-    Rails.logger.info " #{Time.now.to_s(:db)} Started #{self.class.name}#process "
+    Rails.logger.info " #{Time.now.to_s(:db)} Started #{self.class.name}#retrieve"
     
     process_channel
-    process_results
-    
-    bulk_import
-    
-    Rails.logger.info " #{Time.now.to_s(:db)} Ended #{self.class.name}#process"
+   
     @bulk_insert = []
-    
+    started = Time.now
+    channel.videos.each do |v|
+      if v.published_at.to_i > sincedate.to_i
+        begin
+          hs = construct_hash(v)
+          # v.update_attributes hs
+          @bulk_insert << hs
+          Rails.logger.debug "  Process #{v.published_at.to_s(:db)}"
+        rescue Exception=>ex
+          Rails.logger.error "  #{self.class.name}#initial_load #{ex.message}"
+        end
+      else
+        Rails.logger.debug "  Skip #{v.published_at.to_s(:db)}" 
+        break 
+      end
+    end
+    bulk_import
+    ended = Time.now
+    log_duration started, ended
+    @bulk_insert = []
   end
   
   protected
@@ -66,6 +88,15 @@ class YoutubeAccount < Account
   def channel
     @channel ||=
        Yt::Channel.new url: "youtube.com/#{object_name}"
+  end
+  
+  def construct_hash video
+    hs = {:yt_channel_id => self.yt_channel.id,
+          :video_id => video.id,
+          :published_at => video.published_at.to_s(:db),
+          :likes => video.like_count - video.dislike_count,
+          :comments => video.comment_count,
+          :favorites => video.favorite_count}
   end
   
   def bulk_import
@@ -81,7 +112,31 @@ class YoutubeAccount < Account
     end
   end
   
+  def process_channel
+    # create daily yt_channel based on created_at
+    created = Time.now.beginning_of_day.to_s(:db)
+    yt_ch = YtChannel.find_or_create_by channel_id: channel.id, created_at: created
+    yt_ch.account_id=self.id
+    yt_ch.views = channel.view_count
+    yt_ch.comments = channel.comment_count
+    yt_ch.videos = channel.video_count
+    yt_ch.subscribers = channel.subscriber_count
+    yt_ch.published_at = channel.published_at
+    yt_ch.save
+  end
   
+  def log_duration started, ended
+    total_seconds = (ended - started)
+    seconds = total_seconds % 60
+    minutes = (total_seconds / 60) % 60
+    hours = total_seconds / (60 * 60)
+    duration = format("%02d:%02d:%02d", hours, minutes, seconds)
+    Rails.logger.info " #{ended.to_s(:db)} Ended #{self.class.name}#process_load"
+    Rails.logger.info " Duration: #{duration}"
+  end
+  
+end
+=begin
   def save_video vid
     begin
       video = Yt::Video.new id: vid
@@ -100,16 +155,6 @@ class YoutubeAccount < Account
       Rails.logger.error "  #{self.class.name}#save_video #{ex.message}"
       nil
     end 
-  end
-
-  def process_channel
-    yt_ch = YtChannel.find_or_create_by channel_id: channel.id
-    yt_ch.account_id=self.id
-    yt_ch.views = channel.view_count
-    yt_ch.comments = channel.comment_count
-    yt_ch.videos = channel.video_count
-    yt_ch.subscribers = channel.subscriber_count
-    yt_ch.save
   end
   
   def init
@@ -174,15 +219,5 @@ class YoutubeAccount < Account
   def max_results
     @max_results ||= YoutubeConf[:max_results] || 50
   end
-  
-  def log_duration started, ended
-    total_seconds = (ended - started)
-    seconds = total_seconds % 60
-    minutes = (total_seconds / 60) % 60
-    hours = total_seconds / (60 * 60)
-    duration = format("%02d:%02d:%02d", hours, minutes, seconds)
-    Rails.logger.info " #{ended.to_s(:db)} Ended #{self.class.name}#process_load"
-    Rails.logger.info " Duration: #{duration}"
-  end
-  
-end
+=end
+

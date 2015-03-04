@@ -1,5 +1,5 @@
 class YtVideo < ActiveRecord::Base
-  belongs_to :yt_channel, foreign_key: :yt_channel_id
+  belongs_to :youtube_account, foreign_key: :account_id
   
   after_save :sync_redshift
   
@@ -10,5 +10,9 @@ class YtVideo < ActiveRecord::Base
   # bin/delayed_job restart 
   # to clear cache of method create_or_update
   handle_asynchronously :sync_redshift, :run_at => Proc.new { 5.seconds.from_now }
+  
+  def yt_channel
+    YtChannel.order("id desc").find_by account_id: self.account_id
+  end
   
 end

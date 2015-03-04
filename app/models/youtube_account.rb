@@ -1,6 +1,7 @@
 class YoutubeAccount < Account
-  has_one :yt_channel, foreign_key: :account_id
-
+  has_many :yt_channels, foreign_key: :account_id
+  has_many :yt_videos, foreign_key: :account_id
+  
   # run this only once
   def self.initial_load
     YoutubeAccount.where("is_active is not null").to_a.each do | yt |
@@ -29,7 +30,7 @@ class YoutubeAccount < Account
       rescue Exception=>ex
         Rails.logger.error "  #{self.class.name}#initial_load #{ex.message}"
       end 
-      if ( (i % 10) == 0 || i < 10 )
+      if ( (i % 20) == 0 || i < 10 )
         Rails.logger.debug "  #{i} videos remain"
       end
     end
@@ -69,6 +70,10 @@ class YoutubeAccount < Account
           # v.update_attributes hs
           @bulk_insert << hs
           Rails.logger.debug "  Process #{v.published_at.to_s(:db)}"
+          if @bulk_insert.size > 1000
+            bulk_import
+            @bulk_insert = []
+          end
         rescue Exception=>ex
           Rails.logger.error "  #{self.class.name}#initial_load #{ex.message}"
         end
@@ -91,7 +96,7 @@ class YoutubeAccount < Account
   end
   
   def construct_hash video
-    hs = {:yt_channel_id => self.yt_channel.id,
+    hs = {:account_id => self.id,
           :video_id => video.id,
           :published_at => video.published_at.to_s(:db),
           :likes => video.like_count - video.dislike_count,
@@ -103,9 +108,6 @@ class YoutubeAccount < Account
     unless @bulk_insert.empty?
       begin
         YtVideo.import! @bulk_insert
-        ch = YtChannel.find_or_create_by channel_id: channel.id
-        date = @bulk_insert.first[:published_at]
-        ch.update_attribute :published_at,date
       rescue Exception=>ex
         Rails.logger.error " #{self.class.name}#bulk_import #{ex.message}" 
       end
@@ -131,7 +133,7 @@ class YoutubeAccount < Account
     minutes = (total_seconds / 60) % 60
     hours = total_seconds / (60 * 60)
     duration = format("%02d:%02d:%02d", hours, minutes, seconds)
-    Rails.logger.info " #{ended.to_s(:db)} Ended #{self.class.name}#process_load"
+    Rails.logger.info " #{ended.to_s(:db)} Ended #{self.class.name}"
     Rails.logger.info " Duration: #{duration}"
   end
   

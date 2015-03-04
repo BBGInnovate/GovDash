@@ -82,6 +82,17 @@ node[:deploy].each do |application, deploy|
     )
   end
   
+  template "#{deploy[:deploy_to]}/shared/config/youtube.yml" do
+    source "youtube.yml.erb"
+    cookbook 'rails'
+    mode "0660"
+    group deploy[:group]
+    owner deploy[:user]
+    variables(
+      :environment => deploy[:rails_env]
+    )
+  end
+  
   template "#{deploy[:deploy_to]}/current/config/initializers/secret_token.rb" do
     source "secret_token.rb.erb"
     cookbook 'rails'

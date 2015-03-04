@@ -1,3 +1,6 @@
+#
+# this callback is used in Opsworks Apps Deploy action
+#
 Chef::Log.info("deploy/before_migrate.rb Create sym links")
 
 # include_recipe "rails::myconfigure"

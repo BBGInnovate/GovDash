@@ -1,8 +1,12 @@
 class RenameNetworkIdColumnInAccounts < ActiveRecord::Migration
   def self.up
-  	#change foreign_key to group_id
-    rename_column :accounts, :network_id, :group_id
-    add_index :accounts, :group_id
+  	 #change foreign_key to group_id
+  	 begin
+      rename_column :accounts, :network_id, :group_id
+      add_index :accounts, :group_id
+    rescue Exception=>ex
+  	   Rails.logger.error " RenameNetworkIdColumnInAccounts #{ex.message}"
+  	 end
   end
 
   def self.down

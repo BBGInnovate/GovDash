@@ -345,21 +345,19 @@ ActiveRecord::Schema.define(version: 20150303174911) do
   add_index "yt_channels", ["published_at"], name: "index_yt_channels_on_published_at", using: :btree
 
   create_table "yt_videos", force: :cascade do |t|
-    t.integer  "account_id",   limit: 4
-    t.string   "channel_id",   limit: 255
-    t.string   "video_id",     limit: 40
-    t.integer  "likes",        limit: 4
-    t.integer  "comments",     limit: 4
-    t.integer  "favorites",    limit: 4
+    t.integer  "yt_channel_id", limit: 4
+    t.string   "video_id",      limit: 40
+    t.integer  "likes",         limit: 4
+    t.integer  "comments",      limit: 4
+    t.integer  "favorites",     limit: 4
     t.datetime "published_at"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "yt_videos", ["account_id"], name: "index_yt_videos_on_account_id", using: :btree
-  add_index "yt_videos", ["channel_id"], name: "index_yt_videos_on_channel_id", using: :btree
   add_index "yt_videos", ["published_at"], name: "index_yt_videos_on_published_at", using: :btree
   add_index "yt_videos", ["video_id"], name: "index_yt_videos_on_video_id", unique: true, using: :btree
+  add_index "yt_videos", ["yt_channel_id"], name: "index_yt_videos_on_yt_channel_id", using: :btree
 
   add_foreign_key "groups", "organizations"
 end

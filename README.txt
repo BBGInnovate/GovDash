@@ -101,6 +101,9 @@ twitter.yml
          "facebook": {
               "client_id": "****",
               "client_secret": "****"
+         },
+         "youtube": {
+              "delayed_jobs": 1
          }
        }
      }
@@ -229,7 +232,7 @@ sortkey(original_id, channel_id, published_at)
 
 CREATE TABLE yt_videos (
   original_id integer NOT NULL,
-  yt_channel_id integer NOT NULL,
+  account_id integer NOT NULL,
   video_id varchar(40),
   likes integer,
   comments integer,
@@ -240,7 +243,7 @@ CREATE TABLE yt_videos (
   PRIMARY KEY (original_id)
 )
 distkey(video_id)
-sortkey(original_id, yt_channel_id, published_at)
+sortkey(original_id, account_id, published_at)
 
 
 References:

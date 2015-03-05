@@ -93,7 +93,20 @@ class ActiveRecord::Base
     add_struct data
     data.send 'table'
   end
-    
+
+  # copied from Delayed_job::Worker
+  def say(text, level=Rails.logger.level)
+    text = "[Worker(#{name})] #{text}"
+    puts text unless @quiet
+    return unless logger
+    # TODO: Deprecate use of Fixnum log levels
+    unless level.is_a?(String)
+      level = Logger::Severity.constants.detect { |i| Logger::Severity.const_get(i) == level }.to_s.downcase
+    end
+    logger.send(level, "#{Time.now.strftime('%FT%T%z')}: #{text}")
+    Delayed::Worker.logger.flush
+  end
+  
   def self.execute sql
     arr = []
     results = ActiveRecord::Base.connection.execute(sql)

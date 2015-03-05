@@ -10,10 +10,6 @@ class Redshift < ActiveRecord::Base
               "RedshiftYtVideo"=>[]}
 
 class << self
-  def say(text)
-    Delayed::Worker.logger.add(Logger::INFO, text)
-  end
-
   def mysql_model_class
     @mysql_model_class ||=
       if self.name =~ /Redshift(\w*)/
@@ -46,10 +42,7 @@ class << self
       mysql_records = mysql_model_class.
          where("account_id in (#{account_ids})").to_a
     end
-    
-    puts "   AAAA #{RESOURCE[self.name].inspect}"
-    puts "   AAAA mysql_records #{mysql_records.size}"
-    
+
     ids = mysql_records.map{|a| a.id}
     @bulk_insert = []
     mysql_records.each do | rec |
@@ -60,18 +53,19 @@ class << self
         @bulk_insert << attr
         RESOURCE[self.name] << id
         if @bulk_insert.size > 1000
+          logger.info "  upload #{@bulk_insert} #{mysql_model_class} data to Redshift db"
           self.send "import!", @bulk_insert,''
           @bulk_insert = []
         end
       end
     end
-    puts "   AAAA @bulk_insert #{@bulk_insert.size}"
     if @bulk_insert.size > 0
+      logger.info "  upload #{@bulk_insert} #{mysql_model_class} data to Redshift db"
       self.send "import!", @bulk_insert,''
       @bulk_insert = []
     end
   end
-  # handle_asynchronously :upload, :run_at => Proc.new {5.seconds.from_now }
+  handle_asynchronously :upload, :run_at => Proc.new {5.seconds.from_now }
   
   def create_or_update(attr)
      id = attr.delete('id')

@@ -27,6 +27,11 @@ class YoutubeAccount < Account
         hs = construct_hash(v)
         # v.update_attributes hs
         @bulk_insert << hs
+        if @bulk_insert.size > 1000
+          Rails.logger.info "  initial_load: upload data for 1000 videos"
+          bulk_import
+          @bulk_insert = []
+        end
       rescue Exception=>ex
         Rails.logger.error "  #{self.class.name}#initial_load #{ex.message}"
       end 

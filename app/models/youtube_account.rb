@@ -14,7 +14,7 @@ class YoutubeAccount < Account
       yt.retrieve
     end
   end
-  
+
   def initial_load
     process_channel
     @bulk_insert = []
@@ -27,24 +27,25 @@ class YoutubeAccount < Account
         hs = construct_hash(v)
         # v.update_attributes hs
         @bulk_insert << hs
-        if @bulk_insert.size > 1000
-          Rails.logger.info "  initial_load: upload data for 1000 videos"
+        if @bulk_insert.size > 500
+          say "  initial_load: upload data for #{@bulk_insert.size} videos"
           bulk_import
           @bulk_insert = []
         end
       rescue Exception=>ex
-        Rails.logger.error "  #{self.class.name}#initial_load #{ex.message}"
+        logger.error "  #{self.class.name}#initial_load #{ex.message}"
       end 
       if ( (i % 20) == 0 || i < 10 )
-        Rails.logger.debug "  #{i} videos remain"
+        say "  #{i} videos remain", Logger::Severity::DEBUG
       end
     end
-    
+    say "  initial_load: upload data for #{@bulk_insert.size} videos"
     bulk_import
     ended = Time.now
     log_duration started, ended
     @bulk_insert = []
   end
+  handle_asynchronously :initial_load, :run_at => Proc.new {10.seconds.from_now }
   
   def retrieve
     # to prevent attack from the youtube.yml, such as
@@ -62,7 +63,7 @@ class YoutubeAccount < Account
     sincedate = eval("#{n}.#{unit}.#{arr[2]}")
     
     @bulk_insert = []
-    Rails.logger.info " #{Time.now.to_s(:db)} Started #{self.class.name}#retrieve"
+    say "Started #{self.class.name}#retrieve"
     
     process_channel
    
@@ -74,16 +75,16 @@ class YoutubeAccount < Account
           hs = construct_hash(v)
           # v.update_attributes hs
           @bulk_insert << hs
-          Rails.logger.debug "  Process #{v.published_at.to_s(:db)}"
-          if @bulk_insert.size > 1000
+          if @bulk_insert.size > 500
+            say "Process #{v.published_at.to_s(:db)}"
             bulk_import
             @bulk_insert = []
           end
         rescue Exception=>ex
-          Rails.logger.error "  #{self.class.name}#initial_load #{ex.message}"
+          logger.error "  #{self.class.name}#initial_load #{ex.message}"
         end
       else
-        Rails.logger.debug "  Skip #{v.published_at.to_s(:db)}" 
+        logger.debug "  Skip #{v.published_at.to_s(:db)}"
         break 
       end
     end
@@ -92,6 +93,7 @@ class YoutubeAccount < Account
     log_duration started, ended
     @bulk_insert = []
   end
+  handle_asynchronously :retrieve, :run_at => Proc.new {10.seconds.from_now }
   
   protected
   
@@ -114,7 +116,7 @@ class YoutubeAccount < Account
       begin
         YtVideo.import! @bulk_insert
       rescue Exception=>ex
-        Rails.logger.error " #{self.class.name}#bulk_import #{ex.message}" 
+        logger.error " #{self.class.name}#bulk_import #{ex.message}"
       end
     end
   end
@@ -131,17 +133,17 @@ class YoutubeAccount < Account
     yt_ch.published_at = channel.published_at
     yt_ch.save
   end
-  
+    
   def log_duration started, ended
     total_seconds = (ended - started)
     seconds = total_seconds % 60
     minutes = (total_seconds / 60) % 60
     hours = total_seconds / (60 * 60)
     duration = format("%02d:%02d:%02d", hours, minutes, seconds)
-    Rails.logger.info " #{ended.to_s(:db)} Ended #{self.class.name}"
-    Rails.logger.info " Duration: #{duration}"
+    say " #{ended.to_s(:db)} Ended #{self.class.name}"
+    say " Duration: #{duration}"
   end
-  
+
 end
 =begin
   def save_video vid

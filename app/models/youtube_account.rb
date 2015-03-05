@@ -45,7 +45,7 @@ class YoutubeAccount < Account
     log_duration started, ended
     @bulk_insert = []
   end
-  handle_asynchronously :initial_load, :run_at => Proc.new {10.seconds.from_now }
+  # handle_asynchronously :initial_load, :run_at => Proc.new {10.seconds.from_now }
   
   def retrieve
     # to prevent attack from the youtube.yml, such as
@@ -73,13 +73,16 @@ class YoutubeAccount < Account
       if v.published_at.to_i > sincedate.to_i
         begin
           hs = construct_hash(v)
-          # v.update_attributes hs
+          video = YtVideo.find_or_create_by video_id: v.id
+          video.update_attributes hs
+=begin
           @bulk_insert << hs
           if @bulk_insert.size > 500
             say "Process #{v.published_at.to_s(:db)}"
             bulk_import
             @bulk_insert = []
           end
+=end
         rescue Exception=>ex
           logger.error "  #{self.class.name}#initial_load #{ex.message}"
         end
@@ -94,7 +97,7 @@ class YoutubeAccount < Account
     @bulk_insert = []
   end
   handle_asynchronously :retrieve, :run_at => Proc.new {10.seconds.from_now }
-  
+
   protected
   
   def channel

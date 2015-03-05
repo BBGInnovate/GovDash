@@ -107,6 +107,24 @@ class ActiveRecord::Base
     Delayed::Worker.logger.flush
   end
   
+  def send_rabbit_message action
+    # see rabbit_receiver.rb
+    unless ['upload','retrieve','initial_load'].include? action
+      raise "#{self.class.name}#send_rabbit_message invalid action: #{action}"
+    end
+    
+    begin
+      payload = {:id => self.id,:klass=> self.class, :date=>Time.zone.now.to_s(:db)}.to_yaml
+      rabbit = RabbitProducer.new
+      rabbit.channel.default_exchange.publish(payload,
+            :type        => action,
+            :routing_key => "amqpgem.#{action}")
+      rabbit.connection.close
+    rescue Exception=>ex
+      logger.error "   RabbitMQ #{ex.message}"
+    end
+  end
+  
   def self.execute sql
     arr = []
     results = ActiveRecord::Base.connection.execute(sql)

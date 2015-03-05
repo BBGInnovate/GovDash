@@ -19,11 +19,8 @@ module Delayed
         :pid_dir => "#{Rails.root}/tmp/pids"
       }
 
-      if defined? DelayedJobWorkers
-        @worker_count = DelayedJobWorkers
-      else
-        @worker_count = 1
-      end
+      @worker_count = YoutubeConf[:delayed_job_workers] || 1
+
       STDERR.puts  " @worker_count = #{@worker_count}"
  
       @monitor = false

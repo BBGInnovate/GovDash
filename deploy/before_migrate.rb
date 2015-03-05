@@ -92,6 +92,7 @@ node[:deploy].each do |application, deploy|
     group deploy[:group]
     owner deploy[:user]
     variables(
+      :youtube => deploy[:youtube] || {},
       :environment => deploy[:rails_env]
     )
   end

@@ -69,7 +69,7 @@ Radd::Application.routes.draw do
 
   # Connect Site
   resource :facebook, :except => :create do
-    get :callback, :to => :create
+    get :callback, action: :create
   end
   resource :facebooks, :only=>:index do
     collection do
@@ -78,7 +78,7 @@ Radd::Application.routes.draw do
   end
   
   resource :twitter, :except => :create do
-    get :callback, :to => :create
+    get :callback, action: :create
   end
   resource :twitters, :only=>:index do
     collection do

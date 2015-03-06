@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150303174911) do
+ActiveRecord::Schema.define(version: 20150306184544) do
 
   create_table "account_types", force: :cascade do |t|
     t.string   "name",       limit: 20
@@ -27,8 +27,6 @@ ActiveRecord::Schema.define(version: 20150303174911) do
     t.boolean  "status",            limit: 1,   default: true
     t.boolean  "page_admin",        limit: 1,   default: false
     t.string   "media_type_name",   limit: 20,  default: "FacebookAccount"
-    t.integer  "group_id",          limit: 4
-    t.integer  "service_id",        limit: 4
     t.integer  "account_type_id",   limit: 4
     t.integer  "language_id",       limit: 4
     t.string   "contact",           limit: 255
@@ -40,13 +38,16 @@ ActiveRecord::Schema.define(version: 20150303174911) do
     t.boolean  "new_item",          limit: 1,   default: false
   end
 
-  add_index "accounts", ["group_id"], name: "index_accounts_on_group_id", using: :btree
-
   create_table "accounts_countries", force: :cascade do |t|
     t.integer  "account_id", limit: 4
     t.integer  "country_id", limit: 4
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "accounts_groups", id: false, force: :cascade do |t|
+    t.integer "account_id", limit: 4, null: false
+    t.integer "group_id",   limit: 4, null: false
   end
 
   create_table "accounts_languages", force: :cascade do |t|
@@ -70,6 +71,11 @@ ActiveRecord::Schema.define(version: 20150303174911) do
   end
 
   add_index "accounts_sc_segments", ["sc_segment_id", "account_id"], name: "index_accounts_sc_segments_on_sc_segment_id_and_account_id", using: :btree
+
+  create_table "accounts_subgroups", id: false, force: :cascade do |t|
+    t.integer "account_id",  limit: 4, null: false
+    t.integer "subgroup_id", limit: 4, null: false
+  end
 
   create_table "accounts_users", force: :cascade do |t|
     t.integer  "account_id", limit: 4
@@ -329,12 +335,16 @@ ActiveRecord::Schema.define(version: 20150303174911) do
   add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
 
   create_table "yt_channels", force: :cascade do |t|
-    t.integer  "account_id",   limit: 4
-    t.string   "channel_id",   limit: 255
-    t.integer  "views",        limit: 4
-    t.integer  "comments",     limit: 4
-    t.integer  "videos",       limit: 4
-    t.integer  "subscribers",  limit: 4
+    t.integer  "account_id",      limit: 4
+    t.string   "channel_id",      limit: 255
+    t.integer  "views",           limit: 4
+    t.integer  "comments",        limit: 4
+    t.integer  "videos",          limit: 4
+    t.integer  "subscribers",     limit: 4
+    t.integer  "video_comments",  limit: 4,   default: 0
+    t.integer  "video_favorites", limit: 4,   default: 0
+    t.integer  "video_likes",     limit: 4,   default: 0
+    t.integer  "video_views",     limit: 4,   default: 0
     t.datetime "published_at"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -350,6 +360,7 @@ ActiveRecord::Schema.define(version: 20150303174911) do
     t.integer  "likes",         limit: 4
     t.integer  "comments",      limit: 4
     t.integer  "favorites",     limit: 4
+    t.integer  "views",         limit: 4,  default: 0
     t.datetime "published_at"
     t.datetime "created_at"
     t.datetime "updated_at"

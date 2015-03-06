@@ -5,12 +5,12 @@ class Account < ActiveRecord::Base
   
   RETRY_SLEEP = 15  # seconds
   SLEEP = 20
-  belongs_to :group
-  belongs_to :subgroup
   belongs_to :account_type
   belongs_to :language
   has_and_belongs_to_many :countries
   has_and_belongs_to_many :regions
+  has_and_belongs_to_many :groups
+  has_and_belongs_to_many :subgroups
   has_and_belongs_to_many :sc_segments
   has_and_belongs_to_many :users
   
@@ -54,7 +54,7 @@ class Account < ActiveRecord::Base
   
   # options = {:group_ids=>[1,2,3], 
   #           :region_ids=>[1,2,3], 
-  #           :service_ids=>[1,2,3],
+  #           :group_ids=>[1,2,3],
   #           :country_ids=>[251],
   #           :account_ids=>[1]   # this override all 
   #          }
@@ -66,6 +66,7 @@ class Account < ActiveRecord::Base
     options[:ids] = ids
     account_type_ids = options[:account_type_ids] || []
     group_ids = options[:group_ids] || []
+    subgroup_ids = options[:subgroup_ids] || []
     service_ids = options[:service_ids] || []
     language_ids = options[:language_ids] || []
     
@@ -84,7 +85,7 @@ class Account < ActiveRecord::Base
       combined_account_ids << options[:account_ids]
     end
 
-    [:ids, :account_type_ids, :media_type_names, :group_ids, :service_ids].each do |opt|
+    [:ids, :account_type_ids, :media_type_names].each do |opt|
        if (options[opt] && options[opt].first)
          cond += ["#{opt.to_s.singularize} in (#{options[opt].join(',')})"]
        end
@@ -110,6 +111,16 @@ class Account < ActiveRecord::Base
       country_account_ids = AccountsCountry.where(["country_id in (#{country_ids.join(',')})"]).
            map{|a| a.account_id}
       combined_account_ids << country_account_ids
+    end
+    if !group_ids.empty?
+      group_account_ids = AccountsGroup.where(["group_id in (#{group_ids.join(',')})"]).
+           map{|a| a.account_id}
+      combined_account_ids << group_account_ids
+    end
+    if !subgroup_ids.empty?
+      subgroup_account_ids = AccountsSubgroup.where(["subgroup_id in (#{subgroup_ids.join(',')})"]).
+           map{|a| a.account_id}
+      combined_account_ids << subgroup_account_ids
     end
     
     account_ids = consolidate_account_ids combined_account_ids

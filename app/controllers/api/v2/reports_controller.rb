@@ -155,7 +155,7 @@ class Api::V2::ReportsController < Api::V2::BaseController
     @options[:account_ids] = Account.get_account_ids @options
     @options[:accounts] = accounts
     valid_options = false
-    [:subgroup_ids, :region_ids, :country_ids, :account_ids].each do |opt|
+    [:group_ids, :subgroup_ids, :region_ids, :country_ids, :account_ids].each do |opt|
        if (Array === @options[opt] && @options[opt].first)
          valid_options = true
          break

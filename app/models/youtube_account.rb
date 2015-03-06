@@ -29,18 +29,18 @@ class YoutubeAccount < Account
         @bulk_insert << hs
         if @bulk_insert.size > 500
           say "  initial_load: upload data for #{@bulk_insert.size} videos"
-          bulk_import
+          YtVideo.import! @bulk_insert
           @bulk_insert = []
         end
       rescue Exception=>ex
         logger.error "  #{self.class.name}#initial_load #{ex.message}"
       end 
-      if ( (i % 20) == 0 || i < 10 )
+      if ( (i % 20) == 0 || i > 0 )
         say "  #{i} videos remain", Logger::Severity::DEBUG
       end
     end
     say "  initial_load: upload data for #{@bulk_insert.size} videos"
-    bulk_import
+    YtVideo.import! @bulk_insert
     
     summarize
     
@@ -95,9 +95,8 @@ class YoutubeAccount < Account
         break 
       end
     end
-    bulk_import
-    
-    summarize sincedate, self.yt_videos.where("published_at.to_i > '#{sincedate.to_i}'")
+
+    summarize sincedate
     
     ended = Time.now
     log_duration started, ended
@@ -105,11 +104,28 @@ class YoutubeAccount < Account
   end
   # handle_asynchronously :retrieve, :run_at => Proc.new {10.seconds.from_now }
   
-  def summarize
+  def summarize init_date=nil
     videos = self.yt_videos
-    init_date = videos.select("min(published_at) AS published_at").
-      to_a.first.published_at
-    summary_for_day init_date, videos
+    
+    if !init_date
+      init_date = videos.select("min(published_at) AS published_at").
+        to_a.first.published_at
+    end
+    @channel_insert = []
+    while init_date < Time.zone.now
+      s_date = init_date.beginning_of_day
+      e_date = init_date.end_of_day
+      my_videos = videos.where("published_at BETWEEN '#{s_date}' AND '#{e_date}'").to_a
+      unless my_videos.empty?      
+        summary_for_day init_date, my_videos
+      end
+      init_date += 1.day 
+    end
+    
+    unless @channel_insert.empty?
+      YtChannel.import! @channel_insert
+    end
+    @channel_insert = []
   end
   
   def channel
@@ -165,41 +181,37 @@ class YoutubeAccount < Account
   # recursively get total_likes etc. for each day in yt_channels
   #  
   def summary_for_day init_date, videos
-    s_date = init_date.beginning_of_day
-    
-    if s_date > Time.now
-      return
-    end
-    
-    e_date = init_date.end_of_day
     likes = 0
     comments = 0
     favorites = 0
     views = 0
-    my_videos = videos.where("published_at BETWEEN '#{s_date}' AND '#{e_date}'").to_a
-    unless my_videos.empty?
-      my_videos.each do | v |
-        likes += v.likes
-        comments += v.comments
-        favorites += v.favorites
-        views += v.views
-      end
-      totals = {:total_comments => comments,
-                :total_favorites => favorites,
-                :total_likes => likes,
-                :total_views => views}
+    videos.each do | v |
+      likes += v.likes
+      comments += v.comments
+      favorites += v.favorites
+      views += v.views
+    end
+    totals = {:published_at => init_date.middle_of_day,
+              :account_id => self.id,
+              :channel_id=>self.channel.id,
+              :video_comments => comments,
+              :video_favorites => favorites,
+              :video_likes => likes,
+              :video_views => views}
 
-      ch = self.yt_channels.find_or_create_by published_at: init_date.middle_of_day
-      if ch.total_comments != totals[:total_comments] ||
-         ch.total_favorites != totals[:total_favorites] ||
-         ch.total_likes != totals[:total_likes] ||
-         ch.total_views != totals[:total_views]
-         ch.update_attributes totals
+    ch = self.yt_channels.find_by published_at: init_date.middle_of_day
+    if ch
+      if ch.video_comments != totals[:total_comments] ||
+         ch.video_favorites != totals[:total_favorites] ||
+         ch.video_likes != totals[:total_likes] ||
+         ch.video_views != totals[:total_views]
+       
+         ch.video_attributes totals
       end
-    end 
-    init_date += 1.day
-    summary_for_day init_date, videos
-    
+    else
+      # new record
+      @channel_insert << totals
+    end
   end
   
 end

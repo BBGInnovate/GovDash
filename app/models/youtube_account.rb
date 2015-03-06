@@ -41,6 +41,9 @@ class YoutubeAccount < Account
     end
     say "  initial_load: upload data for #{@bulk_insert.size} videos"
     bulk_import
+    
+    summarize
+    
     ended = Time.now
     log_duration started, ended
     @bulk_insert = []
@@ -69,11 +72,12 @@ class YoutubeAccount < Account
    
     @bulk_insert = []
     started = Time.now
+    changed_videos = []
     channel.videos.each do |v|
       if v.published_at.to_i > sincedate.to_i
         begin
           hs = construct_hash(v)
-          video = YtVideo.find_or_create_by video_id: v.id
+          video = self.yt_videos.find_or_create_by video_id: v.id
           video.update_attributes hs
 =begin
           @bulk_insert << hs
@@ -92,18 +96,28 @@ class YoutubeAccount < Account
       end
     end
     bulk_import
+    
+    summarize sincedate, self.yt_videos.where("published_at.to_i > '#{sincedate.to_i}'")
+    
     ended = Time.now
     log_duration started, ended
     @bulk_insert = []
   end
-  handle_asynchronously :retrieve, :run_at => Proc.new {10.seconds.from_now }
-
-  protected
+  # handle_asynchronously :retrieve, :run_at => Proc.new {10.seconds.from_now }
+  
+  def summarize
+    videos = self.yt_videos
+    init_date = videos.select("min(published_at) AS published_at").
+      to_a.first.published_at
+    summary_for_day init_date, videos
+  end
   
   def channel
     @channel ||=
        Yt::Channel.new url: "youtube.com/#{object_name}"
   end
+  
+  protected
   
   def construct_hash video
     hs = {:account_id => self.id,
@@ -111,6 +125,7 @@ class YoutubeAccount < Account
           :published_at => video.published_at.to_s(:db),
           :likes => video.like_count - video.dislike_count,
           :comments => video.comment_count,
+          :views => video.view_count,
           :favorites => video.favorite_count}
   end
   
@@ -126,14 +141,14 @@ class YoutubeAccount < Account
   
   def process_channel
     # create daily yt_channel based on created_at
-    created = Time.now.beginning_of_day.to_s(:db)
-    yt_ch = YtChannel.find_or_create_by channel_id: channel.id, created_at: created
+    published = Time.now.middle_of_day.to_s(:db)
+    yt_ch = self.yt_channels.find_or_create_by channel_id: channel.id, published_at: published
     yt_ch.account_id=self.id
     yt_ch.views = channel.view_count
     yt_ch.comments = channel.comment_count
     yt_ch.videos = channel.video_count
     yt_ch.subscribers = channel.subscriber_count
-    yt_ch.published_at = channel.published_at
+    # channel.published_at
     yt_ch.save
   end
     
@@ -146,7 +161,47 @@ class YoutubeAccount < Account
     say " #{ended.to_s(:db)} Ended #{self.class.name}"
     say " Duration: #{duration}"
   end
+  #
+  # recursively get total_likes etc. for each day in yt_channels
+  #  
+  def summary_for_day init_date, videos
+    s_date = init_date.beginning_of_day
+    
+    if s_date > Time.now
+      return
+    end
+    
+    e_date = init_date.end_of_day
+    likes = 0
+    comments = 0
+    favorites = 0
+    views = 0
+    my_videos = videos.where("published_at BETWEEN '#{s_date}' AND '#{e_date}'").to_a
+    unless my_videos.empty?
+      my_videos.each do | v |
+        likes += v.likes
+        comments += v.comments
+        favorites += v.favorites
+        views += v.views
+      end
+      totals = {:total_comments => comments,
+                :total_favorites => favorites,
+                :total_likes => likes,
+                :total_views => views}
 
+      ch = self.yt_channels.find_or_create_by published_at: init_date.middle_of_day
+      if ch.total_comments != totals[:total_comments] ||
+         ch.total_favorites != totals[:total_favorites] ||
+         ch.total_likes != totals[:total_likes] ||
+         ch.total_views != totals[:total_views]
+         ch.update_attributes totals
+      end
+    end 
+    init_date += 1.day
+    summary_for_day init_date, videos
+    
+  end
+  
 end
 =begin
   def save_video vid

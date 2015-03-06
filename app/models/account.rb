@@ -5,12 +5,12 @@ class Account < ActiveRecord::Base
   
   RETRY_SLEEP = 15  # seconds
   SLEEP = 20
-  belongs_to :group
-  belongs_to :subgroup
   belongs_to :account_type
   belongs_to :language
   has_and_belongs_to_many :countries
   has_and_belongs_to_many :regions
+  has_and_belongs_to_many :groups
+  has_and_belongs_to_many :subgroups
   has_and_belongs_to_many :sc_segments
   has_and_belongs_to_many :users
   
@@ -54,7 +54,7 @@ class Account < ActiveRecord::Base
   
   # options = {:group_ids=>[1,2,3], 
   #           :region_ids=>[1,2,3], 
-  #           :service_ids=>[1,2,3],
+  #           :group_ids=>[1,2,3],
   #           :country_ids=>[251],
   #           :account_ids=>[1]   # this override all 
   #          }
@@ -66,6 +66,7 @@ class Account < ActiveRecord::Base
     options[:ids] = ids
     account_type_ids = options[:account_type_ids] || []
     group_ids = options[:group_ids] || []
+    subgroup_ids = options[:subgroup_ids] || []
     service_ids = options[:service_ids] || []
     language_ids = options[:language_ids] || []
     

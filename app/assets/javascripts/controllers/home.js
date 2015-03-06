@@ -47,6 +47,10 @@ function HomeCtrl($scope, Languages, Regions, Countries, Groups, Session, Accoun
   	$scope.removeGroup = function(idx) {
   		$scope.selectedGroup.splice( idx, 1 );
   	};
+
+  	$scope.removeSubgroup = function(idx) {
+  		$scope.selectedGroup.splice( idx, 1 );
+  	};
   	
   	$scope.selectAllCountries = function() {
   		var allObj = $scope.countries[0];
@@ -90,15 +94,23 @@ function HomeCtrl($scope, Languages, Regions, Countries, Groups, Session, Accoun
 				$scope.filterText += $scope.selectedGroup[i].name + ', ';
 			}
   		}
+
+  		var subgroups = [];
+  		if ($scope.selectedSubgroup != null) {
+			for (var i = 0; i < $scope.selectedSubroup.length; i++) {
+				groups.push($scope.selectedSubgroup[i].id);
+				$scope.filterText += $scope.selectedSubgroup[i].name + ', ';
+			}
+  		}
   
-        Reports.getData(regions, countries, languages, 
-  		groups, null, null) // Last two nulls are startDate and endDate
+        Reports.getData(regions, countries, languages, groups, subgroups, null, null) // Last two nulls are startDate and endDate
             .then(function(response) {
         		// Call function to populate tables / charts
             	$scope.populateData(response);
             	
             	// Set the filters
             	$scope.selectedGroups = groups;
+            	$scope.selectedSubroups = subgroups;
             	$scope.selectedCountries = countries;
             	$scope.selectedLanguages = languages;
             	$scope.selectedRegions = regions;

@@ -2,7 +2,7 @@ class YoutubeAccount < Account
   has_many :yt_channels, foreign_key: :account_id
   has_many :yt_videos, foreign_key: :account_id
   
-  BATCH_COUNT = 1000
+  BATCH_COUNT = 5000
   # run this only once
   def self.initial_load
     YoutubeAccount.where("is_active is not null").to_a.each do | yt |
@@ -108,20 +108,17 @@ class YoutubeAccount < Account
     log_duration started, ended
     @bulk_insert = []
   end
-  # handle_asynchronously :retrieve, :run_at => Proc.new {10.seconds.from_now }
+  handle_asynchronously :retrieve, :run_at => Proc.new {10.seconds.from_now }
   
   def summarize init_date=nil
     videos = self.yt_videos
     sql = "sum(comments) video_comments,sum(favorites) video_favorites,"
     sql += "sum(likes) video_likes,sum(views) video_views,"
     sql += " date_format(published_at, '%Y-%m-%d') AS date"
-
-    if !init_date
-      init_date = videos.select("min(published_at) AS published_at").
-        to_a.first.published_at
-    end
     my_videos = videos.select(sql).group('date').order('date ASC')
-    
+    if !init_date
+      init_date = Time.parse(my_videos.first.date)
+    end
     @channel_insert = []
     while init_date < Time.zone.now
       data = my_videos.select{|a| a.date == init_date.strftime('%Y-%m-%d')}.first

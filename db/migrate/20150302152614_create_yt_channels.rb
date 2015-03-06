@@ -8,7 +8,7 @@ class CreateYtChannels < ActiveRecord::Migration
         t.integer :comments
         t.integer :videos
         t.integer :subscribers
-        t.datetime :published_at # store latest video published_at for retrieval
+        t.datetime :published_at # store date when the aggregated data (total_views etc. are created
         t.timestamps
       end
       add_index :yt_channels, :published_at

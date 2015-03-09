@@ -119,6 +119,7 @@ class YoutubeAccount < Account
     if !init_date
       init_date = Time.parse(my_videos.first.date)
     end
+
     @channel_insert = []
     while init_date < Time.zone.now
       data = my_videos.select{|a| a.date == init_date.strftime('%Y-%m-%d')}.first
@@ -168,14 +169,19 @@ class YoutubeAccount < Account
   
   def process_channel
     # create daily yt_channel based on created_at
-    published = Time.now.middle_of_day.to_s(:db)
-    yt_ch = self.yt_channels.find_or_create_by channel_id: channel.id, published_at: published
+    published = Time.now.middle_of_day
+    yt_ch = self.yt_channels.find_or_create_by channel_id: channel.id, published_at: published.to_s(:db)
     yt_ch.account_id=self.id
     yt_ch.views = channel.view_count
     yt_ch.comments = channel.comment_count
     yt_ch.videos = channel.video_count
     yt_ch.subscribers = channel.subscriber_count
-    # channel.published_at
+    
+    pre_day = (published-1.day).to_s(:db)
+    pre_ch = self.yt_channels.where("publised_at = '#{pre_day}'").last
+    if pre_ch
+      yt_ch.video_subscribers = (yt_ch.subscribers.to_i - pre_ch.subscribers.to_i)
+    end
     yt_ch.save
   end
     
@@ -195,6 +201,7 @@ class YoutubeAccount < Account
 
   def summary_for_day init_date, data
     ch = my_yt_channels.select{|a| a.published_at == init_date.middle_of_day}.first
+ 
     if !ch
       # new record
       attr = data.attributes
@@ -203,9 +210,18 @@ class YoutubeAccount < Account
       attr.merge! "published_at" => "#{init_date.middle_of_day.to_s(:db)}",
         "account_id" => self.id,
         "channel_id" => self.channel.id
-
+      if pre_ch
+        attr.merge! "video_subscribers" => 
+                     attr["subscribers"].to_i - pre_ch.subscribers.to_i
+      end
+    
       @channel_insert << attr
       return
+    end
+    
+    if pre_ch
+      ch.video_subscribers = 
+                     ch.subscribers.to_i - pre_ch.subscribers.to_i
     end
     changed = false
     if ch.video_comments != data.video_comments

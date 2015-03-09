@@ -11,6 +11,9 @@ module Api::ReportsHelper
   end 
   def tw_accounts
     accounts.map{|a| [a.id,a.object_name] if a.media_type_name=='TwitterAccount' }.compact
+  end
+  def yt_accounts
+    accounts.map{|a| [a.id,a.object_name] if a.media_type_name=='YoutubeAccount' }.compact
   end 
   def fb_account_names
     accounts.map{|a| a.object_name if a.media_type_name=='FacebookAccount' }.compact
@@ -24,7 +27,13 @@ module Api::ReportsHelper
   def tw_account_ids
     accounts.map{|a| a.id if a.media_type_name=='TwitterAccount' }.compact
   end
-   
+  def yt_account_names
+    accounts.map{|a| a.object_name if a.media_type_name=='YoutubeAccount' }.compact
+  end   
+  def yt_account_ids
+    accounts.map{|a| a.id if a.media_type_name=='YoutubeAccount' }.compact
+  end
+  
   def accounts
     @accounts ||=
          Account.where("is_active=1").select("id, name, object_name, media_type_name, contact").where(["id in (?)", @options[:account_ids]])
@@ -46,11 +55,18 @@ module Api::ReportsHelper
     @tw_involved_countries ||=
         involved_countries.map{|rc| [rc.country.id, rc.country.name] if rc.account.is_twitter?}.compact.uniq
   end
+  def yt_involved_countries
+    @yt_involved_countries ||=
+        involved_countries.map{|rc| [rc.country.id, rc.country.name] if rc.account.is_youtube?}.compact.uniq
+  end
   def fb_related_countries
     fb_involved_countries # - input_countries
   end
   def tw_related_countries
     tw_involved_countries # - input_countries
+  end
+  def yt_related_countries
+    yt_involved_countries # - input_countries
   end
   
   # for regions
@@ -70,11 +86,17 @@ module Api::ReportsHelper
     @tw_involved_regions ||=
         involved_regions.map{|rc| [rc.region.id, rc.region.name] if rc.account.is_twitter?}.compact.uniq
   end
+  def yt_involved_regions
+    @yt_involved_regions ||=
+        involved_regions.map{|rc| [rc.region.id, rc.region.name] if rc.account.is_youtube?}.compact.uniq
+  end
   def fb_related_regions
     fb_involved_regions # - input_regions
   end
   def tw_related_regions
     tw_involved_regions # - input_regions
   end
-  
+  def yt_related_regions
+    yt_involved_regions # - input_regions
+  end
 end

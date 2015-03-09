@@ -1,3 +1,18 @@
+=begin
+ post
+{"options":{
+     "source":"youtube",
+     "end_date":"2015-03-06",
+     "period":"1.week",
+     "network_ids":[1,2],
+     "region_ids":[1,2],
+     "service_ids":[1,2],
+     "country_ids":[1,2],
+     "account_ids":[141,142]
+   }
+  }
+=end
+
 class Api::V2::ReportsController < Api::V2::BaseController
   include Api::ReportsHelper
     
@@ -14,6 +29,7 @@ class Api::V2::ReportsController < Api::V2::BaseController
       @collection = get_twitters
     else
      @collection = get_facebooks if !!get_facebooks
+     @collection.merge! get_youtubes if !!get_youtubes
      @collection.merge! get_twitters if !!get_twitters
      @collection.merge! get_sitecatalysts if !!get_sitecatalysts
     end
@@ -118,6 +134,42 @@ class Api::V2::ReportsController < Api::V2::BaseController
         return nil
       else
         @report[:sitecatalyst][:values] = sel 
+        @report
+      end
+    rescue Exception=>error
+      logger.error error.message
+      error.backtrace.each do |m|
+        logger.error "#{m}"
+      end
+      nil
+    end
+  end
+  
+  def get_youtubes
+    begin
+      names = yt_account_names
+    rescue Exception=>error
+      logger.error error.message
+      return nil
+    end
+    
+    if names.empty?
+      return nil
+    end
+    begin
+      stat = YtStat.new(@options)
+      sel = stat.select_by
+      if !sel
+        return nil
+      else
+        @report = {:youtube => {
+             :accounts=> yt_accounts.to_h,
+             :countries => yt_related_countries.to_h,
+             :regions => yt_related_regions.to_h
+           }}
+        @report[:youtube][:values] = sel
+        acc = stat.select_accounts
+        @report[:youtube][:values].merge! acc if acc
         @report
       end
     rescue Exception=>error

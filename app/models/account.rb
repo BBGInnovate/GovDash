@@ -220,12 +220,14 @@ class Account < ActiveRecord::Base
   def is_twitter?
     self.media_type_name == 'TwitterAccount'
   end
-  
+  def is_youtube?
+    self.media_type_name == 'YoutubeAccount'
+  end
   def info
     begin
     {:name=>self.name,:id=>self.id,
-      :entity=>self.group.name,
-      :service=>self.service.name,
+      # :entity=>self.group.name,
+      # :service=>self.service.name,
       :countries=>self.countries.map{|c| [c.id, c.name]}.to_h,
       :regions=>self.regions.map{|c| [c.id, c.name]}.to_h,
       :contact=>(self.contact || 'N/A')}

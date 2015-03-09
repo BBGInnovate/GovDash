@@ -178,7 +178,7 @@ class YoutubeAccount < Account
     yt_ch.subscribers = channel.subscriber_count
     
     pre_day = (published-1.day).to_s(:db)
-    pre_ch = self.yt_channels.where("publised_at = '#{pre_day}'").last
+    pre_ch = self.yt_channels.where("published_at = '#{pre_day}'").last
     if pre_ch
       yt_ch.video_subscribers = (yt_ch.subscribers.to_i - pre_ch.subscribers.to_i)
     end

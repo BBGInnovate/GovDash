@@ -9,7 +9,7 @@ class YtVideo < ActiveRecord::Base
   end
   # bin/delayed_job restart 
   # to clear cache of method create_or_update
-  handle_asynchronously :sync_redshift, :run_at => Proc.new { 5.seconds.from_now }
+  # handle_asynchronously :sync_redshift, :run_at => Proc.new { 5.seconds.from_now }
   
   def yt_channel_for date=Time.zone.now
     date = date.middle_of_day.to_s(:db)

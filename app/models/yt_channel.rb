@@ -14,7 +14,7 @@ class YtChannel < ActiveRecord::Base
   end
   # bin/delayed_job restart 
   # to clear cache of method create_or_update
-  handle_asynchronously :sync_redshift, :run_at => Proc.new { 5.seconds.from_now }
+  # handle_asynchronously :sync_redshift, :run_at => Proc.new { 5.seconds.from_now }
   
   def self.update_video_subscribers
     YoutubeAccount.all do | acc |

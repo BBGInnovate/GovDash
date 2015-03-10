@@ -124,6 +124,9 @@ class YoutubeAccount < Account
     while init_date < Time.zone.now
       data = my_videos.select{|a| a.date == init_date.strftime('%Y-%m-%d')}.first
       if data
+        # if no YtChannel is found for that day, then  use 
+        # YtChannel.import!. Otherwise use
+        # YtChannel.update_attributes
         summary_for_day init_date, data
         if @channel_insert.size > BATCH_COUNT
           logger.debug "  #{self.class.name}#summarize upload #{@channel_insert.size}"

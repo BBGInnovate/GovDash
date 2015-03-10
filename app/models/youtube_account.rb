@@ -201,7 +201,9 @@ class YoutubeAccount < Account
 
   def summary_for_day init_date, data
     ch = my_yt_channels.select{|a| a.published_at == init_date.middle_of_day}.first
- 
+    pre_day = init_date.middle_of_day - 1.day
+    pre_ch = self.yt_channels.where("published_at = '#{pre_day}'").last
+    
     if !ch
       # new record
       attr = data.attributes

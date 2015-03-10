@@ -37,21 +37,24 @@ class Account < ActiveRecord::Base
             :routing_key => "amqpgem.#{self.class.name}")
     rabbit.connection.close
   end
-  
-  def send_rabbit message="voiceofamerica"
-    routing_key = "#{self.object_name}"
-    AMQP.channel.default_exchange.publish(message, :routing_key => "routing_key") do
-      Rails.logger.info "[AMQP] Published \"#{message}\""
+
+  def info
+    begin
+     {:name=>self.name,:id=>self.id,
+      :groups=>self.groups.map(&:name),
+      :subgroups=>self.subgroups.map(&:name),
+      :countries=>self.countries.map{|c| [c.id, c.name]}.to_h,
+      :regions=>self.regions.map{|c| [c.id, c.name]}.to_h,
+      :contact=>(self.contact || 'N/A')}
+    rescue Exception=>e
+      logger.error "Error: #{e.message}"
+      e.backtrace[0..10].each do |m|
+        logger.error "#{m}"
+      end
+      {}
     end
   end
-  
-  def receive_rabbit
-    routing_key = "mq-#{self.object_name}"
-    AMQP.channel.default_exchange.publish(message, :routing_key => "routing_key") do
-      Rails.logger.info Terminal.yellow("[AMQP] Published \"#{message}\"")
-    end
-  end
-  
+
   # options = {:group_ids=>[1,2,3], 
   #           :region_ids=>[1,2,3], 
   #           :group_ids=>[1,2,3],
@@ -222,22 +225,6 @@ class Account < ActiveRecord::Base
   end
   def is_youtube?
     self.media_type_name == 'YoutubeAccount'
-  end
-  def info
-    begin
-    {:name=>self.name,:id=>self.id,
-      # :entity=>self.group.name,
-      # :service=>self.service.name,
-      :countries=>self.countries.map{|c| [c.id, c.name]}.to_h,
-      :regions=>self.regions.map{|c| [c.id, c.name]}.to_h,
-      :contact=>(self.contact || 'N/A')}
-    rescue Exception=>e
-      logger.error "Error: #{e.message}"
-      e.backtrace[0..10].each do |m|
-        logger.error "#{m}"
-      end
-      {}
-    end
   end
 
   def new_item

@@ -35,7 +35,6 @@ class YtStat
   # sum over week
   # ruby end_of_week is Sunday
   def get_select_trend_by_week start_date,myend_date, myaccounts
-    puts "    MMMM get_select_trend_by_week"
     
     if !myend_date.sunday?
      # myend_date = (myend_date-1.week).end_of_week
@@ -93,10 +92,11 @@ class YtStat
     cond = ["published_at BETWEEN '#{start_date.beginning_of_day.to_s(:db)}}' AND '#{end_date.end_of_day.to_s(:db)}}'"]
     sql = "DATE_FORMAT(published_at,'%Y-%m-%d') AS date, "
     sql += select_account_name myaccounts
-    sql += "COALESCE(sum(subscribers),0) AS total_subscribers,"
-    sql += " COALESCE(sum(comments),0) as total_comments, "
-    sql += "COALESCE(sum(views),0) as total_views, "
-    sql += "COALESCE(sum(total_subscribers+total_comments+total_views),0) as total_number"
+    sql += "COALESCE(subscribers,0) AS total_subscribers,"
+    sql += " COALESCE(comments,0) as total_comments, "
+    sql += "COALESCE(views,0) as total_views, "
+    sql += "COALESCE(videos,0) as total_videos, "
+    sql += "(total_subscribers+total_comments+total_views) as total_number"
     records = YtChannel.select(sql).where(cond).where(["account_id in (?)",account_ids]).first
   end
 
@@ -134,15 +134,12 @@ class YtStat
     results = []
     [rec1, rec2].each_with_index do |rec, i|
       result = init_struct
-      total = rec.video_subscribers + rec.video_comments + 
-         rec.video_views + rec.video_favorites +
-         rec.video_likes
+      total = rec.total_subscribers + rec.total_comments + 
+         rec.total_views
       result.values = {:date=>rec.date,
-          :video_subscribers=>rec.video_subscribers,
-          :video_comments=>rec.video_comments,
-          :video_views=>rec.video_views,
-          :video_likes=>rec.video_likes,
-          :video_favorites=>rec.video_favorites,
+          :subscribers=>rec.total_subscribers,
+          :comments=>rec.total_comments,
+          :views=>rec.total_views,
           :totals=>total
           }   
       results << result.values
@@ -219,11 +216,11 @@ class YtStat
   
   def set_engagement_data rec
     begin
-    {:video_subscribers=> rec.video_subscribers,
-     :video_favorites=>rec.video_favorites,
-     :video_likes=>rec.video_likes,
-     :video_comments=>rec.video_comments,
-     :video_views=>rec.video_views,
+    {:subscribers=> rec.video_subscribers,
+     :favorites=>rec.video_favorites,
+     :likes=>rec.video_likes,
+     :comments=>rec.video_comments,
+     :views=>rec.video_views,
      :totals => (rec.video_favorites + rec.video_likes +
          rec.video_comments + rec.video_views + rec.video_subscribers)
     }
@@ -274,11 +271,11 @@ class YtStat
     result.values = {:period=>rec.period}
     result.values.merge! set_engagement_data(rec)
     ch = 'N/A'
-    result.values[:changes] = {:video_favorites=>ch, 
-            :video_comments=>ch,
-            :video_likes=>ch, 
-            :video_views=>ch,
-            :video_subscribers=>ch,
+    result.values[:changes] = {:favorites=>ch, 
+            :comments=>ch,
+            :likes=>ch, 
+            :views=>ch,
+            :subscribers=>ch,
             :totals=>ch}         
     results << result.data
     msg = "#{self.class.name} Data missing in #{rec.name} #{previous_period}"

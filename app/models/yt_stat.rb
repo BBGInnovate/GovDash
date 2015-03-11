@@ -8,7 +8,6 @@ class YtStat
   # select data for one year
   # sum over month
   def get_select_trend_by_month start_date,myend_date, myaccounts
-    puts "    MMMM get_select_trend_by_month"
     if myend_date.day != myend_date.end_of_month.day
        myend_date = (myend_date - 1.month)
     end
@@ -68,7 +67,7 @@ class YtStat
     account_ids = myaccounts.map{|a| a.id}
     cond = ["published_at BETWEEN '#{start_date.beginning_of_day.to_s(:db)}' AND '#{end_date.end_of_day.to_s(:db)}' "]
     sql = "DATE_FORMAT(published_at,'%Y-%m-%d') AS trend_date, "
-    sql += " subscribers AS video_subscribers, 'day' AS trend_type,"    
+    sql += " 'day' AS trend_type,"    
     sql += select_account_name myaccounts   
     sql += select_summary_sql
     records = YtChannel.select(sql).where(cond).
@@ -177,7 +176,7 @@ class YtStat
   end
 
   def get_period_result rec1, rec2
-    puts "    MMMM get_period_result"
+
     results = []
     totals = []
     compute_changes rec1,rec2
@@ -216,13 +215,18 @@ class YtStat
   
   def set_engagement_data rec
     begin
-    {:subscribers=> rec.video_subscribers,
+    if rec.video_subscribers==0
+      subs = 'N/A'
+    else
+      subs = rec.video_subscribers
+    end
+    {:subscribers=> subs,
      :favorites=>rec.video_favorites,
      :likes=>rec.video_likes,
      :comments=>rec.video_comments,
      :views=>rec.video_views,
      :totals => (rec.video_favorites + rec.video_likes +
-         rec.video_comments + rec.video_views + rec.video_subscribers)
+         rec.video_comments + rec.video_views + rec.video_subscribers.to_i)
     }
     rescue Exception=>ex
       Rails.logger.error "   set_engagement_data #{ex.message}"

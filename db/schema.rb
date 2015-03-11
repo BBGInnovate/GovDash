@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150306184544) do
+ActiveRecord::Schema.define(version: 20150309154549) do
 
   create_table "account_types", force: :cascade do |t|
     t.string   "name",       limit: 20
@@ -31,6 +31,7 @@ ActiveRecord::Schema.define(version: 20150306184544) do
     t.integer  "language_id",       limit: 4
     t.string   "contact",           limit: 255
     t.string   "user_access_token", limit: 255
+    t.string   "page_access_token", limit: 255
     t.boolean  "is_active",         limit: 1,   default: true
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -80,6 +81,17 @@ ActiveRecord::Schema.define(version: 20150306184544) do
   create_table "accounts_users", force: :cascade do |t|
     t.integer  "account_id", limit: 4
     t.integer  "user_id",    limit: 4
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "api_tokens", force: :cascade do |t|
+    t.string   "platform",          limit: 20
+    t.integer  "account_id",        limit: 4
+    t.string   "canvas_url",        limit: 255
+    t.string   "api_user_email",    limit: 40
+    t.string   "user_access_token", limit: 255
+    t.string   "page_access_token", limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -179,7 +191,7 @@ ActiveRecord::Schema.define(version: 20150306184544) do
   add_index "fb_posts", ["post_id"], name: "index_fb_posts_on_post_id", unique: true, using: :btree
 
   create_table "groups", force: :cascade do |t|
-    t.string   "name",            limit: 128
+    t.string   "name",            limit: 10
     t.string   "description",     limit: 255
     t.boolean  "is_active",       limit: 1,   default: true
     t.datetime "created_at"
@@ -335,16 +347,17 @@ ActiveRecord::Schema.define(version: 20150306184544) do
   add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
 
   create_table "yt_channels", force: :cascade do |t|
-    t.integer  "account_id",      limit: 4
-    t.string   "channel_id",      limit: 255
-    t.integer  "views",           limit: 4
-    t.integer  "comments",        limit: 4
-    t.integer  "videos",          limit: 4
-    t.integer  "subscribers",     limit: 4
-    t.integer  "video_comments",  limit: 4,   default: 0
-    t.integer  "video_favorites", limit: 4,   default: 0
-    t.integer  "video_likes",     limit: 4,   default: 0
-    t.integer  "video_views",     limit: 4,   default: 0
+    t.integer  "account_id",        limit: 4
+    t.string   "channel_id",        limit: 255
+    t.integer  "views",             limit: 4
+    t.integer  "comments",          limit: 4
+    t.integer  "videos",            limit: 4
+    t.integer  "subscribers",       limit: 4
+    t.integer  "video_subscribers", limit: 4,   default: 0
+    t.integer  "video_comments",    limit: 4,   default: 0
+    t.integer  "video_favorites",   limit: 4,   default: 0
+    t.integer  "video_likes",       limit: 4,   default: 0
+    t.integer  "video_views",       limit: 4,   default: 0
     t.datetime "published_at"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -355,20 +368,20 @@ ActiveRecord::Schema.define(version: 20150306184544) do
   add_index "yt_channels", ["published_at"], name: "index_yt_channels_on_published_at", using: :btree
 
   create_table "yt_videos", force: :cascade do |t|
-    t.integer  "yt_channel_id", limit: 4
-    t.string   "video_id",      limit: 40
-    t.integer  "likes",         limit: 4
-    t.integer  "comments",      limit: 4
-    t.integer  "favorites",     limit: 4
-    t.integer  "views",         limit: 4,  default: 0
+    t.integer  "account_id",   limit: 4
+    t.string   "video_id",     limit: 40
+    t.integer  "likes",        limit: 4
+    t.integer  "comments",     limit: 4
+    t.integer  "favorites",    limit: 4
+    t.integer  "views",        limit: 4,  default: 0
     t.datetime "published_at"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
+  add_index "yt_videos", ["account_id"], name: "index_yt_videos_on_account_id", using: :btree
   add_index "yt_videos", ["published_at"], name: "index_yt_videos_on_published_at", using: :btree
   add_index "yt_videos", ["video_id"], name: "index_yt_videos_on_video_id", unique: true, using: :btree
-  add_index "yt_videos", ["yt_channel_id"], name: "index_yt_videos_on_yt_channel_id", using: :btree
 
   add_foreign_key "groups", "organizations"
 end

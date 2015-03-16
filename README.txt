@@ -11,66 +11,79 @@ s3.yml
 sitecatalyst.yml 
 twitter.yml
 
-1. MySQL database $db_name installation
-  $db_name=govdash_app
+1. MySQL database govdash_app setup
+  There are two methods to set up the database.
   
-  After deploy source code to target, 
-  login to MySQL client and run
-  # replace variables by the real values
-  # dump radd_production 
-  mysqldump -u$db_user -p  -h$db_host radd_production > dash.sql
-  # load to dash_production
-  mysql -u$db_user -p -h$db_host -D$db_name < dash.sql
+  1. Dump database with full contents from radd_production
+     database in AWS OpsWorks SocialDashboard stack.
+     Use this method if you want to copy all Facebook and Twitter
+     accounts data over. To do this, follow the steps below:
+     1.1 Dump database, run command
+         # replace the variables
+         mysqldump -u$db_user -p -h$db_host radd_production > dash.sql
+     1.2 Load dash.sql to govdash_app
+         # replace the variables
+         mysql -u$db_user -p -h$db_host -D$db_name < dash.sql
+     1.3 Connect to govdash_app database
+         Execute query to create table app_token
+         Note: this table is to replace api_tokens
   
-  In MySQL client, execute query to create table app_token
-  This table is to replace api_tokens
-  
-  CREATE TABLE `app_tokens` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `platform` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `canvas_url` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `api_user_email` varchar(40) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `client_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `client_secret` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `user_access_token` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `page_access_token` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+         CREATE TABLE `app_tokens` (
+          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `platform` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
+          `canvas_url` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+          `api_user_email` varchar(40) COLLATE utf8_unicode_ci DEFAULT NULL,
+          `client_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+          `client_secret` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+          `user_access_token` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+          `page_access_token` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+          `created_at` datetime DEFAULT NULL,
+          `updated_at` datetime DEFAULT NULL,
+           PRIMARY KEY (`id`)
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-2. run `rails c production`
-  Copy and paste following code in Rails console:
-  FacebookAccount.all.each do |fb|
-    tn = fb.api_tokens[ fb.id % 2]
-    if tn.page_access_token
-      email = tn.api_user_email
-      fb.update_attribute :contact,email
-      AppToken.find_or_create_by platform: 'Facebook', 
-        canvas_url: tn.canvas_url,
-        api_user_email: tn.api_user_email,
-        user_access_token: tn.user_access_token,
-        page_access_token: tn.page_access_token
-    end
-  end
-
-3. In MySQL client
-  # note, find corresponding client_secret from smdata.bbg.gov
-  # facebook.yml and replace '?' with the real values.
-  update app_tokens set client_id='1485668908334414', client_secret='?' where api_user_email='ads@bbg.gov';
-  update app_tokens set client_id='518623351606222', client_secret='?' where api_user_email='odditect@bbg.gov';
-  update app_tokens set api_user_email='oddidev@bbg.gov',client_id='?', client_secret='?' where canvas_url='smdata.bbg.gov';
-
-4. After testing the Facebook account retrieve functions successfully,
-   In MySQL client, remove columns 
-    ALTER TABLE accounts DROP COLUMN user_access_token;
-    ALTER TABLE accounts DROP COLUMN page_access_token;
+     1.4 If you want to get FAcebook InSights data,
+         follow the steps below:
+         1.4.1 Open Rails Console by command `rails c production`
+         1.4.2 Migrate page_access_token from accounts table to
+               app_tokens table:
+               Copy and paste following code in Rails console:
+               FacebookAccount.all.each do |fb|
+                 tn = fb.api_tokens[ fb.id % 2]
+                 if tn.page_access_token
+                   email = tn.api_user_email
+                   fb.update_attribute :contact,email
+                   AppToken.find_or_create_by platform: 'Facebook', 
+                     canvas_url: tn.canvas_url,
+                     api_user_email: tn.api_user_email,
+                     user_access_token: tn.user_access_token,
+                     page_access_token: tn.page_access_token
+                 end
+               end
+         1.4.3 Update app_tokens set client_id and secret
+               Note: find corresponding client_secret from smdata.bbg.gov
+               facebook.yml and replace '?' with the real values.
+               update app_tokens set client_id='1485668908334414', client_secret='?' where api_user_email='ads@bbg.gov';
+               update app_tokens set client_id='518623351606222', client_secret='?' where api_user_email='odditect@bbg.gov';
+               update app_tokens set api_user_email='oddidev@bbg.gov',client_id='?', client_secret='?' where canvas_url='smdata.bbg.gov';
+         1.4.4 Optional remove columns from accounts table, after 
+               testing the Facebook account retrieve functions 
+               successfully
    
-    -- And drop table api_tokens, note 
-    -- api_tokens is replaced by app_tokens
-    DROP TABLE api_tokens;
+               ALTER TABLE accounts DROP COLUMN user_access_token;
+               ALTER TABLE accounts DROP COLUMN page_access_token;
+               DROP TABLE api_tokens;
+               
+  2. Use db/schema.rb in this project
+     2.1 In Rail Root, run
+         rake db:schema:load
 
-5. Create custom cookbook and host in bitbucket.org/****/cookbooks.git
+3. If you want to get Facebook InSights data and require page_access_token
+   for accounts not covered in item 1.4
+   Go to page <govdash-loadbalancer>/facebooks/index
+   and follow the instrunctions there.
+
+2. Create custom cookbook and host in bitbucket.org/****/cookbooks.git
    Strucure of cookbooks:
      apache2/attributes/customize.rb  #=> override Apache conf parameters
      passenger_apache2/attributes/customize.rb #=> override Passenger parameters
@@ -79,7 +92,7 @@ twitter.yml
      rails/templates/default/ #=> templates for all required config files
      socialdash/recipes/cronjob.rb
      
-6. Add custom cookbook to OpsWorks stack
+3. Add custom cookbook to OpsWorks stack
 
    In GovDash Stack Settings
    Use custom Chef cookbooks: Yes
@@ -103,33 +116,28 @@ twitter.yml
               "client_secret": "****"
          },
          "youtube": {
-              "delayed_jobs": 1
+              "delayed_jobs": 5
          }
        }
      }
    }
 
-7. Layer Rails App Server Recipes
+4. Layer Rails App Server Recipes
      Repository URL: git@bitbucket.org:****/cookbooks.git
      Configure: socialdash::cronjob rails::myconfigure 
      DeployL    socialdash::cronjob 
 
      OS Packages:  rabbitmq-server
-     
-8. Create Chef before_migrate hook
-   <rails root>/deploy/before_migrate.rb
-   
-9. Create Chef after_restart hook
-   <rails root>/deploy/after_restart.rb
-   to run bin/delayed_job restart
 
-10. Start instance
-   When the instance is up
-   1. user deploy's cronjobs are created for Facebook, Twitter etc. retrieval
-   2. <rails-app>/current/config/ symbalic links are created
-   3. delayed_job daemon is runing
+5. Start OpsWorks GovDash Stack instance
+   When the instance is up, make sure:
+   5.1 User "deploy" cronjobs are created for Facebook, Twitter, Youtube
+       sitecatalyst
+   5.2 <rails-app>/current/config/ symbalic links are created
+   5.3 delayed_job daemon is running
    
-11. Create Redshift Database tables
+6. If you want to use AWS Redshift Database
+   6.1 Run the following PostgreSQL commands
 
 create table fb_pages (
   original_id integer,
@@ -221,10 +229,11 @@ CREATE TABLE yt_channels (
    comments integer,
    videos integer,
    subscribers integer,
-   total_comments integer,
-   total_favorites integer,
-   total_likes integer,
-   total_views integer,
+   video_subscribers integer,
+   video_comments integer,
+   video_favorites integer,
+   video_likes integer,
+   video_views integer,
    published_at timestamp,
    created_at timestamp,
    updated_at timestamp,
@@ -250,8 +259,7 @@ CREATE TABLE yt_videos (
 distkey(video_id)
 sortkey(original_id, account_id, published_at)
 
-
-References:
+7. References:
    Chef Resources:
    http://support.rightscale.com/12-Guides/Chef_Cookbooks_Developer_Guide/04-Developer/06-Development_Resources/Chef_Resources
    https://docs.chef.io/resource_examples.html
@@ -260,3 +268,16 @@ References:
    http://www.usa.gov/About/developer-resources/social-media-registry.shtml
    https://github.com/measuredvoice/estuary/tree/master/lib/services
    
+8. Useful command line tools for Rails developer
+   Launch PostgreSQL (PSQL) client:
+    /Applications/Postgres.app/Contents/Versions/9.4/bin/psql -h 127.0.0.1 -U oddidev -p 5439 -d pages
+   Drop PSQL database:
+    /Applications/Postgres.app/Contents/Versions/9.4/bin/dropdb -h 127.0.0.1 -p 5439 -U oddidev -i pages
+   Create PSQL database:
+    /Applications/Postgres.app/Contents/Versions/9.4/bin/createdb -h 127.0.0.1 -p 5439 -U oddidev -E UTF8 -e pages    
+   Kill PSQL process of id 1234:
+    select pg_cancel_backend(1234);
+    select pg_terminate_backend(1234);
+   Find PSQL running processes:
+    SELECT * FROM pg_stat_activity WHERE datname = 'yt_channels';
+

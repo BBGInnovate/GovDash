@@ -44,7 +44,7 @@ class Api::V2::ReportsController < Api::V2::BaseController
   # replace get_facebooks etc.
   #
   def get_reports source = nil
-    if source
+    if source && source.downcase != "all"
       medias = ["#{source.upcase}Account"]
     else
       medias = accounts.map(&:media_type_name).uniq

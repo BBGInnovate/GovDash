@@ -104,7 +104,7 @@ node[:deploy].each do |application, deploy|
     group deploy[:group]
     owner deploy[:user]
     
-    notifies :run, "execute[restart Rails app #{application}]"
+    # notifies :run, "execute[restart Rails app #{application}]"
     
   end
 end

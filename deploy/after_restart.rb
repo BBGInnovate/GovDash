@@ -17,6 +17,7 @@ run <<-END
   rm '#{current_path}/config/youtube.yml'
   rm '#{current_path}/config/s3.yml'
   rm '#{current_path}/config/sitecatalyst.yml'
+  rm '#{current_path}/config/initializers/secret_token.rb'
   ln -s '#{shared_path}/config/email.yml' '#{current_path}/config/email.yml'
   ln -s '#{shared_path}/config/facebook.yml' '#{current_path}/config/facebook.yml'
   ln -s '#{shared_path}/config/rabbit.yml' '#{current_path}/config/rabbit.yml'
@@ -24,6 +25,7 @@ run <<-END
   ln -s '#{shared_path}/config/youtube.yml' '#{current_path}/config/youtube.yml'
   ln -s '#{shared_path}/config/s3.yml' '#{current_path}/config/s3.yml'
   ln -s '#{shared_path}/config/sitecatalyst.yml' '#{current_path}/config/sitecatalyst.yml'
+  ln -s '#{shared_path}/config/secret_token.rb' '#{current_path}/config/initializers/secret_token.rb' 
   touch tmp/restart.txt  
   bin/delayed_job restart
 END

@@ -97,7 +97,7 @@ node[:deploy].each do |application, deploy|
     )
   end
   
-  template "#{deploy[:deploy_to]}/current/config/initializers/secret_token.rb" do
+  template "#{deploy[:deploy_to]}/shared/config/secret_token.rb" do
     source "secret_token.rb.erb"
     cookbook 'rails'
     mode "0660"

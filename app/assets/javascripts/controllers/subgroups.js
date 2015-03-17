@@ -7,7 +7,13 @@ function SubgroupsCtrl($scope, Subgroups, Groups, $routeParams, $rootScope, $loc
 	});
   
   	$scope.create = function() {
-  		Subgroups.create(this.name, this.description)
+
+      var groups = [];
+      for (var i = 0; i < this.selectedGroup.length; i++) {
+        groups.push(this.selectedGroup[i].id);
+      }
+
+  		Subgroups.create(this.name, this.description, groups)
 			.then(function(response) {
 		   		$location.path('subgroups');
 		});
@@ -33,7 +39,7 @@ function SubgroupsCtrl($scope, Subgroups, Groups, $routeParams, $rootScope, $loc
             .then(function(response) {
                $scope.subgroup = response.data[0];
                //get all groups
-                /*Groups.getAllGroups()
+                Groups.getAllGroups()
                   .then(function(response) {
                     $scope.groups = response.data;
                      for (var i = 0; i < $scope.groups.length; i++) {
@@ -42,7 +48,7 @@ function SubgroupsCtrl($scope, Subgroups, Groups, $routeParams, $rootScope, $loc
                          $scope.selectedGroup = $scope.group[i];
                       }
                      }
-                });*/
+                });
         });
   		
   	};

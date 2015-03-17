@@ -3,11 +3,8 @@
 	<div style="float:left" class="page-header">
 		<h1>Create a Subgroup</h1>
 	</div>
-	<!--<p style="float:right">{{user.email}} <a class="btn btn-primary" ng-click="logout('/users/login')">Logout</a></p>-->
 </div>
 <div style="clear:both;"></div>
-
-
 
 <form class="form-horizontal col-md-6" role="form" ng-submit="create()">
 		<div class="form-group">
@@ -20,6 +17,12 @@
 			<label for="description" class="col-md-2 control-label">Description</label>
 			<div class="col-md-10">
 				<input type="text" class="form-control" data-ng-model="description" id="description" placeholder="description" required>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="group" class="col-md-2 control-label">Group(s)</label>
+			<div class="col-md-10">
+				<select ng-model="selectedGroup" ng-options="group.name for group in groups" id="group" multiple ng-multiple="true"></select>
 			</div>
 		</div>
 		<div class="form-group">

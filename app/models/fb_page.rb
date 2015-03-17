@@ -5,43 +5,38 @@
 class FbPage < ActiveRecord::Base
   belongs_to :account
 
-  after_save :sync_redshift
+  # after_save :sync_redshift
   def save_lifetime_data
-    today = Time.zone.now
-    if post_created_time > today.beginning_of_day &&
-       post_created_time <= today.end_of_day
-       link = "https://graph.facebook.com/?id=#{self.obj_name}"
-       begin       
-         response = fetch(link)
-         json = JSON.parse response.body
-         websites = json['website'].split(' ')
-       rescue Exception=>error
-         logger.error error.message
-         return
-       end
+    link = "https://graph.facebook.com/?id=#{self.obj_name}"
+    begin       
+      response = fetch(link)
+      json = JSON.parse response.body
+      websites = json['website'].split(' ')
+    rescue Exception=>error
+      logger.error error.message
+      return
+    end
        
-       shares = 0
-       begin
-         websites.each do |website|
-           if !website.match(/http:\/\/|https:\/\//)
-             website = "http://#{website}"
-           end
-           link = "https://graph.facebook.com/?id=#{website}"
-           response = fetch(link)
-           json = JSON.parse response.body
-           shares += json['shares'].to_i
-         end
-       rescue Exception=>error
-         puts "FbPAge#save_lifetime_data #{error.message}"
-         puts "#{error.backtrace}"
-       end
-       @page = self.account.graph_api.get_object self.obj_name
-       res = FbPage.where(:account_id=>self.account_id).select("sum(comments) AS comments").first
-       
-       self.update_attributes :total_shares=>shares, :total_likes=>@page['likes'], 
+    shares = 0
+    begin
+      websites.each do |website|
+        if !website.match(/http:\/\/|https:\/\//)
+          website = "http://#{website}"
+        end
+        link = "https://graph.facebook.com/?id=#{website}"
+        response = fetch(link)
+        json = JSON.parse response.body
+        shares += json['shares'].to_i
+      end
+    rescue Exception=>error
+      logger.debug "  FbPAge#save_lifetime_data #{error.message}"
+      logger.debug "  #{error.backtrace}"
+    end
+    @page = self.account.graph_api.get_object self.obj_name
+    res = FbPage.where(:account_id=>self.account_id).select("sum(comments) AS comments").first
+    self.update_attributes :total_shares=>shares, :total_likes=>@page['likes'], 
          :total_comments => res.comments,
          :total_talking_about=>@page['talking_about_count']
-    end
   end
   
   def obj_name

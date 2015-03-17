@@ -176,7 +176,6 @@ class YtStat
   end
 
   def get_period_result rec1, rec2
-
     results = []
     totals = []
     compute_changes rec1,rec2

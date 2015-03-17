@@ -18,7 +18,7 @@ class FacebookAccount < Account
   QUERY_LIMIT = 250
   SCHEDULED_DELAY = 1.hour.from_now
   def self.archive
-     started = Time.zone.now
+     started = Time.now
      count = 0
      no_count = 0
      records = includes(:api_tokens).where("is_active=1").

@@ -121,7 +121,7 @@ class YoutubeAccount < Account
     end
 
     @channel_insert = []
-    while init_date < Time.zone.now
+    while init_date < DateTime.now.utc
       data = my_videos.select{|a| a.date == init_date.strftime('%Y-%m-%d')}.first
       if data
         # if no YtChannel is found for that day, then  use 

@@ -281,3 +281,5 @@ sortkey(original_id, account_id, published_at)
    Find PSQL running processes:
     SELECT * FROM pg_stat_activity WHERE datname = 'yt_channels';
 
+   # tail OpsWorks log
+   sudo /usr/sbin/opsworks-agent-cli show_log

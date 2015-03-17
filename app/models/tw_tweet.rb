@@ -1,6 +1,6 @@
 class TwTweet < ActiveRecord::Base
 
-  after_save :sync_redshift
+  # after_save :sync_redshift
   
   def sync_redshift
     attr = self.attributes

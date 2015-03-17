@@ -1,7 +1,7 @@
 class YtChannel < ActiveRecord::Base
   belongs_to :youtube_account, foreign_key: :account_id
   
-  after_save :sync_redshift
+  # after_save :sync_redshift
    
   def yt_videos
     @yt_videos ||= 

@@ -5,7 +5,7 @@ class TwitterAccount < Account
   
   # Run it in rails console for testing 
   def self.retrieve
-     started = Time.zone.now
+     started = Time.now
      count = 0
      
      begin
@@ -22,7 +22,7 @@ class TwitterAccount < Account
        logger.error "  TwitterAccount#retrieve #{ex.message}"
      end
      
-     ended = Time.zone.now
+     ended = Time.now
      size = records.size
      total_seconds=(ended-started).to_i
      duration=Time.at(total_seconds).utc.strftime("%H:%M:%S")
@@ -49,11 +49,12 @@ class TwitterAccount < Account
       end
       # upload_show
       logger.info "   #{self.id} since: #{since_date.to_s(:db)} retrieve success"
-      self.update_attributes :new_item=>false,:status=>true,:updated_at=>Time.zone.now
+      self.update_attributes :new_item=>false,:status=>true,:updated_at=>DateTime.now.utc
       return 'Success'
     rescue Exception=>error
       log_fail error.message
-      self.update_attributes :status=>false,:updated_at=>Time.zone.now
+      logger.error "   #{error.backtrace}"
+      self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
       return false
       # raise error.message
     end
@@ -80,7 +81,7 @@ class TwitterAccount < Account
        opt = options.merge(:max_id=>timelines.last.id+1)
        retweets = client.user_timeline opt
      else
-       today = Time.zone.now
+       today = DateTime.now.utc
        begin_time = since_date.beginning_of_day
        end_time = today.end_of_day
        last_tweet = tw_tweets.select("tweet_id").
@@ -100,7 +101,7 @@ class TwitterAccount < Account
        retweets = client.user_timeline opt
        
      end  
-    rescue *errors => error
+    rescue Twitter::Error::TooManyRequests => error
       logger.error error.message
       if @num_attempts < self.max_attempts
         # NOTE: Your process could go to sleep for up to 15 minutes but if you
@@ -114,7 +115,8 @@ class TwitterAccount < Account
       end
     rescue Exception => error
       log_fail error.message
-      raise Exception.new("in request_twitter #{error.message}")
+      logger.error("in request_twitter #{error.message}")
+      # raise Exception.new("in request_twitter #{error.message}")
     end
     retweets
   end
@@ -243,13 +245,13 @@ class TwitterAccount < Account
     S3Model.new.store(s3_filepath+"timeline.json", timelines.to_json)
   end
 
-  def s3_show(date=Time.zone.now)
+  def s3_show(date=DateTime.now.utc)
     self.is_download = true
     arr = get_show(date)
   end
   
   # read one show.json
-  def get_show(date_str=Time.zone.now)
+  def get_show(date_str=DateTime.now.utc)
     date_str = date_str.end_of_day
     started = date_str  #  .days_ago(days_list)
  
@@ -281,7 +283,7 @@ class TwitterAccount < Account
   
   def parse_lifetime_from_table
     increment = 1.day
-    current_date = Time.zone.now.end_of_day
+    current_date = DateTime.now.utc.end_of_day
     my_arr = []
     
     result = {"name"=>self.object_name+"/lifetime"}
@@ -290,7 +292,7 @@ class TwitterAccount < Account
     while current_date > 7.days.ago do
       beginning_of_ = (current_date-increment+1.day).beginning_of_day.to_s(:db)
       end_of_ = current_date.end_of_day
-      if end_of_ > Time.zone.now.end_of_day
+      if end_of_ > DateTime.now.utc.end_of_day
          break
       end
       end_of_ = end_of_.to_s(:db)
@@ -322,7 +324,7 @@ class TwitterAccount < Account
   end
 
 
-  def get_shows(date_str=Time.zone.now)
+  def get_shows(date_str=DateTime.now.utc)
     date_str = date_str.end_of_day
     started = date_str.days_ago(days_list)
     arr = []
@@ -379,7 +381,7 @@ class TwitterAccount < Account
     end
   end
 
-  def s3_timeline(date=Time.zone.now)
+  def s3_timeline(date=DateTime.now.utc)
     self.is_download = true
     arr = get_lifetime(date)
     arr
@@ -389,7 +391,7 @@ class TwitterAccount < Account
     aggregate_data increment,unit
   end
   
-  def get_lifetime(date_str=Time.zone.now)
+  def get_lifetime(date_str=DateTime.now.utc)
     arr = []
     date_str = date_str.end_of_day
     started = date_str.days_ago(days_list)
@@ -421,7 +423,7 @@ class TwitterAccount < Account
     # period 1.day or 1.week or 1.month
   def aggregate_data increment, unit
     # increment = instance_eval("#{number}.#{unit}")
-    current_date = Time.zone.now.end_of_day
+    current_date = DateTime.now.utc.end_of_day
     my_arr = []
     
     result = {"name"=>self.object_name+"/#{unit}"}
@@ -430,7 +432,7 @@ class TwitterAccount < Account
     while current_date > increment.ago do
       beginning_of_ = (current_date-increment+1.day).beginning_of_day.to_s(:db)
       end_of_ = current_date.end_of_day
-      if end_of_ > Time.zone.now.end_of_day
+      if end_of_ > DateTime.now.utc.end_of_day
          break
       end
       end_of_ = end_of_.to_s(:db)
@@ -482,7 +484,7 @@ class TwitterAccount < Account
   end
   
   def send_mq_message rabbit
-    payload = {:account_id => self.id, :date=>Time.zone.now.to_s(:db)}.to_yaml
+    payload = {:account_id => self.id, :date=>DateTime.now.utc.to_s(:db)}.to_yaml
     rabbit.channel.default_exchange.publish(payload,
             :type        => "summarize",
             :routing_key => "amqpgem.#{self.class.name}")
@@ -493,7 +495,7 @@ class TwitterAccount < Account
   
   def create_today_timeline
     # create or update Today's timeline for lifetime data
-    today = Time.zone.now
+    today = DateTime.now.utc
     started = (today-1.day).beginning_of_day.to_s(:db)
     ended = today.end_of_day.to_s(:db)
     cond = "tweet_created_at BETWEEN '#{started}' AND '#{ended}' AND account_id=#{self.id}"
@@ -527,7 +529,7 @@ class TwitterAccount < Account
     if tl[1] && tl[1].tweet_created_at.to_date==today.to_date
       tl[1].update_attributes options
     else
-      options[:tweet_created_at] = Time.zone.now
+      options[:tweet_created_at] = DateTime.now.utc
       find_or_create_timeline(options)
     end
   end
@@ -548,7 +550,7 @@ class TwitterAccount < Account
       timeline = self.tw_timelines.create options
       # @bulk_timelines << options
     else
-      options[:updated_at] = Time.zone.now
+      options[:updated_at] = DateTime.now.utc
       timeline.update_attributes options
     end
     timeline
@@ -616,7 +618,7 @@ class TwitterAccount < Account
   end
   
   
-  def s3_filepath(date=Time.zone.now)
+  def s3_filepath(date=DateTime.now.utc)
     if (date.class == String)
       date = Time.parse date_str
     end

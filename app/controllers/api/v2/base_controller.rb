@@ -154,9 +154,13 @@ class Api::V2::BaseController <  ActionController::Base
     attr = filter_attributes(record.attributes)
     if Account === record
       attr['group_name']= record.group.name if !!record.respond_to?(:group) && record.group
-      attr['subgroup_name']= record.subgroup.name
-      attr['language_name']= record.language.name      
       
+      languages = record.languages
+      names = languages.map{|lang| lang.name}
+      attr['language_names']= names
+      ids = languages.map{|lang| lang.id}
+      attr['language_ids']= ids
+
       countries = record.countries
       names = countries.map{|c| c.name}
       attr['country_names']= names
@@ -175,6 +179,15 @@ class Api::V2::BaseController <  ActionController::Base
       ids = regions.map{|c| c.id}
       attr['region_ids']= ids
 
+      subgroups = record.subgroups
+      names = subgroups.map{|s| s.name}
+      attr['subgroup_names']= names
+      ids = subgroups.map{|s| s.id}
+      attr['subgroup_ids']= ids
+
+    elsif AccountsLanguage === record
+      attr['account_name']= record.account.name if !!record.respond_to?(:account) && record.account
+      attr['language_name']= record.language.name if !!record.respond_to?(:language) && record.language
     elsif AccountsCountry === record
       attr['account_name']= record.account.name if !!record.respond_to?(:account) && record.account
       attr['country_name']= record.country.name if !!record.respond_to?(:country) && record.country
@@ -184,6 +197,9 @@ class Api::V2::BaseController <  ActionController::Base
     elsif AccountsRegion === record
       attr['account_name']= record.account.name if !!record.respond_to?(:account) && record.account
       attr['region_name']= record.region.name if !!record.respond_to?(:region) && record.region
+    elsif AccountsSubgroup === record
+      attr['account_name']= record.account.name if !!record.respond_to?(:account) && record.account
+      attr['subgroup_name']= record.subgroup.name if !!record.respond_to?(:subgroup) && record.subgroup
     elsif AccountsScSegment === record
       attr['account_name']= record.account.name if !!record.respond_to?(:account) && record.account
       attr['sc_segment_name']= record.sc_segment.name if !!record.respond_to?(:sc_segment) && record.sc_segment

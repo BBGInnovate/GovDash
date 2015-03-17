@@ -4,7 +4,7 @@ class Language < ActiveRecord::Base
     if !@common_names
       commons = LanguageList::COMMON_LANGUAGES
       cnames = commons.map{|a| a.name}
-      anames = Account.all.map{| a | a.language.name}
+      anames = Language.all.map{| lang | lang.name}
       @common_names = cnames | anames
     end
     @common_names

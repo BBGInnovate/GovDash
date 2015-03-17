@@ -11,10 +11,10 @@ class RabbitReceiver
   include Rabbit
   
   def self.consumers
-    amqp_consumer
+    amqp_consumer ['upload','retrieve','initial_load']
   end
 
-  def self.amqp_consumer(queue_names=["FacebookAccount"])
+  def self.amqp_consumer(queue_names)
     queues = []
     t = Thread.new { EventMachine.run }
     EventMachine.next_tick do

@@ -38,7 +38,7 @@
           <tr>
             <th style="width: 170px"><a href="" ng-click="reverse=!reverse;order('name', reverse)">Name <i class="icon-sort"></i></a></th>
     <!--    <th style="width: 100px">Account Type</th> -->
-            <th style="width: 80px"><a href="" ng-click="reverse=!reverse;order('network_name', reverse)">Network <i class="icon-sort"></i></a></th>
+            <th style="width: 80px"><a href="" ng-click="reverse=!reverse;order('group_name', reverse)">Group <i class="icon-sort"></i></a></th>
             <th><a href="" ng-click="reverse=!reverse;order('service_name', reverse)">Service <i class="icon-sort"></i></a></th>
             <th style="width: 80px"><a href="" ng-click="reverse=!reverse;order('language_name', reverse)">Language <i class="icon-sort"></i></a></th>
             <th>Region</th>
@@ -55,7 +55,7 @@
 					<span ng-show="!loggedInUser">{{account.object_name}}</span> 
 				</td>
 			<!--	<td><i class="icon-{{account.media_type_name | displayIcon}}"></i></td> -->
-				<td>{{account.network_name}}</td>
+				<td>{{account.group_name}}</td>
 				<td>{{account.service_name}}</td>
 				<td>{{account.language_name}}</td>
 				<td>{{account.region_names | toString}}</td>

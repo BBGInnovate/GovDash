@@ -4,8 +4,6 @@ class Api::V2::BaseController <  ActionController::Base
   protect_from_forgery with: :null_session, :if => Proc.new { |c| c.request.format == 'application/vnd.radd.v1' }
 
   before_filter :controller_name
-#  before_filter :authenticate_user!
-#  before_filter :is_service_chief?
   
   append_view_path ["#{Rails.root}/app/views/api/v2/#{controller_name}", "#{Rails.root}/app/views/default"]
   
@@ -21,7 +19,7 @@ class Api::V2::BaseController <  ActionController::Base
     names = Language.common_names
     
     arrs = []
-    [Network, Service, Region, AccountType,MediaType, Country,Language, ScSegment].each do | p |
+    [Group, Subgroup, Region, AccountType,MediaType, Country,Language, ScSegment].each do | p |
       arr = [{'lookup'=> p.name}]
       hsh = {}
       if p.respond_to? :is_active
@@ -155,8 +153,8 @@ class Api::V2::BaseController <  ActionController::Base
   def add_associate_name(record)
     attr = filter_attributes(record.attributes)
     if Account === record
-      attr['network_name']= record.network.name if !!record.respond_to?(:network) && record.network
-      attr['service_name']= record.service.name
+      attr['group_name']= record.group.name if !!record.respond_to?(:group) && record.group
+      attr['subgroup_name']= record.subgroup.name
       attr['language_name']= record.language.name      
       
       countries = record.countries

@@ -21,10 +21,29 @@ $( document ).ready(function() {
 
 <div class="content1">
 <h1><%= "Facebook Authorization" %></h1>
-Environment: <%= Rails.env.to_s %>
+<i>Environment: <%= Rails.env.to_s %></i>
+<p>Create Facebook Account(s), if you want them to access InSights data,
+in accounts table with column 'contact'
+set to the app_user_email as in app_tokens table, see below:</p>
+<p>
+Create entries in app_tokens table with attributes:
+<ul>
+ 
+<li>platform: 'Facebook'</li>
+<li>app_user_email: the email used to create a Facebook Application
+</li>
+<li>canvas_url: the domain name for convas_url in Facebook Application, eg. sm.bbg.gov
+</li>  
+<li>client_id: Facebook App client_id</li>
+<li>client_secret: Facebook App client_secret</li>
+</ul>
+</p>
+
 <p>This tool is for getting page access token for Facebook pages if the selected
   user (email) has "Page Role" for that page.
 </p>
+<p>The related Facebook Account(s), linked by 'contact' column, then has access to InSights data.
+</p> 
 <p>Currently, there are three users, each should have Page Role for various pages</p>
 <ul>
 <li>ads@bbg.gov</li>
@@ -44,11 +63,6 @@ Environment: <%= Rails.env.to_s %>
 
 <li>In the Email dropdown list, select an email, e.g. ads@bbg.gov</li>
 <li>Click Submit</li>
-</ul>
-After the process completed, the "Access Toten?" column in the table below will change to Yes
-for all the pages the user has "Page Role"
-</p>
-
 </ul>
 After the process completed, the "Access Toten?" column in the table below will change to Yes
 for all the pages the user has "Page Role"

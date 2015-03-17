@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140924172829) do
+ActiveRecord::Schema.define(version: 20150309154549) do
 
   create_table "account_types", force: :cascade do |t|
     t.string   "name",       limit: 20
@@ -27,8 +27,6 @@ ActiveRecord::Schema.define(version: 20140924172829) do
     t.boolean  "status",            limit: 1,   default: true
     t.boolean  "page_admin",        limit: 1,   default: false
     t.string   "media_type_name",   limit: 20,  default: "FacebookAccount"
-    t.integer  "network_id",        limit: 4
-    t.integer  "service_id",        limit: 4
     t.integer  "account_type_id",   limit: 4
     t.integer  "language_id",       limit: 4
     t.string   "contact",           limit: 255
@@ -46,6 +44,11 @@ ActiveRecord::Schema.define(version: 20140924172829) do
     t.integer  "country_id", limit: 4
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "accounts_groups", id: false, force: :cascade do |t|
+    t.integer "account_id", limit: 4, null: false
+    t.integer "group_id",   limit: 4, null: false
   end
 
   create_table "accounts_languages", force: :cascade do |t|
@@ -70,6 +73,11 @@ ActiveRecord::Schema.define(version: 20140924172829) do
 
   add_index "accounts_sc_segments", ["sc_segment_id", "account_id"], name: "index_accounts_sc_segments_on_sc_segment_id_and_account_id", using: :btree
 
+  create_table "accounts_subgroups", id: false, force: :cascade do |t|
+    t.integer "account_id",  limit: 4, null: false
+    t.integer "subgroup_id", limit: 4, null: false
+  end
+
   create_table "accounts_users", force: :cascade do |t|
     t.integer  "account_id", limit: 4
     t.integer  "user_id",    limit: 4
@@ -84,6 +92,16 @@ ActiveRecord::Schema.define(version: 20140924172829) do
     t.string   "api_user_email",    limit: 40
     t.string   "user_access_token", limit: 255
     t.string   "page_access_token", limit: 255
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "app_tokens", force: :cascade do |t|
+    t.string   "platform",       limit: 20
+    t.string   "canvas_url",     limit: 255
+    t.string   "api_user_email", limit: 40
+    t.string   "client_id",      limit: 255
+    t.string   "client_secret",  limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -172,6 +190,22 @@ ActiveRecord::Schema.define(version: 20140924172829) do
   add_index "fb_posts", ["post_created_time"], name: "index_fb_posts_on_post_created_time", using: :btree
   add_index "fb_posts", ["post_id"], name: "index_fb_posts_on_post_id", unique: true, using: :btree
 
+  create_table "groups", force: :cascade do |t|
+    t.string   "name",            limit: 10
+    t.string   "description",     limit: 255
+    t.boolean  "is_active",       limit: 1,   default: true
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "organization_id", limit: 4
+  end
+
+  add_index "groups", ["organization_id"], name: "index_groups_on_organization_id", using: :btree
+
+  create_table "groups_subgroups", id: false, force: :cascade do |t|
+    t.integer "group_id",    limit: 4, null: false
+    t.integer "subgroup_id", limit: 4, null: false
+  end
+
   create_table "languages", force: :cascade do |t|
     t.string  "name",      limit: 30
     t.string  "iso_639_1", limit: 6
@@ -185,12 +219,10 @@ ActiveRecord::Schema.define(version: 20140924172829) do
     t.datetime "updated_at"
   end
 
-  create_table "networks", force: :cascade do |t|
-    t.string   "name",        limit: 10
-    t.string   "description", limit: 255
-    t.boolean  "is_active",   limit: 1,   default: true
-    t.datetime "created_at"
-    t.datetime "updated_at"
+  create_table "organizations", force: :cascade do |t|
+    t.string   "name",       limit: 255
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
   end
 
   create_table "records", force: :cascade do |t|
@@ -241,10 +273,9 @@ ActiveRecord::Schema.define(version: 20140924172829) do
     t.datetime "updated_at"
   end
 
-  create_table "services", force: :cascade do |t|
+  create_table "subgroups", force: :cascade do |t|
     t.string   "name",        limit: 40
     t.string   "description", limit: 255
-    t.string   "network_id",  limit: 255
     t.boolean  "is_active",   limit: 1,   default: true
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -315,4 +346,42 @@ ActiveRecord::Schema.define(version: 20140924172829) do
   add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
   add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
 
+  create_table "yt_channels", force: :cascade do |t|
+    t.integer  "account_id",        limit: 4
+    t.string   "channel_id",        limit: 255
+    t.integer  "views",             limit: 4
+    t.integer  "comments",          limit: 4
+    t.integer  "videos",            limit: 4
+    t.integer  "subscribers",       limit: 4
+    t.integer  "video_subscribers", limit: 4,   default: 0
+    t.integer  "video_comments",    limit: 4,   default: 0
+    t.integer  "video_favorites",   limit: 4,   default: 0
+    t.integer  "video_likes",       limit: 4,   default: 0
+    t.integer  "video_views",       limit: 4,   default: 0
+    t.datetime "published_at"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "yt_channels", ["account_id"], name: "index_yt_channels_on_account_id", using: :btree
+  add_index "yt_channels", ["channel_id"], name: "index_yt_channels_on_channel_id", using: :btree
+  add_index "yt_channels", ["published_at"], name: "index_yt_channels_on_published_at", using: :btree
+
+  create_table "yt_videos", force: :cascade do |t|
+    t.integer  "account_id",   limit: 4
+    t.string   "video_id",     limit: 40
+    t.integer  "likes",        limit: 4
+    t.integer  "comments",     limit: 4
+    t.integer  "favorites",    limit: 4
+    t.integer  "views",        limit: 4,  default: 0
+    t.datetime "published_at"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "yt_videos", ["account_id"], name: "index_yt_videos_on_account_id", using: :btree
+  add_index "yt_videos", ["published_at"], name: "index_yt_videos_on_published_at", using: :btree
+  add_index "yt_videos", ["video_id"], name: "index_yt_videos_on_video_id", unique: true, using: :btree
+
+  add_foreign_key "groups", "organizations"
 end

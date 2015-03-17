@@ -1,4 +1,4 @@
-function RecordCtrl($scope, Session, Records, Roles, Networks, $rootScope) {"use strict";
+function RecordCtrl($scope, Session, Records, Roles, Groups, $rootScope) {"use strict";
 
     $scope.user = Session.requestCurrentUser();
     $scope.records = Records.index();
@@ -9,13 +9,11 @@ function RecordCtrl($scope, Session, Records, Roles, Networks, $rootScope) {"use
         Session.logout();
     };
     
-    $rootScope.networkList = function() {
-  		
-  		//Networks.getAllNetworks()
-  		
-  		Networks.getAllNetworks()
+    $rootScope.groupList = function() {
+  		  		
+  		Groups.getAllGroups()
             .then(function(response) {
-               $rootScope.networks = response.data;
+               $rootScope.groups = response.data;
         });
   		
   	};

@@ -69,7 +69,7 @@ Radd::Application.routes.draw do
 
   # Connect Site
   resource :facebook, :except => :create do
-    get :callback, :to => :create
+    get :callback, action: :create
   end
   resource :facebooks, :only=>:index do
     collection do
@@ -78,7 +78,7 @@ Radd::Application.routes.draw do
   end
   
   resource :twitter, :except => :create do
-    get :callback, :to => :create
+    get :callback, action: :create
   end
   resource :twitters, :only=>:index do
     collection do
@@ -113,8 +113,9 @@ Radd::Application.routes.draw do
           get 'segments'
         end
       end
-      resources :networks
-      resources :services
+      resources :organizations
+      resources :groups
+      resources :subgroups
       resources :regions
       resources :countries
       resources :sc_segments, :path => "segments"
@@ -166,11 +167,11 @@ Radd::Application.routes.draw do
         get 'fetch'
       end
     end
-    resources :networks do
+    resources :groups do
       as_routes
     end
     
-    resources :services do
+    resources :subgroups do
       as_routes
     end
     

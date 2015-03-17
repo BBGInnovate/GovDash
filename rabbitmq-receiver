@@ -1,38 +1,20 @@
-#!/usr/bin/env bash
+#!/usr/local/bin/ruby
 
-# check if rvm_path var is empty and should be sourced
-if [ "x$rvm_path" = "x" ]; then
-  source $HOME/.bashrc
-fi
+# this file should be called from /etc/init.d
+=begin
+sudo su
+service rabbitmq-server start
+rabbitmq-plugins enable rabbitmq_management
+rabbitmqctl add_user <user> <password>
+rabbitmqctl set_user_tags <user> <password>
+rabbitmqctl set_permissions -p / oddidev ".*" ".*" ".*"
+rabbitmqctl delete_user guest
+sudo rabbitmqctl list_users
+=end
 
-# load  rvm
-if [[ -s "$HOME/.rvm/gems/ruby-2.2.0/environment" ]] ; then
-  source "$HOME/.rvm/gems/ruby-2.2.0/environment"
-else
-  printf "ERROR: An RVM installation was not found.\n"
-  exit
-fi
+require File.expand_path('../config/environment',  __FILE__)
+require File.expand_path('../config/boot',  __FILE__)
+require "bunny"
 
-# this works in command line
-# /home/oddev/cxp/current/rabbitmq-receiver
-#
-PATH="/home/oddev/.rvm/gems/ruby-2.2.0/bin:/home/oddev/.rvm/gems/ruby-2.2.0@global/bin:/usr/local/rvm/rubies/ruby-2.2.0/bin:/home/oddev/.rvm/gems/ruby-2.2.0/bin:/home/oddev/.rvm/gems/ruby-2.2.0@global/bin:/usr/local/rvm/rubies/ruby-2.2.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/local/rvm/bin"
-GEM_HOME='/home/oddev/.rvm/gems/ruby-2.2.0'
-GEM_PATH='/home/oddev/.rvm/gems/ruby-2.2.0:/home/oddev/.rvm/gems/ruby-2.2.0@global'
-MY_RUBY_HOME='/usr/local/rvm/rubies/ruby-2.2.0'
-IRBRC='/usr/local/rvm/rubies/ruby-2.2.0/.irbrc'
-RUBY_VERSION='ruby-2.2.0'
-export RAILS_ENV=production
-source /home/oddev/.rvm/gems/ruby-2.2.0/environment
-cd /home/oddev/cxp/current
-# source .rvmrc file
-source /home/oddev/.rvmrc
-
-# /home/oddev/.rvm/wrappers/ruby-2.2.0/ruby script/run_receiver.rb
-#
-# rvm alias create rabbit_receiver ruby-2.2.0
-# the above creates a wrapper. So 
-/home/oddev/.rvm/wrappers/rabbit_receiver/ruby script/run_receiver.rb
-
-echo $HOME
-
+require  "#{Dir.pwd}/app/models/rabbit_receiver.rb"
+RabbitReceiver.consumers

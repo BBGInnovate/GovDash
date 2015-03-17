@@ -3,8 +3,8 @@ angular.module('accountService', [])
        
         var account = {
             
-            create: function(name, description, object_name, socialMediaAccount, networkId, serviceId, languageId, regionIds, countryIds, accountTypeId, segmentIds) {
-                return $http.post('/api/accounts', {account: {name: name, description: description, object_name: object_name, media_type_name: socialMediaAccount, network_id: networkId, service_id: serviceId, language_id: languageId, region_ids: regionIds, country_ids: countryIds, account_type_id: accountTypeId, sc_segment_ids: segmentIds } })
+            create: function(name, description, object_name, socialMediaAccount, groupId, subgroupId, languageId, regionIds, countryIds, accountTypeId, segmentIds) {
+                return $http.post('/api/accounts', {account: {name: name, description: description, object_name: object_name, media_type_name: socialMediaAccount, group_id: groupId, subgroup_id: subgroupId, language_id: languageId, region_ids: regionIds, country_ids: countryIds, account_type_id: accountTypeId, sc_segment_ids: segmentIds } })
                 .then(function(response) {
                 //    console.log('Account Created!');
                 });
@@ -22,15 +22,15 @@ angular.module('accountService', [])
 					return account;
 				});
             },
-            update: function(accountId, name, description, object_name, socialMediaAccount, networkId, serviceId, languageId, regionIds, countryIds, accountTypeId, segmentIds) {
-            	return $http.put('api/accounts/' + accountId, {account: { id: accountId, name: name, description: description, object_name: object_name, media_type_name: socialMediaAccount, network_id: networkId, service_id: serviceId, language_id: languageId, region_ids: regionIds, country_ids: countryIds, account_type_id: accountTypeId, sc_segment_ids: segmentIds } })
+            update: function(accountId, name, description, object_name, socialMediaAccount, groupId, subgroupId, languageId, regionIds, countryIds, accountTypeId, segmentIds) {
+            	return $http.put('api/accounts/' + accountId, {account: { id: accountId, name: name, description: description, object_name: object_name, media_type_name: socialMediaAccount, group_id: groupId, subgroup_id: subgroupId, language_id: languageId, region_ids: regionIds, country_ids: countryIds, account_type_id: accountTypeId, sc_segment_ids: segmentIds } })
 				.then(function(response) {
                     //console.log('Account Updated!');
                 });
             },
             
-            setInactive: function(accountId, name, description, object_name, socialMediaAccount, networkId, serviceId, languageId, regionIds, countryIds, accountTypeId) {
-            	return $http.put('api/accounts/' + accountId, {account: { id: accountId, name: name, description: description, object_name: object_name, media_type_name: socialMediaAccount, network_id: networkId, service_id: serviceId, language_id: languageId, region_ids: regionIds, country_ids: countryIds, account_type_id: accountTypeId, is_active: 0 } })
+            setInactive: function(accountId, name, description, object_name, socialMediaAccount, groupId, subgroupId, languageId, regionIds, countryIds, accountTypeId) {
+            	return $http.put('api/accounts/' + accountId, {account: { id: accountId, name: name, description: description, object_name: object_name, media_type_name: socialMediaAccount, group_id: groupId, subgroup_id: subgroupId, language_id: languageId, region_ids: regionIds, country_ids: countryIds, account_type_id: accountTypeId, is_active: 0 } })
 				.then(function(response) {
                    
                 });

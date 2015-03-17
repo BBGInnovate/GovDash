@@ -2,8 +2,10 @@ require 'ostruct'
 
 module ReadStatDetail
   
-  attr_accessor :options,:account_hash,:accounts,:account_name_hash, :fb_accounts, :tw_accounts, :sc_accounts, :end_date,
-    :start_date,:page_likes,:trend_period, :final_results
+  attr_accessor :options,:account_hash,:accounts,:account_name_hash, 
+    :fb_accounts, :tw_accounts, :sc_accounts, :yt_accounts, 
+    :fb_accounts,:end_date, :start_date,:page_likes,:trend_period,
+    :final_results
     
   def self.included(base)
     base.extend(ClassMethods)
@@ -13,11 +15,14 @@ module ReadStatDetail
      self.options = options
      self.fb_accounts = options[:accounts].select{|a| a.media_type_name=='FacebookAccount'}
      self.tw_accounts = options[:accounts].select{|a| a.media_type_name=='TwitterAccount'}
+     self.yt_accounts = options[:accounts].select{|a| a.media_type_name=='YoutubeAccount'}
+          
      #use ALL given accounts for Sitecatalyst reports
      self.sc_accounts = options[:accounts]
      self.account_hash = {'ScStat'=>sc_accounts,
                           'FbStat'=>fb_accounts, 
-                          'TwStat'=>tw_accounts}
+                          'TwStat'=>tw_accounts,
+                          'YtStat'=>yt_accounts}
      self.end_date = parse_date(options[:end_date])
      if options[:start_date]
        self.start_date = parse_date(options[:start_date])

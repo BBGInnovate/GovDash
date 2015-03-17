@@ -1,3 +1,20 @@
+=begin
+ post
+{"options":{
+     "source":"youtube",
+     "end_date":"2015-03-06",
+     "period":"1.week",
+     "account_ids":[141,142],
+     "group_ids":[],
+     "subgroup_ids":[],
+     "language_ids":[],
+     "region_ids":[],
+     "country_ids":[],
+     "sc_segment_ids":[]
+   }
+  }
+=end
+
 class Api::V2::ReportsController < Api::V2::BaseController
   include Api::ReportsHelper
     
@@ -6,18 +23,8 @@ class Api::V2::ReportsController < Api::V2::BaseController
 
   before_filter :init
   def index
-    source = @options[:source]
-    @collection = {}  # []
-    if source == 'facebook'
-      @collection = get_facebooks
-    elsif source == 'twitter'
-      @collection = get_twitters
-    else
-     @collection = get_facebooks if !!get_facebooks
-     @collection.merge! get_twitters if !!get_twitters
-     @collection.merge! get_sitecatalysts if !!get_sitecatalysts
-    end
     begin
+      @collection = get_reports @options[:source]
       pretty_respond @collection
     rescue Exception=>e
       logger.error "Error #{e.message}"
@@ -33,10 +40,160 @@ class Api::V2::ReportsController < Api::V2::BaseController
   end
   
   private
-   
-  def get_facebooks
+  #
+  # replace get_facebooks etc.
+  #
+  def get_reports source = nil
+    if source && source.downcase != "all"
+      medias = ["#{source.upcase}Account"]
+    else
+      medias = accounts.map(&:media_type_name).uniq
+    end
+    medias.each do |media_type_name| 
+      names = account_names_for media_type_name.to_s
+      if !names.empty?
+        stat = get_stat_class(media_type_name)
+        if stat
+          sel = stat.select_by
+          if sel
+            rep_name=media_type_name.match('(\w+)Account')[1].downcase.to_sym
+            @report[rep_name] = {
+              :accounts=> accounts_for(media_type_name).to_h,
+              :countries => related_countries_for(media_type_name).to_h,
+              :regions => related_regions_for(media_type_name).to_h
+            }
+            @report[rep_name][:values] = sel
+            acc = stat.select_accounts
+            @report[rep_name][:values].merge! acc if acc 
+          end
+        end
+      end
+    end
+    
+    get_sitecatalysts
+    
+    @report
+  end
+  
+  def get_stat_class media_type
+    case media_type
+    when "FacebookAccount"
+      FbStat.new(@options)
+    when "TwitterAccount"
+      TwStat.new(@options)
+    when "YoutubeAccount"
+      YtStat.new(@options)
+    else
+      nil
+    end
+  end
+
+  #Attach a Sitecatalyst Referal Traffic for all accounts
+  def get_sitecatalysts
+    names = account_names_for("FacebookAccount") |
+            account_names_for("TwitterAccount")
+    return nil if names.empty?
     begin
-      names = fb_account_names
+      stat = ScStat.new @options
+      sel = stat.select_by
+      if sel
+        @report[:sitecatalyst][:values] = sel 
+      end
+    rescue Exception=>error
+      logger.error error.message
+      error.backtrace.each do |m|
+        logger.error "#{m}"
+      end
+    end
+  end
+  
+  def init
+    @report = Hash.new {|h,k| h[k] = {} }
+    get_options
+  end
+  
+  def get_options
+    @options = params[:options] || {}
+    end_date = @options[:end_date]
+    start_date = @options[:start_date]
+    @options[:end_date] = !!end_date ? end_date : (Time.zone.now-1.days).strftime('%Y-%m-%d') 
+    
+    # overwrite period parameter is start_date exists
+    if start_date
+      diff = parse_date(@options[:end_date]) - parse_date(start_date)
+      days = diff.to_i/(3600*24) + 1
+      @options[:period] = "#{days}.days"
+    end
+    period = @options[:period]
+    @options[:period] = !!period ? instance_eval(period) : 1.week
+
+    # source = @options[:source]
+    # @options[:source] = !!source ? source : 'all'
+    @options[:trend] = 'weekly' if !@options[:trend]
+    @options[:account_ids] = Account.get_account_ids @options
+    @options[:accounts] = accounts
+    valid_options = false
+    [:group_ids, :subgroup_ids, :region_ids, :country_ids, :account_ids].each do |opt|
+       if (Array === @options[opt] && @options[opt].first)
+         valid_options = true
+         break
+       end
+    end
+    # http_get_url = "#{request.original_url}/?#{request.request_parameters()[:report].to_param }"
+  end
+
+  def _params_
+    # do nothing
+  end
+end
+=begin
+  def convert collection
+    arrs = []
+    collection.each do | elem |
+      begin
+        hsh = {}
+        hsh[:name] = elem[:name]
+        hsh[:countries] = elem[:countries]
+        hsh[:values] = []
+        next if !elem[:values]
+        elem[:values].each do | value |
+          if Array === value
+            value.each do |v|
+              attributes = v.attributes rescue v
+              attributes.delete('id') if attributes.respond_to?(:delete)
+              hsh[:values] << attributes
+            end
+          else
+            attributes = value.attributes rescue value
+            attributes.delete('id') if attributes.respond_to?(:delete)
+            hsh[:values] << attributes
+          end
+        end 
+        arrs << hsh
+      rescue Exception=>error
+        logger.error error.message
+        error.backtrace.each do |m|
+          logger.error "#{m}"
+        end
+      end
+    end
+    arrs
+  end
+  def select_trend stat
+    return unless @options[:trend]
+    if @options[:trend].match(/week/i)
+      stat.select_trend_by_day
+    elsif @options[:trend].match(/month/i)
+      stat.select_trend_by_week
+    elsif @options[:trend].match(/year/i)
+      stat.select_trend_by_month
+    else
+      stat.select_trend_by_day
+    end
+  end
+    def get_facebooks
+    begin
+      names = account_names_for "FacebookAccount"
     rescue Exception=>error
       logger.error error.message
       # error.backtrace.each do |m|
@@ -55,9 +212,9 @@ class Api::V2::ReportsController < Api::V2::BaseController
         return nil
       else
         @report = {:facebook => {
-             :accounts=> fb_accounts.to_h,
-             :countries => fb_related_countries.to_h,
-             :regions => fb_related_regions.to_h
+             :accounts=> accounts_for("FacebookAccount").to_h,
+             :countries => related_countries_for("FacebookAccount").to_h,
+             :regions => related_regiinitons_for("FacebookAccount").to_h
            }}
         @report[:facebook][:values] = sel
         acc = stat.select_accounts
@@ -103,21 +260,31 @@ class Api::V2::ReportsController < Api::V2::BaseController
       nil
     end
   end
-
-  #Attach a Sitecatalyst Referal Traffic for all accounts
-  def get_sitecatalysts
-    names = fb_account_names | tw_account_names
+  def get_youtubes
+    begin
+      names = yt_account_names
+    rescue Exception=>error
+      logger.error error.message
+      return nil
+    end
+    
     if names.empty?
       return nil
     end
     begin
-      @report = {:sitecatalyst => {}}
-      stat = ScStat.new @options
+      stat = YtStat.new(@options)
       sel = stat.select_by
-      if !sel || sel.empty?
+      if !sel
         return nil
       else
-        @report[:sitecatalyst][:values] = sel 
+        @report = {:youtube => {
+             :accounts=> yt_accounts.to_h,
+             :countries => yt_related_countries.to_h,
+             :regions => yt_related_regions.to_h
+           }}
+        @report[:youtube][:values] = sel
+        acc = stat.select_accounts
+        @report[:youtube][:values].merge! acc if acc
         @report
       end
     rescue Exception=>error
@@ -128,88 +295,5 @@ class Api::V2::ReportsController < Api::V2::BaseController
       nil
     end
   end
-  
-  def init
-    @report = Hash.new {|h,k| h[k] = {} }
-    get_options
-  end
-  
-  def get_options
-    @options = params[:options] || {}
-    end_date = @options[:end_date]
-    start_date = @options[:start_date]
-    @options[:end_date] = !!end_date ? end_date : (Time.zone.now-1.days).strftime('%Y-%m-%d') 
-    
-    # overwrite period parameter is start_date exists
-    if start_date
-      diff = parse_date(@options[:end_date]) - parse_date(start_date)
-      days = diff.to_i/(3600*24) + 1
-      @options[:period] = "#{days}.days"
-    end
-    period = @options[:period]
-    @options[:period] = !!period ? instance_eval(period) : 1.week
+=end
 
-    source = @options[:source]
-    @options[:source] = !!source ? source : 'all'
-    @options[:trend] = 'weekly' if !@options[:trend]
-    @options[:account_ids] = Account.get_account_ids @options
-    @options[:accounts] = accounts
-    valid_options = false
-    [:network_ids, :region_ids, :country_ids, :account_ids].each do |opt|
-       if (Array === @options[opt] && @options[opt].first)
-         valid_options = true
-         break
-       end
-    end
-    # http_get_url = "#{request.original_url}/?#{request.request_parameters()[:report].to_param }"
-  end
-
-  def select_trend stat
-    return unless @options[:trend]
-    if @options[:trend].match(/week/i)
-      stat.select_trend_by_day
-    elsif @options[:trend].match(/month/i)
-      stat.select_trend_by_week
-    elsif @options[:trend].match(/year/i)
-      stat.select_trend_by_month
-    else
-      stat.select_trend_by_day
-    end
-  end
-  def convert collection
-    arrs = []
-    collection.each do | elem |
-      begin
-        hsh = {}
-        hsh[:name] = elem[:name]
-        hsh[:countries] = elem[:countries]
-        hsh[:values] = []
-        next if !elem[:values]
-        elem[:values].each do | value |
-          if Array === value
-            value.each do |v|
-              attributes = v.attributes rescue v
-              attributes.delete('id') if attributes.respond_to?(:delete)
-              hsh[:values] << attributes
-            end
-          else
-            attributes = value.attributes rescue value
-            attributes.delete('id') if attributes.respond_to?(:delete)
-            hsh[:values] << attributes
-          end
-        end 
-        arrs << hsh
-      rescue Exception=>error
-        logger.error error.message
-        error.backtrace.each do |m|
-          logger.error "#{m}"
-        end
-      end
-    end
-    arrs
-  end
-
-  def _params_
-    # do nothing
-  end
-end

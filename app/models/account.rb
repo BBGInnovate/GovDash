@@ -5,12 +5,12 @@ class Account < ActiveRecord::Base
   
   RETRY_SLEEP = 15  # seconds
   SLEEP = 20
-  belongs_to :network
-  belongs_to :service
   belongs_to :account_type
   belongs_to :language
   has_and_belongs_to_many :countries
   has_and_belongs_to_many :regions
+  has_and_belongs_to_many :groups
+  has_and_belongs_to_many :subgroups
   has_and_belongs_to_many :sc_segments
   has_and_belongs_to_many :users
   
@@ -37,24 +37,27 @@ class Account < ActiveRecord::Base
             :routing_key => "amqpgem.#{self.class.name}")
     rabbit.connection.close
   end
-  
-  def send_rabbit message="voiceofamerica"
-    routing_key = "#{self.object_name}"
-    AMQP.channel.default_exchange.publish(message, :routing_key => "routing_key") do
-      Rails.logger.info "[AMQP] Published \"#{message}\""
+
+  def info
+    begin
+     {:name=>self.name,:id=>self.id,
+      :groups=>self.groups.map(&:name),
+      :subgroups=>self.subgroups.map(&:name),
+      :countries=>self.countries.map{|c| [c.id, c.name]}.to_h,
+      :regions=>self.regions.map{|c| [c.id, c.name]}.to_h,
+      :contact=>(self.contact || 'N/A')}
+    rescue Exception=>e
+      logger.error "Error: #{e.message}"
+      e.backtrace[0..10].each do |m|
+        logger.error "#{m}"
+      end
+      {}
     end
   end
-  
-  def receive_rabbit
-    routing_key = "mq-#{self.object_name}"
-    AMQP.channel.default_exchange.publish(message, :routing_key => "routing_key") do
-      Rails.logger.info Terminal.yellow("[AMQP] Published \"#{message}\"")
-    end
-  end
-  
-  # options = {:network_ids=>[1,2,3], 
+
+  # options = {:group_ids=>[1,2,3], 
   #           :region_ids=>[1,2,3], 
-  #           :service_ids=>[1,2,3],
+  #           :group_ids=>[1,2,3],
   #           :country_ids=>[251],
   #           :account_ids=>[1]   # this override all 
   #          }
@@ -65,7 +68,8 @@ class Account < ActiveRecord::Base
     ids = options.delete(:account_ids) || []
     options[:ids] = ids
     account_type_ids = options[:account_type_ids] || []
-    network_ids = options[:network_ids] || []
+    group_ids = options[:group_ids] || []
+    subgroup_ids = options[:subgroup_ids] || []
     service_ids = options[:service_ids] || []
     language_ids = options[:language_ids] || []
     
@@ -84,7 +88,7 @@ class Account < ActiveRecord::Base
       combined_account_ids << options[:account_ids]
     end
 
-    [:ids, :account_type_ids, :media_type_names, :network_ids, :service_ids].each do |opt|
+    [:ids, :account_type_ids, :media_type_names].each do |opt|
        if (options[opt] && options[opt].first)
          cond += ["#{opt.to_s.singularize} in (#{options[opt].join(',')})"]
        end
@@ -110,6 +114,16 @@ class Account < ActiveRecord::Base
       country_account_ids = AccountsCountry.where(["country_id in (#{country_ids.join(',')})"]).
            map{|a| a.account_id}
       combined_account_ids << country_account_ids
+    end
+    if !group_ids.empty?
+      group_account_ids = AccountsGroup.where(["group_id in (#{group_ids.join(',')})"]).
+           map{|a| a.account_id}
+      combined_account_ids << group_account_ids
+    end
+    if !subgroup_ids.empty?
+      subgroup_account_ids = AccountsSubgroup.where(["subgroup_id in (#{subgroup_ids.join(',')})"]).
+           map{|a| a.account_id}
+      combined_account_ids << subgroup_account_ids
     end
     
     account_ids = consolidate_account_ids combined_account_ids
@@ -209,22 +223,8 @@ class Account < ActiveRecord::Base
   def is_twitter?
     self.media_type_name == 'TwitterAccount'
   end
-  
-  def info
-    begin
-    {:name=>self.name,:id=>self.id,
-      :entity=>self.network.name,
-      :service=>self.service.name,
-      :countries=>self.countries.map{|c| [c.id, c.name]}.to_h,
-      :regions=>self.regions.map{|c| [c.id, c.name]}.to_h,
-      :contact=>(self.contact || 'N/A')}
-    rescue Exception=>e
-      logger.error "Error: #{e.message}"
-      e.backtrace[0..10].each do |m|
-        logger.error "#{m}"
-      end
-      {}
-    end
+  def is_youtube?
+    self.media_type_name == 'YoutubeAccount'
   end
 
   def new_item

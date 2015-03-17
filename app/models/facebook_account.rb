@@ -1,23 +1,11 @@
-require Rails.root.to_s + '/lib/write_fb_page'
-
+# require Rails.root.to_s + '/lib/write_fb_page'
 class FacebookAccount < Account
-  include WriteFbPage
-  attr_accessor :graph_api, :insights, :show_raw
+  # include WriteFbPage
+  attr_accessor :graph_api
   
   has_many :fb_pages, -> { order 'post_created_time desc' }, :foreign_key=>:account_id
   has_many :fb_posts, -> { order 'post_created_time desc' }, :foreign_key=>:account_id
-  
-  belongs_to :app_token, foreign_key: :contact, primary_key: :api_user_email,
-    inverse_of: :facebook_accounts
-  
-  alias_method :original_app_token, :app_token
-  def app_token
-    @rec ||= AppToken.where(api_user_email: self.contact).to_a.last
-  end
-  
-  # below to be removed
-  has_many :api_tokens, :foreign_key=>"account_id"
-  
+
   after_initialize :do_this_after_initialize
   
    def do_this_after_initialize
@@ -53,7 +41,7 @@ class FacebookAccount < Account
        
      end
      server = ActionMailer::Base.default_url_options[:server]
-     ended = Time.zone.now
+     ended = DateTime.now.utc
      size = records.size - no_count
      total_seconds=(ended-started).to_i
      duration=Time.at(total_seconds).utc.strftime("%H:%M:%S")
@@ -97,9 +85,7 @@ class FacebookAccount < Account
       hasta -= 1
     end
     if success
-      upload_insights
-      parse_insights
-      self.update_attributes :new_item=>false,:status=>true,:updated_at=>Time.zone.now
+      self.update_attributes :new_item=>false,:status=>true,:updated_at=>DateTime.now.utc
     else
       # delayed_retrieve
       # logger.info "   retrieve scheduled deplayed_job in one hour"   
@@ -109,7 +95,7 @@ class FacebookAccount < Account
   end
   
   def self.retrieve 
-     started = Time.zone.now
+     started = DateTime.now.utc
      count = 0
      no_count = 0
      begin
@@ -132,7 +118,7 @@ class FacebookAccount < Account
        Rails.logger.error "  FacebookAccount#retrieve  #{ex.message}"  
      end
      server = ActionMailer::Base.default_url_options[:server]
-     ended = Time.zone.now
+     ended = DateTime.now.utc
      size = records.size - no_count
      total_seconds=(ended-started).to_i
      duration=Time.at(total_seconds).utc.strftime("%H:%M:%S")
@@ -182,9 +168,7 @@ class FacebookAccount < Account
       hasta = since - 1
     end
     if success
-      upload_insights
-      parse_insights
-      self.update_attributes :new_item=>false,:status=>true,:updated_at=>Time.zone.now
+      self.update_attributes :new_item=>false,:status=>true,:updated_at=>DateTime.now.utc
     else
       # delayed_retrieve
       # logger.info "   retrieve scheduled deplayed_job in one hour"   
@@ -194,12 +178,17 @@ class FacebookAccount < Account
   end
   
     
-  def do_retrieve(since=7.days.ago, hasta=Time.zone.now, rabbit=false)
-    started = Time.zone.now
+  def do_retrieve(since=7.days.ago, hasta=DateTime.now.utc, rabbit=false)
+    started = DateTime.now.utc
     logger.info "Facebook #{self.object_name} started: #{started.to_s(:db)}" 
     @num_attempts = 0
     begin
       @num_attempts += 1
+      # home_page = graph_api.get_object self.obj_name
+      # home_page['description']
+      # home_page['likes']
+      # home_page['talking_about_count']
+      
       posts = graph_api.get_connections(self.obj_name, "posts", :fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta) || []
       if posts.empty?
         logger.debug "  #{since.to_s(:db)}=#{hasta.to_s(:db)} do_retrieve posts empty   "
@@ -207,28 +196,30 @@ class FacebookAccount < Account
     rescue Koala::Facebook::ClientError=>error
       if error.fb_error_type == 'OAuthException'
         log_fail "graph_api.get_connections() #{error.message}"
-        self.update_attributes :status=>false,:updated_at=>Time.zone.now
+        logger.error "graph_api.get_connections() #{error.message}"
+        self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
         return false
       end
       if @num_attempts < self.max_attempts
         sleep RETRY_SLEEP
         retry
       else
-        self.update_attributes :status=>false,:updated_at=>Time.zone.now
+        self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
         log_fail "Tried #{@num_attempts} times. #{error.message}", 5
+        logger.error "Tried #{@num_attempts} times. #{error.message}", 5
         
-        delayed_do_retrieve(since, hasta)
-        logger.info "   retrieve scheduled deplayed_job in one hour" 
+        # delayed_do_retrieve(since, hasta)
+        # logger.info "   retrieve scheduled deplayed_job in one hour" 
       
         return false
       end
     rescue Exception=>error
       log_fail "graph_api.get_connections() #{error.message}"
       
-      delayed_do_retrieve(since, hasta)
-      logger.info "   retrieve scheduled deplayed_job in one hour" 
+      # delayed_do_retrieve(since, hasta)
+      logger.error "   retrieve #{error.message}" 
       
-      self.update_attributes :status=>false,:updated_at=>Time.zone.now
+      self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
       return false
     end
     
@@ -238,10 +229,10 @@ class FacebookAccount < Account
     rescue Exception=>error
       logger.debug error.backtrace
       log_fail "process_posts() #{error.message}"
-      self.update_attributes :status=>false,:updated_at=>Time.zone.now
+      self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
       
-      delayed_do_retrieve(since, hasta)
-      logger.info "   retrieve scheduled deplayed_job in one hour" 
+      # delayed_do_retrieve(since, hasta)
+      logger.info "   retrieve #{error.message}" 
       
       return false
     end
@@ -249,7 +240,7 @@ class FacebookAccount < Account
     return 'Success'
   end
   
-  def delayed_do_retrieve(since=7.days.ago, hasta=Time.zone.now, rabbit=false)
+  def delayed_do_retrieve(since=7.days.ago, hasta=DateTime.now.utc, rabbit=false)
     retrieve since, hasta, rabbit
   end
   handle_asynchronously :delayed_do_retrieve,:run_at => Proc.new { SCHEDULED_DELAY }
@@ -258,7 +249,7 @@ class FacebookAccount < Account
     return true if !posts || posts.empty?
     logger.debug "Process posts #{posts.size}"
     @bulk_insert = []
-    last_created_time = Time.zone.now
+    last_created_time = DateTime.now.utc
     posts.each do |f|
       last_created_time= DateTime.parse(f['created_time'])
       if last_created_time > since_date
@@ -270,9 +261,9 @@ class FacebookAccount < Account
                   :post_type=>post_type,
                   :replies_to_comment =>replies_to_comment,
                   :post_created_time=>last_created_time}
+                  
         dbpost = FbPost.find_or_create_by(:post_id=>f['id'])
         dbpost.update_attributes insert
-        
       end
     end
     unless @bulk_insert.empty?
@@ -310,16 +301,16 @@ class FacebookAccount < Account
   def save_post_details
      count = 0
      total_processed = 0
-     started = Time.zone.now
+     started = DateTime.now.utc
      myposts = self.fb_posts.where("post_created_time > '#{since_date}'").to_a
      myposts.each do |post|
        count += 1
        total_processed += 1
-       fin = Time.zone.now
+       fin = DateTime.now.utc
        duration = fin.to_i - started.to_i
        if count > 10
            puts "Sleep #{SLEEP}"
-           started - Time.zone.now
+           started - DateTime.now.utc
            count = 0
            sleep SLEEP
        end
@@ -327,8 +318,10 @@ class FacebookAccount < Account
        data = {}
        begin
          @num_attempts += 1   
-         insights = graph_api.graph_call("v2.2/#{post.post_id}/insights/post_story_adds_by_action_type")
-         data=insights[0]['values'][0]['value'] rescue {}
+         # insights = graph_api.graph_call("v2.2/#{post.post_id}/insights/post_story_adds_by_action_type")
+         # data=insights[0]['values'][0]['value'] rescue {}
+         data = graph_api.get_object(post.post_id, :fields => "shares,likes.summary(true),comments.summary(true)")
+         
        rescue Koala::Facebook::ClientError, Timeout::Error=>error
          if @num_attempts < self.max_attempts
            sleep RETRY_SLEEP
@@ -344,120 +337,62 @@ class FacebookAccount < Account
        completed = ((total_processed.to_f / myposts.size) * 100).to_i
        logger.debug "#{completed} % completed" if ((total_processed % 10)==0 )
        unless data.empty?
-         like_count = data['like']
-         comment_count = data['comment']
-         share_count = data['share']
-         post.update_attributes :likes=>like_count,
+         # like_count = data['like']
+         # comment_count = data['comment']
+         # share_count = data['share']
+         begin
+           like_count = 0
+           comment_count = 0
+           share_count = 0
+           if data['likes']
+             like_count=data['likes']['summary']['total_count']
+           end
+           if data['comments']
+             comment_count = data['comments']['summary']['total_count']
+           end
+           if data['shares']
+             share_count = data['shares']['count']
+           end
+           post.update_attributes :likes=>like_count,
              :comments=>comment_count,
              :shares=>share_count
+         rescue Exception=>ex
+           logger.error "    FacebookAccount#save_post_details #{ex.message}"
+           logger.error "    #{ex.backtrace}"  
+         end
        else
          logger.debug "No Insights Data post_id #{post.post_id}"
        end
      end
      aggregate_data 1,'day', true
+     
      # recent_page available after aggregate_data
-     recent_page.save_lifetime_data
+     today_page.save_lifetime_data
     
   end
-  
-  def upload_insights
-    file_path = s3_filepath(Time.zone.now) + "insights.json"
-    S3Model.new.store(file_path, get_insights.to_json)
-  end
-  
-  def get_insights
-    if !@insights
-      duration = since_date
-      @num_attempts = 0
-      begin
-        @num_attempts += 1
-        @insights=graph_api.graph_call("v2.2/#{self.obj_name}/insights")
-      rescue Timeout::Error=>error
-        logger.error "Error: get_insights #{error.message}"
-        if @num_attempts < self.max_attempts
-          sleep RETRY_SLEEP
-          retry
-        else
-          log_fail "Retried #{@num_attempts}"
-        end
-      rescue Exception=>error
-        log_fail "#{error.message} -  Failed #{@num_attempts} times"
-      end
-    end
-    @insights
-  end
-  
-  # to get insights page_fan_adds_day metrix directly
-  def get_insights_page_fan_adds_day
-    duration = since_date
-    @num_attempts = 0
-    begin
-     @num_attempts += 1
-     @insight_fans=graph_api.graph_call("v2.2/#{self.obj_name}/insights/page_fan_adds/day?since=#{duration.to_i}")
-    rescue Timeout::Error=>error
-      logger.error "Error: upload_insights #{error.message}"
-      if @num_attempts < self.max_attempts
-        sleep RETRY_SLEEP
-        retry
-      else
-        log_fail "Tried #{@num_attempts} times. #{error.message}", 5
-      end
-    rescue Exception=>error
-      log_fail error.message
-    end
 
-    if !!@insight_fans && @insight_fans[0]
-      values = @insight_fans[0]['values'] || []
-    else
-      values = []
-      logger.debug "Account #{self.id}, no page_fan_adds/day "
-    end
-    values.each do |val|
-      end_time = Time.zone.parse val['end_time']
-      data = val['value']
-      page = fb_pages.where("post_created_time BETWEEN '#{end_time.beginning_of_day}' AND '#{end_time.end_of_day}'").first
-      if page && page.fan_adds_day != data
-        page.update_attribute :fan_adds_day,data
-      end
-    end
-    copy_lifetime_likes
-  end
-  
   def get_replies_to_comment(f)
     replies_to_comment = 0
     if f['comments'] && f['comments']['data']
-      comment_id = f['comments']['data'][0]['id']
-      @num_attempts = 0            
-      begin
-        @num_attempts += 1
-        comments = graph_api.api("#{comment_id}/comments") 
-        replies_to_comment = comments['data'].size
-      rescue Koala::Facebook::ClientError=>error
-        if @num_attempts < self.max_attempts
-          sleep RETRY_SLEEP
-          retry
-        else
-          log_fail "Tried #{@num_attempts} times. #{error.message}", 5
+      f['comments']['data'].each do |comm|
+        comment_id = comm['id']
+        @num_attempts = 0            
+        begin
+          @num_attempts += 1
+          comments = graph_api.api("#{comment_id}/comments")  
+          replies_to_comment += comments['data'].size
+        rescue Koala::Facebook::ClientError=>error
+          if @num_attempts < self.max_attempts
+            sleep RETRY_SLEEP
+            retry
+          else
+            log_fail "Tried #{@num_attempts} times. #{error.message}", 5
+          end
         end
-      rescue Exception=>error
-        log_fail error.message
       end
     end
+    logger.debug "  get_replies_to_comment #{replies_to_comment}"
     replies_to_comment
-  end
-  
-  def self.fb_conf
-    @fb_conf ||= YAML::load_file(File.join(Rails.root.to_s, 'config/facebook.yml'))[Rails.env]
-  end
-  
-  def months_list
-    @months_list ||= Facebook.config[:months_list].to_i
-  end
-  def weeks_list
-    @weeks_list ||= Facebook.config[:weeks_list].to_i
-  end
-  def days_list
-    @days_list ||= Facebook.config[:days_list].to_i
   end
 
   def since_date=(date)
@@ -466,7 +401,7 @@ class FacebookAccount < Account
   
   def since_date
     if !@since_date
-      since_str = Facebook.config[:since_date]
+      since_str = Facebook.config[:since_date] || "7.days.ago"
       since_str.match /(\d+\.\w+)\.ago/
       @back_to_date = (instance_eval $1).to_i
       
@@ -504,214 +439,199 @@ class FacebookAccount < Account
     end
     
   end
-  def recent_page
-    @recent_page = fb_pages.order("post_created_time desc").first
-  end
   
-  def get_access_token
-    # alternate select page_access_token
-    begin
-      idx = self.id % 2
-      self.api_tokens[ idx ].page_access_token
-    rescue Exception=>error
-      logger.error  error.message
-      nil
-    end
-  end
-  
-  def access_token_exists?
-    arr = self.api_tokens.where("page_access_token is not null").to_a
-    !arr.empty?
-  end
-  
-  # oauth = Koala::Facebook::OAuth.new id, secret
-  # app_access_token = oauth.get_app_access_token
-  # Koala.config.api_version = "v2.2"
-  # graph = Koala::Facebook::API.new app_access_token
-  # urls = ['http://www.ruhanirabin.com/easy-steps-to-facebook-connect-comment-box-how-to/']
-  # comments = graph.get_comments_for_urls(urls)
-
-  def graph
-    graph_api
+  def today_page
+    @today_page = FbPage.find_or_create_by account_id: self.id,
+       post_created_time: DateTime.now.utc.end_of_day,
+       object_name: self.object_name
   end
 
+=begin
+    # a yahoo post
+    obj="7040724713_10153243363174714" 
+    a=FacebookAccount.find 7
+    z=a.graph_api.get_object(obj, :fields => "shares,likes.summary(true),comments.summary(true)")
+    z['likes']['summary']['total_count']
+    z['comments']['summary']['total_count']
+    z['shares']['count']
+=end
+  def app_token
+    uri = URI.parse Facebook.config[:canvas_url]        
+    canvas_url = uri.host
+    # where("page_access_token is not null")
+    @tokens ||= AppToken.where("platform='Facebook'").
+        where("canvas_url='#{canvas_url}'").to_a
+    @access_token = @tokens[self.id % @tokens.size]
+  end
+  
   def graph_api(access_token=nil)
-    if @graph_api
-      return @graph_api
-    end
     Koala.config.api_version = "v2.2"
-    if self.page_access_token
-      access_token = self.page_access_token
-    else
-      # get app access token
-      client_id = Facebook.config[:client_id]
-      client_secret = Facebook.config[:client_secret]
-      callback_url = Facebook.config[:canvas_url]
-      @oauth = Koala::Facebook::OAuth.new(client_id, client_secret, callback_url)
-      access_token = @oauth.get_app_access_token 
-      self.user_access_token = access_token
-      self.save  
+    if !access_token
+      # the page_access_token expires in one hour
+      if self.app_token.page_access_token && 
+           self.app_token.updated_at > 55.minutes.ago
+        access_token = self.app_token.page_access_token
+      else
+        # get new app access token
+        client_id = self.app_token[:client_id]
+        client_secret = self.app_token[:client_secret]
+        callback_url = self.app_token[:canvas_url]
+        @oauth = Koala::Facebook::OAuth.new(client_id, client_secret, callback_url)
+        access_token = @oauth.get_app_access_token
+        self.app_token.page_access_token = access_token
+        self.app_token.save
+      end
     end
     @graph_api = Koala::Facebook::API.new(access_token)
   end
   
-  # insights fan_adds_day is 2 days behind
-  # this to use lifetime likes diffrence to fill fan_adds_day
-  def copy_lifetime_likes
-    logger.debug "copy_lifetime_likes #{self.id} #{self.object_name}"
-    (0..3).each do |i|
-      if fb_pages[i] && !fb_pages[i].fan_adds_day
-        if fb_pages[i].total_likes &&
-           fb_pages[i+1].total_likes
-          fb_pages[i].fan_adds_day = fb_pages[i].total_likes -
-             fb_pages[i+1].total_likes
-          fb_pages[i].save
-        end
-      end
-    end  
-  end
-  
-  # download insights from S3
-  # return array of hashes
-  def download_insights(date=Time.zone.now)
-    path = s3_filepath(date) + "insights.json"
-    logger.debug "Download from S3 #{path}. All dates are end date"
-    results = []
-    if since_date > 31.days.ago
-      # since_date is within one month
-      # get 1.month.ago insights.json file
-      path1 = s3_filepath(date.months_ago(1)) + "insights.json"
-      begin
-        result2 = S3Model.new.json_obj path1
-        results << result2
-      rescue
-        logger.error "ERROR #{$!} - #{path1}"
-      end
-      
-      begin
-        result1 = S3Model.new.json_obj path
-        results << result1
-      rescue
-        logger.error "ERROR #{$!} - #{path}"
-      end
-    else
-      begin
-        result = S3Model.new.json_obj path
-        results << result
-      rescue
-        logger.error "ERROR #{$!} - #{path}"
-      end
-    end
+  protected
 
-    arrays = []
-    results.each do |result|
-      arr = []
-      result.each do |a|
-        if a['id'].match /page_fan_adds_unique\/day$/
-          # adds_unique_day(a)
-        
-        elsif a['id'].match /overall\/day$/
-          arr << overall_day(a)
-        elsif a['id'].match /overall\/week$/
-          arr << overall_week(a)
-        elsif a['id'].match /overall\/month$/
-          arr << overall_month(a)
-        elsif a['id'].match /overall\/lifetime$/
-          arr << overall_lifetime(a)
-        elsif a['id'].match /page_fan_adds\/day$/
-          arr << page_fan_adds_day(a)
-       
-        elsif a['id'].match /page_story_adds\/day$/
-        arr << page_story_adds_day(a)
-        
-        elsif a['id'].match /page_story_adds_by_story_type\/day$/
-          arr << page_story_adds_by_story_type_day(a)
-        
-        elsif a['id'].match /page_consumptions\/day$/
-          arr << page_consumptions_day(a)
-        
-        elsif a['id'].match /page_consumptions_by_consumption_type\/day$/
-        # arr << page_consumptions_by_consumption_type_day(a)
-        
-        elsif a['id'].match /page_stories\/week/
-          arr << page_stories_week(a)
-        
-        elsif a['id'].match /page_stories_by_story_type\/week/
-          arr << page_stories_by_story_type_week(a)
-        
-        elsif a['id'].match /page_fans\/lifetime/
-          page_fans a
-        end
-      end
-      arrays << arr
+  
+  def find_or_create_page(options)
+    created_time = options.delete :post_created_time
+    begin_date = created_time.beginning_of_day
+    end_date = created_time.end_of_day
+    rec = FbPage.where(account_id: self.id).
+          where(post_created_time: (begin_date..end_date)).first
+    if !rec
+       rec = FbPage.create :account_id => self.id, 
+             :post_created_time=>created_time,
+             :object_name => self.object_name
     end
-    show_raw ? results : merge_arrays(arrays)
+    rec.update_attributes options
   end
   
-  def merge_arrays arrays
-    if arrays.empty?
-      ['No found']
-    elsif arrays.size == 1
-      arrays[0]
-    else
-      arrays[0].each do |a1|
-        arrays[1].each do |a2|
-          if a1['name'] == a2['name']
-            if a2['values'].size == 1
-               a2['values'][0] = a1['values'][0].merge(a2['values'][0]) rescue ''
-            end       
-          end
-        end
-      end
-      arrays[1]
-    end
+  
+  def exist_posts
+    @exist_posts ||= FbPost.all.map {|a| a.post_id}
   end
   
-  def exchange_page_access_token(access_token)
-    if !access_token
-      raise "  FacebookAccount#exchange_page_access_token access_token is null"
-    end
-    self.user_access_token = access_token
-    token = access_token
-    begin
-      page_token = graph_api(token).graph_call("v2.2/#{self.send(:obj_name)}?fields=access_token&access_token=#{token}")
-      if page_token['access_token']
-        self.page_access_token = page_token['access_token']
-        self.save!
-      else
-        logger.info "FacebookAccount: #{self.object_name} : no page_token['access_token']"
-      end
-    rescue Exception=>error
-      logger.error error.message
-    end
+  def expire
+  
   end
   
-  def token?
-    !!page_access_token
+  def me  
+    feeds=graph_api.graph_call("v2.2/me")
   end
   
-  def debug_token
-    begin
-      token = self.page_access_token
-      if token
-        end_point = "v2.2/debug_token?input_token=#{token}&access_token=#{token}"
-        re = graph_api.graph_call end_point
-        expiry = re['data']['expires_at']
-        if expiry == 0
-          'never'
-        else
-          expiry = (Time.at(expiry) - Time.zone.now) / 3600 
-          "in about #{exp.to} hours"
-        end
-      else
-        ''
-      end
-    rescue Exception=>ex
-      'FB Error'
-    end
+  # period 1.day or 1.week or 1.month
+  def lifetime_data number=1, unit="day"
+    increment = instance_eval("#{number}.#{unit}")
+    end_of_today = DateTime.now.utc.end_of_day
     
+    # current_date = DateTime.now.utc.end_of_day
+    current_date = end_of_today
+    my_arr = []
+    while current_date > min_post_date do
+      end_of_ = current_date.end_of_day
+      if end_of_ > end_of_today
+         break
+      end
+      logger.error "DATE #{current_date} > #{min_post_date}"
+      data = select_lifetime_data end_of_
+      if data
+        my_arr << { "value"=>{"likes"=>data.total_likes,"comments"=>data.total_comments,
+                            "shares"=>data.total_shares,"talking_about" => data.total_talking_about
+                            },
+                    "end_time"=>end_of_.to_s(:db)
+                  }
+      end
+      current_date = current_date - 1.day
+    end
+    my_arr.reverse
+  end
+  
+  def select_lifetime_data end_of
+    data = fb_pages.where(post_created_time: 
+             (end_of.beginning_of_day..end_of.end_of_day)).
+             first
+  end
+  
+  # period 1.day or 1.week or 1.month
+  def aggregate_data number=1, unit="month", create_page=false
+    increment = instance_eval("#{number}.#{unit}")
+    end_of_today = DateTime.now.utc.end_of_day
+    current_date = end_of_today
+    my_arr = []
+    while current_date > min_post_date do
+      beginning_of_ = (current_date-increment+1.day).beginning_of_day.to_s(:db)
+      end_of_ = current_date
+      if end_of_ > end_of_today
+         break
+      end
+      # puts "DATE #{current_date} > #{min_post_date}"
+      end_of_ = end_of_.to_s(:db)
+      data = select_aggregated_data beginning_of_, end_of_
+      
+      options = {:likes=>data.likes, 
+                 :comments=>data.comments,
+                 :shares=>data.shares,
+                 :posts => data.post_count,
+                 :replies_to_comment => data.replies_to_comment
+                }
+      my_arr << { "value"=>options,
+                  "start_date"=>beginning_of_,
+                  "end_time"=>end_of_
+                }
+      if create_page
+        options[:post_created_time] = current_date
+        find_or_create_page(options)
+      end
+      # current_date = current_date - increment
+      current_date = current_date - 1.day
+    end
+    my_arr.reverse
+  end
+  
+  def select_aggregated_data beginning_of, end_of
+    # select_query = "post_type='original' AND (post_created_time BETWEEN '#{beginning_of}' AND '#{end_of}') "
+    data = recent_posts.select("count(*) AS post_count,sum(likes) as likes, sum(comments) as comments, sum(shares) as shares,sum(replies_to_comment) as replies_to_comment").
+        where(post_type: 'original').
+        where(post_created_time: (beginning_of..end_of)).
+        first
   end
 
+end
+=begin
+  def get_likes_count(post_id)
+    count = 0     
+    feed = self.graph_api.get_object('/' + post_id + '/likes?limit=1000')
+    while feed.size > 0
+      count += feed.size
+      feed = feed.next_page rescue []
+    end  
+    count
+  end
+
+  def self.populate
+    # place holder
+  end
+  
+  
+  def send_mq_message rabbit
+    payload = {:account_id => self.id, :date=>Time.zone.now.to_s(:db)}.to_yaml
+    rabbit.channel.default_exchange.publish(payload,
+            :type        => "save_post_details",
+            :routing_key => "amqpgem.examples.patterns.command")
+    rabbit.connection.close
+  end
+  
+  
+  def self.fb_conf
+    @fb_conf ||= YAML::load_file(File.join(Rails.root.to_s, 'config/facebook.yml'))[Rails.env]
+  end
+  
+  def months_list
+    @months_list ||= Facebook.config[:months_list].to_i
+  end
+  def weeks_list
+    @weeks_list ||= Facebook.config[:weeks_list].to_i
+  end
+  def days_list
+    @days_list ||= Facebook.config[:days_list].to_i
+  end
+  
   def get_valid_date name
     name.match /_(week|day|month|lifetime)$/
     @period = $1
@@ -796,145 +716,13 @@ class FacebookAccount < Account
   end
   
   
-  def send_mq_message rabbit
-    payload = {:account_id => self.id, :date=>Time.zone.now.to_s(:db)}.to_yaml
-    rabbit.channel.default_exchange.publish(payload,
-            :type        => "save_post_details",
-            :routing_key => "amqpgem.examples.patterns.command")
-    rabbit.connection.close
+  def recent_page
+    @recent_page = fb_pages.order("post_created_time desc").first
   end
-  
-  
-  protected
-  def insights_life
-    unless @insights_life
-      @insights_life = {"id"=>"overall/lifetime","name"=>"overall_lifetime","period"=>"life time"}
-      @insights_life["values"] = lifetime_data(1, 'day')
-    end
-    @insights_life
+
+  def graph
+    graph_api
   end
-  
-  def insights_month
-    unless @insights_month
-      @insights_month = {"id"=>"overall/month","name"=>"overall_month","period"=>"month"}
-      @insights_month["values"] =  aggregate_data 1,'month', false
-    end
-    @insights_month
-  end
-  def insights_week
-    unless @insights_week
-      @insights_week = {"id"=>"overall/week","name"=>"overall_week","period"=>"week"}
-      @insights_week["values"] =  aggregate_data 1,'week', false
-    end
-    @insights_week
-  end
-  def insights_day
-    unless @insights_day
-      @insights_day = {"id"=>"overall/day","name"=>"overall_day","period"=>"day"}
-      @insights_day["values"] =  aggregate_data 1,'day', true
-    end
-    @insights_day
-  end
-  
-  def find_or_create_page(options)
-    created_time = options.delete :post_created_time
-    begin_date = created_time.beginning_of_day
-    end_date = created_time.end_of_day
-    
-    re = FbPage.where("account_id=#{self.id} AND post_created_time BETWEEN '#{begin_date}' AND '#{end_date}' ").
-      first
-    if !re
-      re = FbPage.create :account_id => self.id, :post_created_time=>created_time,
-         :object_name => self.object_name
-    end
-    re.update_attributes options
-  end
-  
-  
-  def exist_posts
-    @exist_posts ||= FbPost.all.map {|a| a.post_id}
-  end
-  
-  def expire
-  
-  end
-  
-  def me  
-    feeds=graph_api.graph_call("v2.2/me")
-  end
-  
-  # period 1.day or 1.week or 1.month
-  def lifetime_data number=1, unit="day"
-    increment = instance_eval("#{number}.#{unit}")
-    current_date = Time.zone.now.end_of_day
-    my_arr = []
-    while current_date > min_post_date do
-      end_of_ = current_date.end_of_day
-      if end_of_ > Time.zone.now.end_of_day
-         break
-      end
-      logger.error "DATE #{current_date} > #{min_post_date}"
-      data = select_lifetime_data end_of_
-      if data
-        my_arr << { "value"=>{"likes"=>data.total_likes,"comments"=>data.total_comments,
-                            "shares"=>data.total_shares,"talking_about" => data.total_talking_about
-                            },
-                    "end_time"=>end_of_.to_s(:db)
-                  }
-      end
-      current_date = current_date - 1.day
-    end
-    my_arr.reverse
-  end
-  
-  def select_lifetime_data end_of
-    data = fb_pages.where("post_created_time BETWEEN '#{end_of.beginning_of_day}' AND '#{end_of.end_of_day}'").
-           first
-  end
-  
-  # period 1.day or 1.week or 1.month
-  def aggregate_data number=1, unit="month", create_page=false
-    increment = instance_eval("#{number}.#{unit}")
-    current_date = (Time.zone.now-0.day).end_of_day
-    my_arr = []
-    while current_date > min_post_date do
-      beginning_of_ = (current_date-increment+1.day).beginning_of_day.to_s(:db)
-      end_of_ = current_date.end_of_day
-      if end_of_ > Time.zone.now.end_of_day
-         break
-      end
-      # puts "DATE #{current_date} > #{min_post_date}"
-      end_of_ = end_of_.to_s(:db)
-      data = select_aggregated_data beginning_of_, end_of_
-      
-      options = {:likes=>data.likes, 
-                 :comments=>data.comments,
-                 :shares=>data.shares,
-                 :posts => data.post_count,
-                 :replies_to_comment => data.replies_to_comment
-                }
-      my_arr << { "value"=>options,
-                  "start_date"=>beginning_of_,
-                  "end_time"=>end_of_
-                }
-      if create_page
-        options[:post_created_time] = current_date
-        find_or_create_page(options)
-      end
-      # current_date = current_date - increment
-      current_date = current_date - 1.day
-    end
-    my_arr.reverse
-  end
-  
-  def select_aggregated_data beginning_of, end_of
-    select_query = "post_type='original' AND (post_created_time BETWEEN '#{beginning_of}' AND '#{end_of}') "
-    puts select_query
-    data = recent_posts.select("count(*) AS post_count,sum(likes) as likes, sum(comments) as comments, sum(shares) as shares,sum(replies_to_comment) as replies_to_comment").
-        where(select_query).
-        first
-  end
-  
   def page_fan_adds_day(content)
     name = "page_fan_adds_day"
     desc = "Daily: The number of new people who have liked your Page (Total Count)"
@@ -1001,22 +789,210 @@ class FacebookAccount < Account
     # puts "AAAA #{content}.inspect"
   end
   
-  public
-  
-  def get_likes_count(post_id)
-    count = 0     
-    feed = self.graph_api.get_object('/' + post_id + '/likes?limit=1000')
-    while feed.size > 0
-      count += feed.size
-      feed = feed.next_page rescue []
+  # insights fan_adds_day is 2 days behind
+  # this to use lifetime likes diffrence to fill fan_adds_day
+  def copy_lifetime_likes
+    logger.debug "copy_lifetime_likes #{self.id} #{self.object_name}"
+    (0..3).each do |i|
+      if fb_pages[i] && !fb_pages[i].fan_adds_day
+        if fb_pages[i].total_likes &&
+           fb_pages[i+1].total_likes
+          fb_pages[i].fan_adds_day = fb_pages[i].total_likes -
+             fb_pages[i+1].total_likes
+          fb_pages[i].save
+        end
+      end
     end  
-    count
-  end
-
-  def self.populate
-    # place holder
   end
   
-end
+  def merge_arrays arrays
+    if arrays.empty?
+      ['No found']
+    elsif arrays.size == 1
+      arrays[0]
+    else
+      arrays[0].each do |a1|
+        arrays[1].each do |a2|
+          if a1['name'] == a2['name']
+            if a2['values'].size == 1
+               a2['values'][0] = a1['values'][0].merge(a2['values'][0]) rescue ''
+            end       
+          end
+        end
+      end
+      arrays[1]
+    end
+  end
+  
+  def upload_insights
+    file_path = s3_filepath(Time.zone.now) + "insights.json"
+    S3Model.new.store(file_path, get_insights.to_json)
+  end
+  
+  def get_insights
+    if !@insights
+      duration = since_date
+      @num_attempts = 0
+      begin
+        @num_attempts += 1
+        @insights=graph_api.graph_call("v2.2/#{self.obj_name}/insights")
+      rescue Timeout::Error=>error
+        logger.error "Error: get_insights #{error.message}"
+        if @num_attempts < self.max_attempts
+          sleep RETRY_SLEEP
+          retry
+        else
+          log_fail "Retried #{@num_attempts}"
+        end
+      rescue Exception=>error
+        log_fail "#{error.message} -  Failed #{@num_attempts} times"
+      end
+    end
+    @insights
+  end
+  
+  # to get insights page_fan_adds_day metrix directly
+  def get_insights_page_fan_adds_day
+    duration = since_date
+    @num_attempts = 0
+    begin
+     @num_attempts += 1
+     @insight_fans=graph_api.graph_call("v2.2/#{self.obj_name}/insights/page_fan_adds/day?since=#{duration.to_i}")
+    rescue Timeout::Error=>error
+      logger.error "Error: upload_insights #{error.message}"
+      if @num_attempts < self.max_attempts
+        sleep RETRY_SLEEP
+        retry
+      else
+        log_fail "Tried #{@num_attempts} times. #{error.message}", 5
+      end
+    rescue Exception=>error
+      log_fail error.message
+    end
+
+    if !!@insight_fans && @insight_fans[0]
+      values = @insight_fans[0]['values'] || []
+    else
+      values = []
+      logger.debug "Account #{self.id}, no page_fan_adds/day "
+    end
+    values.each do |val|
+      end_time = Time.zone.parse val['end_time']
+      data = val['value']
+      page = fb_pages.where("post_created_time BETWEEN '#{end_time.beginning_of_day}' AND '#{end_time.end_of_day}'").first
+      if page && page.fan_adds_day != data
+        page.update_attribute :fan_adds_day,data
+      end
+    end
+    copy_lifetime_likes
+  end
+    def insights_life
+    unless @insights_life
+      @insights_life = {"id"=>"overall/lifetime","name"=>"overall_lifetime","period"=>"life time"}
+      @insights_life["values"] = lifetime_data(1, 'day')
+    end
+    @insights_life
+  end
+  
+  def insights_month
+    unless @insights_month
+      @insights_month = {"id"=>"overall/month","name"=>"overall_month","period"=>"month"}
+      @insights_month["values"] =  aggregate_data 1,'month', false
+    end
+    @insights_month
+  end
+  def insights_week
+    unless @insights_week
+      @insights_week = {"id"=>"overall/week","name"=>"overall_week","period"=>"week"}
+      @insights_week["values"] =  aggregate_data 1,'week', false
+    end
+    @insights_week
+  end
+  def insights_day
+    unless @insights_day
+      @insights_day = {"id"=>"overall/day","name"=>"overall_day","period"=>"day"}
+      @insights_day["values"] =  aggregate_data 1,'day', true
+    end
+    @insights_day
+  end
+  
+  # download insights from S3
+  # return array of hashes
+  def download_insights(date=Time.zone.now)
+    path = s3_filepath(date) + "insights.json"
+    logger.debug "Download from S3 #{path}. All dates are end date"
+    results = []
+    if since_date > 31.days.ago
+      # since_date is within one month
+      # get 1.month.ago insights.json file
+      path1 = s3_filepath(date.months_ago(1)) + "insights.json"
+      begin
+        result2 = S3Model.new.json_obj path1
+        results << result2
+      rescue
+        logger.error "ERROR #{$!} - #{path1}"
+      end
+      
+      begin
+        result1 = S3Model.new.json_obj path
+        results << result1
+      rescue
+        logger.error "ERROR #{$!} - #{path}"
+      end
+    else
+      begin
+        result = S3Model.new.json_obj path
+        results << result
+      rescue
+        logger.error "ERROR #{$!} - #{path}"
+      end
+    end
+
+    arrays = []
+    results.each do |result|
+      arr = []
+      result.each do |a|
+        if a['id'].match /page_fan_adds_unique\/day$/
+          # adds_unique_day(a)
+        
+        elsif a['id'].match /overall\/day$/
+          arr << overall_day(a)
+        elsif a['id'].match /overall\/week$/
+          arr << overall_week(a)
+        elsif a['id'].match /overall\/month$/
+          arr << overall_month(a)
+        elsif a['id'].match /overall\/lifetime$/
+          arr << overall_lifetime(a)
+        elsif a['id'].match /page_fan_adds\/day$/
+          arr << page_fan_adds_day(a)
+       
+        elsif a['id'].match /page_story_adds\/day$/
+        arr << page_story_adds_day(a)
+        
+        elsif a['id'].match /page_story_adds_by_story_type\/day$/
+          arr << page_story_adds_by_story_type_day(a)
+        
+        elsif a['id'].match /page_consumptions\/day$/
+          arr << page_consumptions_day(a)
+        
+        elsif a['id'].match /page_consumptions_by_consumption_type\/day$/
+        # arr << page_consumptions_by_consumption_type_day(a)
+        
+        elsif a['id'].match /page_stories\/week/
+          arr << page_stories_week(a)
+        
+        elsif a['id'].match /page_stories_by_story_type\/week/
+          arr << page_stories_by_story_type_week(a)
+        
+        elsif a['id'].match /page_fans\/lifetime/
+          page_fans a
+        end
+      end
+      arrays << arr
+    end
+    show_raw ? results : merge_arrays(arrays)
+  end
+=end
+
 
   

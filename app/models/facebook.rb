@@ -22,7 +22,6 @@ class Facebook < ActiveRecord::Base
            canvas_url = app_token.canvas_url || 'ads.localhost.com'
            cnf = {:client_id=>client_id,
                   :client_secret=>client_secret,
-                  :name=>app_token.facebook_accounts[0].name,
                   :scope=> cnf[:scope],
                   :canvas_url=>canvas_url}
         end

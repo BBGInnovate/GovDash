@@ -27,6 +27,7 @@ class FacebooksController < ApplicationController
     uri = URI.parse Facebook.config[:canvas_url] 
     @emails = AppToken.select("distinct api_user_email").
        where("api_user_email is not null").
+       where("platform='Facebook'").
        where("canvas_url='#{uri.host}'").to_a.
        map{|c| [c.api_user_email]}.unshift(['--Email--',''])
   end
@@ -50,6 +51,7 @@ class FacebooksController < ApplicationController
     )
   end
 
+=begin
   def get_records email
     uri = URI.parse Facebook.config[:canvas_url]
     records = AppToken.includes(:facebook_accounts).
@@ -57,27 +59,24 @@ class FacebooksController < ApplicationController
       where(email).
       references(:facebook_accounts).to_a
   end
+=end
 
   # handle Normal OAuth flow: callback
   def create
     if session[:email]
-      # api_user_email should be unique if app_tokens table
-      # this makes the code compatible with the old api_tokens
-      apps = AppToken.where(api_user_email: session[:email] ).to_a
-      unless apps.empty?
-        app = apps.last
+      # api_user_email should be unique in api_tokens table
+      app = AppToken.where(api_user_email: session[:email] ).last
+      if app
         Facebook.app_token = app
         client = Facebook.auth(callback_facebook_url).client
         uri = URI.parse client.redirect_uri
         client.authorization_code = params[:code]
         access_token = client.access_token! :client_auth_body
         puts "   user token: #{access_token.access_token}"
-        sleep 5
+        sleep 2
         user = FbGraph::User.me(access_token).fetch
         authenticate Facebook.identify(user)
-        app.facebook_accounts.each do |fb|
-          fb.exchange_page_access_token access_token.access_token
-        end
+        app.exchange_page_access_token access_token.access_token
       end
     end
     redirect_to '/facebooks/index' # dashboard_url
@@ -107,16 +106,9 @@ class FacebooksController < ApplicationController
       if app_token
         Facebook.app_token = app_token
         session[:email] = email
-        @accounts = app_token.facebook_accounts
-      end
-    else
-      @accounts = FacebookAccount.all
-    end
-    @accounts.each do |ac|
-      if !!ac.page_access_token
-         @token_count += 1
       end
     end
+    @accounts = FacebookAccount.where("is_active=1").all
   end
   
   def oauth2_error(e)

@@ -460,8 +460,7 @@ class FacebookAccount < Account
     canvas_url = uri.host
     # where("page_access_token is not null")
     @tokens ||= AppToken.where("platform='Facebook'").
-        where("client_id is not null").
-        where("canvas_url='#{canvas_url}'").to_a
+        where("client_id is not null").to_a
     @access_token = @tokens[self.id % @tokens.size]
   end
   

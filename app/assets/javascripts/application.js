@@ -16,8 +16,9 @@
 //= require services/sessionService
 //= require services/recordService
 //= require services/roleService
-//= require services/networkService
-//= require services/serviceService
+//= require services/organizationService
+//= require services/groupService
+//= require services/subgroupService
 //= require services/accountService
 //= require services/regionService
 //= require services/countryService
@@ -31,8 +32,9 @@
 //= require controllers/record
 //= require controllers/home
 //= require controllers/users
-//= require controllers/networks
-//= require controllers/services
+//= require controllers/organizations
+//= require controllers/groups
+//= require controllers/subgroups
 //= require controllers/accounts
 //= require controllers/regions
 //= require controllers/countries
@@ -42,7 +44,7 @@
 
 
 angular.module('radd', ['sessionService','recordService', 'roleService', 'regionService', 
-'countryService', 'networkService', 'serviceService', 'accountService', 
+'countryService', 'organizationService', 'groupService', 'subgroupService', 'accountService', 
 'accountTypeService', 'mediaTypeService', 'languageService', 'reportService', 'userService', 
 'dateService', 'segmentService', '$strap.directives', 'directives', 'filters', 'ngRoute', 
 'angucomplete', 'googlechart', 'datePicker', 'ui.bootstrap'])
@@ -80,9 +82,15 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
       .when('/users/login', {templateUrl:'/users/login.html', controller:UsersCtrl})
       .when('/users/register', {templateUrl:'/users/register.html', controller:UsersCtrl})
       .when('/config', {templateUrl:'/config/index.html'})
-      .when('/networks/create/', {templateUrl:'/networks/create.html', controller:NetworksCtrl})
-      .when('/networks', {templateUrl:'/networks/list.html', controller:NetworksCtrl})
-      .when('/networks/edit/:networkId', {templateUrl:'/networks/edit.html', controller:NetworksCtrl})
+      .when('/organizations/create/', {templateUrl:'/organizations/create.html', controller:OrganizationsCtrl})
+      .when('/organizations', {templateUrl:'/organizations/list.html', controller:OrganizationsCtrl})
+      .when('/organizations/edit/:organizationId', {templateUrl:'/organizations/edit.html', controller:OrganizationsCtrl})
+      .when('/groups/create/', {templateUrl:'/groups/create.html', controller:GroupsCtrl})
+      .when('/groups', {templateUrl:'/groups/list.html', controller:GroupsCtrl})
+      .when('/groups/edit/:groupId', {templateUrl:'/groups/edit.html', controller:GroupsCtrl})
+      .when('/subgroups/create/', {templateUrl:'/subgroups/create.html', controller:SubgroupsCtrl})
+      .when('/subgroups', {templateUrl:'/subgroups/list.html', controller:SubgroupsCtrl})
+      .when('/subgroups/edit/:subgroupId', {templateUrl:'/subgroups/edit.html', controller:SubgroupsCtrl})
       .when('/accounts', {templateUrl:'/accounts/list.html', controller:AccountsCtrl})
       .when('/accounts/create/', {templateUrl:'/accounts/create.html', controller:AccountsCtrl})
       .when('/accounts/edit/:accountId', {templateUrl:'/accounts/edit.html', controller:AccountsCtrl})

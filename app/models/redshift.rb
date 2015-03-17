@@ -2,72 +2,68 @@ class Redshift < ActiveRecord::Base
   self.abstract_class = true
   establish_connection "redshift_#{Rails.env}".to_sym
   
-  @@existing_fb_pages = []
-  @@existing_fb_posts = []
-  @@existing_tw_timelines = []
-  @@existing_tw_tweets = []
-  
-  RESOURCE = {"RedshiftFbPage"=>@@existing_fb_pages,
-              "RedshiftFbPost"=>@@existing_fb_posts,
-              "RedshiftTwTimeline"=>@@existing_tw_timelines,
-              "RedshiftTwTweet"=>[]}
-class << self       
+  RESOURCE = {"RedshiftFbPage"=>[],
+              "RedshiftFbPost"=>[],
+              "RedshiftTwTimeline"=>[],
+              "RedshiftTwTweet"=>[],
+              "RedshiftYtChannel"=>[],
+              "RedshiftYtVideo"=>[]}
+
+class << self
   def mysql_model_class
-    if self.name =~ /Redshift(\w*)/
-      $1.constantize
-    else
-      nil
-    end
+    @mysql_model_class ||=
+      if self.name =~ /Redshift(\w*)/
+        $1.constantize
+      else
+        nil
+      end
   end
   
-  def upload last_id, conditions={} 
-    klass = self
-    # klass = RedshiftTwTweet
-    klass_name = klass.name
-    mysql_klass = klass.mysql_model_class
-    
+  def upload last_id=0, conditions={} 
+    RESOURCE[self.name] = 
+       select("original_id").
+          where("original_id > #{last_id}").
+            to_a.map{|r| r.original_id}
+              
     account_ids = []
     if conditions.empty?
-      account_ids = mysql_klass.select("distinct account_id").map{|a| a.account_id}
+      mysql_records = mysql_model_class.all
     elsif conditions[:account_id]
       aid = conditions[:account_id]
-      if Array === aid
-        account_ids << aid.split(',') 
+      if String === aid
+        account_ids << aid.split(',')
+      elsif Array === aid
+        account_ids = aid
+      elsif Integer === aid
+        account_ids = [aid]
       else
-        account_ids << aid
+        account_ids = []
       end
-    end
-    
-    account_ids.each do | acc_id |
-      arr = []
-      klass::RESOURCE[klass_name] = 
-        klass.select("original_id").
-        where(:account_id=>acc_id).
-        where("original_id > #{last_id}").
-        to_a.map{|r| r.original_id}
-      
-      mysql_klass.where(:account_id=>acc_id).
-        where("id > #{last_id}").to_a.each do |rec|
-        attr = rec.attributes
-        id = attr.delete('id')
-        unless klass::RESOURCE[klass_name].include? id
-          attr.merge! "original_id"=>id
-          arr << attr
-          klass::RESOURCE[klass_name] << id
-        end
-      end
-      
-      unless arr.empty?
-        klass.send "import!", arr,''
-        Rails.logger.debug " Account #{acc_id} #{arr.size} rows uploaded"
-      else
-        Rails.logger.debug " Account #{acc_id} Nothing to upload"
-      end
-      
-      sleep 3
-      
+      mysql_records = mysql_model_class.
+         where("account_id in (#{account_ids})").to_a
     end
 
+    ids = mysql_records.map{|a| a.id}
+    @bulk_insert = []
+    mysql_records.each do | rec |
+      attr = rec.attributes
+      id = attr.delete('id')
+      unless RESOURCE[self.name].include? id
+        attr.merge! "original_id"=>id
+        @bulk_insert << attr
+        RESOURCE[self.name] << id
+        if @bulk_insert.size > 1000
+          logger.info "  upload #{@bulk_insert} #{mysql_model_class} data to Redshift db"
+          self.send "import!", @bulk_insert,''
+          @bulk_insert = []
+        end
+      end
+    end
+    if @bulk_insert.size > 0
+      logger.info "  upload #{@bulk_insert} #{mysql_model_class} data to Redshift db"
+      self.send "import!", @bulk_insert,''
+      @bulk_insert = []
+    end
   end
   handle_asynchronously :upload, :run_at => Proc.new {5.seconds.from_now }
   
@@ -94,6 +90,7 @@ class << self
     self.connection.execute(sql)
   end
 end
+
 end
 
 =begin

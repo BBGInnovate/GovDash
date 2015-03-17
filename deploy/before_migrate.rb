@@ -1,3 +1,6 @@
+#
+# this callback is used in Opsworks Apps Deploy action
+#
 Chef::Log.info("deploy/before_migrate.rb Create sym links")
 
 # include_recipe "rails::myconfigure"
@@ -82,14 +85,26 @@ node[:deploy].each do |application, deploy|
     )
   end
   
-  template "#{deploy[:deploy_to]}/current/config/initializers/secret_token.rb" do
+  template "#{deploy[:deploy_to]}/shared/config/youtube.yml" do
+    source "youtube.yml.erb"
+    cookbook 'rails'
+    mode "0660"
+    group deploy[:group]
+    owner deploy[:user]
+    variables(
+      :youtube => deploy[:youtube] || {},
+      :environment => deploy[:rails_env]
+    )
+  end
+  
+  template "#{deploy[:deploy_to]}/shared/config/secret_token.rb" do
     source "secret_token.rb.erb"
     cookbook 'rails'
     mode "0660"
     group deploy[:group]
     owner deploy[:user]
     
-    notifies :run, "execute[restart Rails app #{application}]"
+    # notifies :run, "execute[restart Rails app #{application}]"
     
   end
 end

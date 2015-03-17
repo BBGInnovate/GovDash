@@ -1,0 +1,21 @@
+<!-- user comes from $scope.user -->
+<div>
+	<p><a href="" back-button><i class="icon-angle-left"></i> Back</a></p>
+	<div style="float:left" class="page-header">
+		<h1>Organizations</h1>
+	</div>
+	
+</div>
+<div style="clear:both;"></div>
+
+
+<div data-ng-init="list()">
+	<ul>
+		<li data-ng-repeat="organization in organizations">
+			<div class="well">
+				<h3><a href="#/organizations/edit/{{organization.id}}">{{organization.name}}</a></h3>
+			</div>
+		</li>
+	</ul>
+	
+</div>

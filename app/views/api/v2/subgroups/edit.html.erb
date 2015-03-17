@@ -1,0 +1,23 @@
+<%= form_for @subgroup, {:url=>api_subgroup_path, :method=>"put"} do |f| %>
+  <div id="notice"></div>
+
+  <%= f.label :name %>
+  <%= f.text_field :name %><br />
+
+  <%= f.label :group_id %>
+  <% opt = Group.all.map{|g| [g.name, g.id]} %>
+  <%= f.select :group_id, options_for_select(opt, :selected => :group_id) %>
+  
+  <%= f.label :description %>
+  <%= f.text_field :description %><br />
+
+  <%= f.label :is_active %>
+  <%= f.text_field :is_active %><br />
+  
+  <%= f.submit "Update", :id=>"submit" %>
+<% end %>
+<script>
+  jQuery(document).ready(function(){
+      service.init(); 
+  });
+</script>

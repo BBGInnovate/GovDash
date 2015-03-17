@@ -27,9 +27,12 @@ class ActiveRecord::Base
       
     key_list, value_list = convert_record_list(record_list)       
     key_list = key_list | [:created_at, :updated_at]
-    value_list = value_list.map{|a| a += ["'#{Time.now}'", "'#{Time.now+1}'"]} 
-    sql = "INSERT #{ignore} INTO #{self.table_name} (#{key_list.join(", ")}) VALUES #{value_list.map {|rec| "(#{rec.join(", ")})" }.join(" ,")}"     
+    value_list = value_list.map{|a| a += ["'#{Time.now.to_s(:db)}'", "'#{Time.now.to_s(:db)}'"]} 
+    sql = %{INSERT #{ignore} INTO #{self.table_name} (#{key_list.join(", ")}) VALUES #{value_list.map {|rec| "(#{rec.join(", ")})" }.join(" ,")};}   
+    # self.connection.insert_sql("set GLOBAL wait_timeout=28800;")   
+    self.connection.insert_sql("SET unique_checks=0;")    
     self.connection.insert_sql(sql)
+    self.connection.insert_sql("SET unique_checks=1;")
   end
   
   def self.convert_record_list(record_list)
@@ -90,7 +93,38 @@ class ActiveRecord::Base
     add_struct data
     data.send 'table'
   end
+
+  # copied from Delayed_job::Worker
+  def say(text, level=Rails.logger.level)
+    text = "[Worker(#{name})] #{text}"
+    puts text unless @quiet
+    return unless logger
+    # TODO: Deprecate use of Fixnum log levels
+    unless level.is_a?(String)
+      level = Logger::Severity.constants.detect { |i| Logger::Severity.const_get(i) == level }.to_s.downcase
+    end
+    logger.send(level, "#{Time.now.strftime('%FT%T%z')}: #{text}")
+    Delayed::Worker.logger.flush
+  end
+  
+  def send_rabbit_message action
+    # see rabbit_receiver.rb
+    unless ['upload','retrieve','initial_load'].include? action
+      raise "#{self.class.name}#send_rabbit_message invalid action: #{action}"
+    end
     
+    begin
+      payload = {:id => self.id,:klass=> self.class, :date=>Time.zone.now.to_s(:db)}.to_yaml
+      rabbit = RabbitProducer.new
+      rabbit.channel.default_exchange.publish(payload,
+            :type        => action,
+            :routing_key => "amqpgem.#{action}")
+      rabbit.connection.close
+    rescue Exception=>ex
+      logger.error "   RabbitMQ #{ex.message}"
+    end
+  end
+  
   def self.execute sql
     arr = []
     results = ActiveRecord::Base.connection.execute(sql)

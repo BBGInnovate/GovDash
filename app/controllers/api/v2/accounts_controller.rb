@@ -1,8 +1,5 @@
 class Api::V2::AccountsController < Api::V2::BaseController
   before_filter :authenticate_user!, :is_analyst?, only: [:new, :create, :edit, :update, :destroy]
-  #before_filter :is_admin?
-  #Current user is Admin or Analyst (except for simple listing accounts)
-  #before_filter :is_analyst?
 
   def index 
   
@@ -64,7 +61,7 @@ class Api::V2::AccountsController < Api::V2::BaseController
   
   def condition1
     pam = {:is_active=>true}
-    [:network_id, :service_id, :account_type_id, :language_id].each do |p|
+    [:group_id, :account_type_id, :language_id].each do |p|
       pam[p] = params[p] if params[p]
     end
     pam

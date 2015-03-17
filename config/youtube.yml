@@ -1,0 +1,13 @@
+# api_key supplied via OpsWorks custom cookbooks
+# Google govdash-dev project
+development: &default
+  api_key: 
+  since_date: 14.days.ago
+  max_results: 50
+  
+# Google GovDash project
+production:
+  <<: *default
+  api_key: 
+  
+  

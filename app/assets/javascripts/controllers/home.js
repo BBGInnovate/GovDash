@@ -7,27 +7,28 @@ function HomeCtrl($scope, Languages, Regions, Countries, Networks, Session, Acco
     
 	// Initial GET requests for page load
     $scope.getData = function() {
+		if ($rootScope.loggedInUser === true) {
+			Regions.getAllRegions()
+				.then(function (response) {
+					$scope.regions = response.data;
+				});
 
-  		Regions.getAllRegions()
-            .then(function(response) {
-               $scope.regions = response.data;
-        });
-  		
-  		Countries.getAllCountries()
-            .then(function(response) {
-               $scope.countries = response.data;
-        });
-        
-        Languages.getAllLanguages()
-            .then(function(response) {
-               $scope.languages = response.data;
-         
-        });
-        
-        Networks.getAllNetworks()
-            .then(function(response) {
-               $scope.networks = response.data;
-        });
+			Countries.getAllCountries()
+				.then(function (response) {
+					$scope.countries = response.data;
+				});
+
+			Languages.getAllLanguages()
+				.then(function (response) {
+					$scope.languages = response.data;
+
+				});
+
+			Networks.getAllNetworks()
+				.then(function (response) {
+					$scope.networks = response.data;
+				});
+		}
         
         
   	};

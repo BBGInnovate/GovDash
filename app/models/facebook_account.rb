@@ -460,6 +460,7 @@ class FacebookAccount < Account
     canvas_url = uri.host
     # where("page_access_token is not null")
     @tokens ||= AppToken.where("platform='Facebook'").
+        where("client_id is not null").
         where("canvas_url='#{canvas_url}'").to_a
     @access_token = @tokens[self.id % @tokens.size]
   end
@@ -467,20 +468,7 @@ class FacebookAccount < Account
   def graph_api(access_token=nil)
     Koala.config.api_version = "v2.2"
     if !access_token
-      # the page_access_token expires in one hour
-      if self.app_token.page_access_token && 
-           self.app_token.updated_at > 55.minutes.ago
-        access_token = self.app_token.page_access_token
-      else
-        # get new app access token
-        client_id = self.app_token[:client_id]
-        client_secret = self.app_token[:client_secret]
-        callback_url = self.app_token[:canvas_url]
-        @oauth = Koala::Facebook::OAuth.new(client_id, client_secret, callback_url)
-        access_token = @oauth.get_app_access_token
-        self.app_token.page_access_token = access_token
-        self.app_token.save
-      end
+      access_token = self.app_token.get_access_token
     end
     @graph_api = Koala::Facebook::API.new(access_token)
   end

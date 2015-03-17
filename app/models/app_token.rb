@@ -2,11 +2,19 @@ class AppToken < ActiveRecord::Base
 
   self.table_name = "app_tokens"
 
-  def graph_api(access_token=nil)
-    access_token = access_token || page_access_token || user_access_token
-    @graph_api = Koala::Facebook::API.new(access_token)
+  def get_access_token
+    if self.page_access_token && 
+       self.updated_at > 55.minutes.ago
+      self.page_access_token
+    else
+      callback_url = canvas_url
+      @oauth = Koala::Facebook::OAuth.new(client_id, client_secret, callback_url)
+      access_token = @oauth.get_app_access_token
+      self.update_attribute :page_access_token, access_token
+      access_token
+    end 
   end
-  
+
   def exchange_page_access_token(access_token)
     if !access_token
       raise "  AppToken#exchange_page_access_token access_token is null"

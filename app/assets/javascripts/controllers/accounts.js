@@ -7,6 +7,11 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		for (var i = 0; i < this.selectedRegion.length; i++) {
   			regions.push(this.selectedRegion[i].id);
   		}
+
+  		var subgroups = [];
+  		for (var i = 0; i < this.selectedSubgroup.length; i++) {
+  			subgroups.push(this.selectedSubgroup[i].id);
+  		}
   		
   		var countries = [];
 		for (var i = 0; i < this.selectedCountry.length; i++) {
@@ -22,7 +27,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		
   						// name field				 // object_name field
   		Accounts.create(this.name, this.description, this.object_name, 
-  		this.selectedMediaType.name, this.selectedGroup.id,  this.selectedSubgroup.id, 
+  		this.selectedMediaType.name, this.selectedGroup.id,  subgroups, 
   		this.selectedLanguage.id, regions, countries, this.selectedAccountType.id,
   		segments)
 			.then(function(response) {
@@ -59,7 +64,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
             .then(function(response) {
                $scope.account = response.data[0];
                var groupId = $scope.account.group_id;
-               var subgroupId = $scope.account.subgroup_id;
+               var subgroupIds = $scope.account.subgroup_ids;
                var regionIds = $scope.account.region_ids;
                var countryIds = $scope.account.country_ids;
                var accountTypeId = $scope.account.account_type_id;
@@ -82,7 +87,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 			   // The looping that occurs in the promise below is because the API
 			   // brings out the data in alphabetical order and the selected element
 			   // in the Angular dropdown needs to be found. The Ids are provided in the 
-			   // individual objects object (groupId, subgroupId, etc.) 
+			   // individual objects object (groupId, subgroupIds, etc.) 
 				Accounts.getAllDataForAccounts()
 					.then(function(response) {
 					   $scope.allData = response.data;
@@ -96,17 +101,21 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 							}
 					   }
 			   			
-			   		   //TODO: how to handle more than one subgroup
+					   // Loop through the subgroupIds and push them to objects so 
+					   // Angular can pre-populate the select dropdown
 					   var subgroups = $scope.allData[1];
 					   subgroups.shift();
 					   $scope.subgroups = subgroups;
+					   var selectedSubgroups = [];
 					   for (var i = 0; i < $scope.subgroups.length; i++) {
-							if ($scope.subgroups[i].id == subgroupId) {
-								 $scope.selectedSubgroup = $scope.subgroups[i];
-							}
+					   		for (var j = 0; j < subgroupIds.length; j++) {
+					   			if ($scope.subgroups[i].id == subgroupIds[j]) {
+					   				selectedSubgroups.push($scope.subgroups[i]);
+					   			}
+					   		}
 					   }
-		
-			   
+					   $scope.selectedSubgroup = selectedSubgroups;
+
 					   var regions = $scope.allData[2];
 					   regions.shift();
 					   $scope.regions = regions;

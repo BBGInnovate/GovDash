@@ -99,7 +99,7 @@ Radd::Application.routes.draw do
 
       # 3/18/15 match '/facebook/*path' => "facebooks#index", via: [:get]
       # 3/18/15 match '/twitter/*path' => "twitters#index", via: [:get]
-      # 3/18/15 match '/reports' => "reports#index", via: [:get,:post]
+      match '/reports' => "reports#index", via: [:get,:post]
       # 3/18/15 match '/sitecatalyst/*path' => "sitecatalyst#index", via: [:get]
       
       resources :record do

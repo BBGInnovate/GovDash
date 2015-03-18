@@ -4,19 +4,41 @@
     }
 </style>
 
-<form name="loginForm" class="auth-form">
-    <h2 class="auth-form-heading">Please sign in</h2><br/>
-    <div class="alert alert-warning" ng-show="authReason">
-        {{authReason}}
-    </div>
-    <div class="alert alert-error" ng-show="authError">
-        {{authError}}
-    </div>
-    <input type="text" class="input-block-level" placeholder="Email address" ng-model="user.email" required autofocus>
-    <input type="password" class="input-block-level" placeholder="Password" ng-model="user.password" required>
-    <label class="checkbox">
-        <input type="checkbox" value="remember-me"> Remember me
-    </label><br/>
-    <a class="btn btn-large btn-primary" type="submit" ng-click="login(user)" ng-disabled="loginForm.$invalid">Sign in</a>
-    <a class="btn btn-link" href="#/users/register">Register</a>
-</form>
+<div class="sign-in-wrapper">
+    <div class="sign-in-inner">
+        <div class="login-brand text-center">
+            <i class="fa fa-database m-right-xs"></i> <strong class="text-skin">Login</strong>
+        </div>
+
+        <form name="loginForm" class="auth-form">
+            <!--  <h2 class="auth-form-heading">Please sign in</h2><br/> -->
+            <div class="alert alert-warning" ng-show="authReason">
+                {{authReason}}
+            </div>
+            <div class="alert alert-error" ng-show="authError">
+                {{authError}}
+            </div>
+            <div class="form-group m-bottom-md">
+                <input type="text" class="form-control" placeholder="Email address" ng-model="user.email" required autofocus>
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" placeholder="Password" ng-model="user.password" required>
+            </div>
+            <div class="form-group">
+                <div class="custom-checkbox">
+                    <input type="checkbox" id="chkRemember">
+                    <label for="chkRemember"></label>
+                </div>
+                Remember me
+            </div>
+            <div class="m-top-md p-top-sm">
+                <a class="btn btn-success block" type="submit" ng-click="login(user)" ng-disabled="loginForm.$invalid">Sign in</a>
+
+            </div>
+            <div class="m-top-md p-top-sm">
+                <div class="font-12 text-center m-bottom-xs">Do not have an account?</div>
+                <a class="btn btn-default block" href="#/users/register">Register</a>
+            </div>
+        </form>
+    </div><!-- ./sign-in-inner -->
+</div><!-- ./sign-in-wrapper -->

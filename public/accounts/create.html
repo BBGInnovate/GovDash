@@ -36,7 +36,15 @@
 			</div>
 		</div>
 		<div class="form-group">
-			<label for="description" class="col-md-2 control-label">Group</label>
+			<label for="organization" class="col-md-2 control-label">Organization</label>
+			<div class="col-md-10">
+				<select ng-model="selectedOrganization" ng-options="organization.name for organization in organizations">
+					<option value="">-- Choose Organization --</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="group" class="col-md-2 control-label">Group</label>
 			<div class="col-md-10">
 				<select ng-model="selectedGroup" ng-options="group.name for group in groups">
 					<option value="">-- Choose Group --</option>
@@ -44,10 +52,9 @@
 			</div>
 		</div>
 		<div class="form-group">
-			<label for="description" class="col-md-2 control-label">Service</label>
+			<label for="subgroup" class="col-md-2 control-label">Subgroup(s)</label>
 			<div class="col-md-10">
-				<select ng-model="selectedService" ng-options="service.name for service in services">
-					<option value="">-- Choose Service --</option>
+				<select ng-model="selectedSubgroup" ng-options="subgroup.name for subgroup in subgroups" multiple ng-multiple="true">
 				</select>
 			</div>
 		</div>

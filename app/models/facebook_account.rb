@@ -3,8 +3,10 @@ class FacebookAccount < Account
   # include WriteFbPage
   attr_accessor :graph_api
   
-  has_many :fb_pages, -> { order 'post_created_time desc' }, :foreign_key=>:account_id
-  has_many :fb_posts, -> { order 'post_created_time desc' }, :foreign_key=>:account_id
+  has_many :fb_pages, -> { order 'post_created_time desc' }, 
+      foreign_key: :account_id, dependent: :destroy
+  has_many :fb_posts, -> { order 'post_created_time desc' }, 
+      foreign_key: :account_id, dependent: :destroy
 
   after_initialize :do_this_after_initialize
   
@@ -184,11 +186,6 @@ class FacebookAccount < Account
     @num_attempts = 0
     begin
       @num_attempts += 1
-      # home_page = graph_api.get_object self.obj_name
-      # home_page['description']
-      # home_page['likes']
-      # home_page['talking_about_count']
-      
       posts = graph_api.get_connections(self.obj_name, "posts", :fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta) || []
       if posts.empty?
         logger.debug "  #{since.to_s(:db)}=#{hasta.to_s(:db)} do_retrieve posts empty   "
@@ -196,7 +193,7 @@ class FacebookAccount < Account
     rescue Koala::Facebook::ClientError=>error
       if error.fb_error_type == 'OAuthException'
         log_fail "graph_api.get_connections() #{error.message}"
-        logger.error "graph_api.get_connections() #{error.message}"
+        logger.error "graph_api.get_connections() #{error.backtrace}"
         self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
         return false
       end
@@ -206,7 +203,7 @@ class FacebookAccount < Account
       else
         self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
         log_fail "Tried #{@num_attempts} times. #{error.message}", 5
-        logger.error "Tried #{@num_attempts} times. #{error.message}", 5
+        logger.error "Tried #{@num_attempts} times. #{error.backtrace}"
         
         # delayed_do_retrieve(since, hasta)
         # logger.info "   retrieve scheduled deplayed_job in one hour" 
@@ -321,18 +318,21 @@ class FacebookAccount < Account
          # insights = graph_api.graph_call("v2.2/#{post.post_id}/insights/post_story_adds_by_action_type")
          # data=insights[0]['values'][0]['value'] rescue {}
          data = graph_api.get_object(post.post_id, :fields => "shares,likes.summary(true),comments.summary(true)")
-         
+         # logger.debug "  GET shares,likes #{data.keys}"
        rescue Koala::Facebook::ClientError, Timeout::Error=>error
          if @num_attempts < self.max_attempts
            sleep RETRY_SLEEP
            retry
          else
-           log_fail "Tried #{@num_attempts} times. #{error.message[0..200]}", 5
+           # log_fail "Tried #{@num_attempts} times. #{error.message[0..200]}", 5
            logger.error error.message
          end
+       rescue GraphMethodException=>error
+         # log_fail error.message
+         logger.error "   save_post_details GraphMethodException post #{post.post_id}"
        rescue Exception=>error
-         log_fail error.message
-         logger.error error.message
+         # log_fail error.message
+         logger.error error.backtrace
        end
        completed = ((total_processed.to_f / myposts.size) * 100).to_i
        logger.debug "#{completed} % completed" if ((total_processed % 10)==0 )
@@ -361,7 +361,7 @@ class FacebookAccount < Account
            logger.error "    #{ex.backtrace}"  
          end
        else
-         logger.debug "No Insights Data post_id #{post.post_id}"
+         logger.debug "No public data for post #{post.post_id}"
        end
      end
      aggregate_data 1,'day', true
@@ -391,7 +391,7 @@ class FacebookAccount < Account
         end
       end
     end
-    logger.debug "  get_replies_to_comment #{replies_to_comment}"
+    # logger.debug "  get_replies_to_comment #{replies_to_comment}"
     replies_to_comment
   end
 
@@ -446,6 +446,12 @@ class FacebookAccount < Account
        object_name: self.object_name
   end
 
+  # return hash
+  # {"city"=>"Washington", "country"=>"United States", "state"=>"DC"}
+  def location
+    loc = JSON.parse self.account_profile.location.gsub('=>',':')
+  end
+  
 =begin
     # a yahoo post
     obj="7040724713_10153243363174714" 

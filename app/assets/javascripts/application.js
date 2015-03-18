@@ -1,17 +1,11 @@
-//= require jquery.min
-//= require suggest.min
+//= require jquery-1.11.1.min
 //= require angular.min
-//= require bootstrap.min
+//= require bootstrap-simplify.min
 //= require angular-strap.min
 //= require angular-route
 //= require angular-resource
-//= require ui-bootstrap-tpls.min
-//= require angucomplete
-//= require ng-google-chart
 //= require filters
 //= require directives
-//= require datePicker
-//= require dateRange
 //= require services/reportService
 //= require services/sessionService
 //= require services/recordService
@@ -28,6 +22,7 @@
 //= require services/userService
 //= require services/dateService
 //= require services/segmentService
+//= require services/apiService
 //= require controllers/app
 //= require controllers/record
 //= require controllers/home
@@ -40,126 +35,140 @@
 //= require controllers/countries
 //= require controllers/segments
 //= require active_scaffold
+//= require moment
+//= require bootstrap-datetimepicker
+//= require jquery.flot.min
+//= require jquery.slimscroll.min
+//= require rapheal.min
+//= require morris.min
+//= require datepicker-simplify
+//= require sparkline.min
+//= require skycons
+//= require jquery.popupoverlay.min
+//= require jquery.easypiechart.min
+//= require jquery.steps.min
+//= require modernizr.min
+//= require simplify
 //= require main
 
 
-angular.module('radd', ['sessionService','recordService', 'roleService', 'regionService', 
-'countryService', 'organizationService', 'groupService', 'subgroupService', 'accountService', 
-'accountTypeService', 'mediaTypeService', 'languageService', 'reportService', 'userService', 
-'dateService', 'segmentService', '$strap.directives', 'directives', 'filters', 'ngRoute', 
-'angucomplete', 'googlechart', 'datePicker', 'ui.bootstrap'])
+angular.module('radd', ['sessionService','recordService', 'roleService', 'regionService',
+	'countryService', 'organizationService', 'groupService', 'subgroupService', 'accountService',
+	'accountTypeService', 'mediaTypeService', 'languageService', 'reportService', 'userService',
+	'dateService', 'apiService', 'segmentService', '$strap.directives', 'directives', 'filters', 'ngRoute'])
 
-  .config(['$httpProvider', function($httpProvider){
-        $httpProvider.defaults.headers.common['X-CSRF-Token'] = $('meta[name=csrf-token]').attr('content');
-		
-        var interceptor = ['$location', '$rootScope', '$q', function($location, $rootScope, $q) {
-            function success(response) {
-                return response
-            };
-			
-            // this function for unauthorized
-            function error(response) {
-                if (response.status == 401) {
-                    $rootScope.$broadcast('event:unauthorized');
-                    $location.path('/users/login');
-                    return response;
-                };
-                return $q.reject(response);
-            };
 
-            return function(promise) {
-                return promise.then(success, error);
-            };
-        }];
-        $httpProvider.responseInterceptors.push(interceptor);
-    
-  }])
-  .config(['$routeProvider', function($routeProvider){
-    $routeProvider
-     // .when('/', {templateUrl:'/record/index.html', controller:RecordCtrl})
-      .when('/', {templateUrl:'/home/index.html', controller:HomeCtrl})
-      .when('/record', {templateUrl:'/record/index.html', controller:RecordCtrl})
-      .when('/users/login', {templateUrl:'/users/login.html', controller:UsersCtrl})
-      .when('/users/register', {templateUrl:'/users/register.html', controller:UsersCtrl})
-      .when('/config', {templateUrl:'/config/index.html'})
-      .when('/organizations/create/', {templateUrl:'/organizations/create.html', controller:OrganizationsCtrl})
-      .when('/organizations', {templateUrl:'/organizations/list.html', controller:OrganizationsCtrl})
-      .when('/organizations/edit/:organizationId', {templateUrl:'/organizations/edit.html', controller:OrganizationsCtrl})
-      .when('/groups/create/', {templateUrl:'/groups/create.html', controller:GroupsCtrl})
-      .when('/groups', {templateUrl:'/groups/list.html', controller:GroupsCtrl})
-      .when('/groups/edit/:groupId', {templateUrl:'/groups/edit.html', controller:GroupsCtrl})
-      .when('/subgroups/create/', {templateUrl:'/subgroups/create.html', controller:SubgroupsCtrl})
-      .when('/subgroups', {templateUrl:'/subgroups/list.html', controller:SubgroupsCtrl})
-      .when('/subgroups/edit/:subgroupId', {templateUrl:'/subgroups/edit.html', controller:SubgroupsCtrl})
-      .when('/accounts', {templateUrl:'/accounts/list.html', controller:AccountsCtrl})
-      .when('/accounts/create/', {templateUrl:'/accounts/create.html', controller:AccountsCtrl})
-      .when('/accounts/edit/:accountId', {templateUrl:'/accounts/edit.html', controller:AccountsCtrl})
-      .when('/regions/create/', {templateUrl:'/regions/create.html', controller:RegionsCtrl})
-      .when('/regions', {templateUrl:'/regions/list.html', controller:RegionsCtrl})
-      .when('/regions/edit/:regionId', {templateUrl:'/regions/edit.html', controller:RegionsCtrl})
-      .when('/countries/create/', {templateUrl:'/countries/create.html', controller:CountriesCtrl})
-      .when('/countries', {templateUrl:'/countries/list.html', controller:CountriesCtrl})
-      .when('/countries/edit/:countryId', {templateUrl:'/countries/edit.html', controller:CountriesCtrl})
-      .when('/segments/create/', {templateUrl:'/segments/create.html', controller:SegmentsCtrl})
-      .when('/segments', {templateUrl:'/segments/list.html', controller:SegmentsCtrl})
-      .when('/segments/edit/:segmentId', {templateUrl:'/segments/edit.html', controller:SegmentsCtrl})
-      .when('/users', {templateUrl:'/users/list.html', controller:UsersCtrl})
-      .when('/users/edit/:userId', {templateUrl:'/users/edit.html', controller:UsersCtrl});
-  }])
-  
-   // register listener to watch for route changes
-  .run(function ($rootScope, $location, Session, $timeout) {
-	$rootScope.headerRedirect = '';
+	.config(['$httpProvider', function($httpProvider){
+		$httpProvider.defaults.headers.common['X-CSRF-Token'] = $('meta[name=csrf-token]').attr('content');
 
-	// watch loggedInUser and control headerRedirect which is the header logo's redirect anchor reference
-	// used in angular.html.erb file
-	$rootScope.$watch('loggedInUser', function () {
-		if ($rootScope.loggedInUser === true) {
-			$rootScope.headerRedirect = '#';
-		} else {
-			$rootScope.headerRedirect = '#/users/login'
-		}
-	});
+		var interceptor = ['$location', '$rootScope', '$q', function($location, $rootScope, $q) {
+			function success(response) {
+				return response
+			};
 
-	Session.checkUserLoggedIn()
-		.then(function(response) {
-		   if (response.info == null) {
-				$location.path("/users/login");
-				$rootScope.loggedInUser = false;
-				$rootScope.email = null;
-		   } else if (response.info == 'Logged in') {
-				$rootScope.loggedInUser = true;
-				$rootScope.email = response.user.email;
-		   }
-	   
-		   // this event will fire every time the route changes
-		   $rootScope.$on("$routeChangeStart", function (event, next, current) {
+			// this function for unauthorized
+			function error(response) {
+				if (response.status == 401) {
+					$rootScope.$broadcast('event:unauthorized');
+					$location.path('/users/login');
+					return response;
+				};
+				return $q.reject(response);
+			};
 
-			    if (!$rootScope.loggedInUser) {
-  					// no logged user, we should be going to the login route
-  					if (next.templateUrl === "/users/login.html" || next.templateUrl === "/users/register.html") {
-            	// don't redirect anon users on the login or register routes
-  					} else {
-  						// redirect all dashboard routes to login
-  						$location.path("/users/login");
-  					}
-  				
-  				} 
-				
-				// Only ADMIN users can access user based pages
-				if (next.templateUrl) {
-					if (next.templateUrl.indexOf('/users/') > -1 &&
-					next.templateUrl != "/users/login.html" && next.templateUrl != "/users/register.html" && $rootScope.userRole != 'Administrator') {
-							$location.path("/config");
-					}
+			return function(promise) {
+				return promise.then(success, error);
+			};
+		}];
+		$httpProvider.responseInterceptors.push(interceptor);
+
+	}])
+	.config(['$routeProvider', function($routeProvider){
+		$routeProvider
+			// .when('/', {templateUrl:'/record/index.html', controller:RecordCtrl})
+			.when('/', {templateUrl:'/home/index.html', controller:HomeCtrl})
+			.when('/record', {templateUrl:'/record/index.html', controller:RecordCtrl})
+			.when('/users/login', {templateUrl:'/users/login.html', controller:UsersCtrl})
+			.when('/users/register', {templateUrl:'/users/register.html', controller:UsersCtrl})
+			.when('/config', {templateUrl:'/config/index.html'})
+			.when('/organizations/create/', {templateUrl:'/organizations/create.html', controller:OrganizationsCtrl})
+			.when('/organizations', {templateUrl:'/organizations/list.html', controller:OrganizationsCtrl})
+			.when('/organizations/edit/:organizationId', {templateUrl:'/organizations/edit.html', controller:OrganizationsCtrl})
+			.when('/groups/create/', {templateUrl:'/groups/create.html', controller:GroupsCtrl})
+			.when('/groups', {templateUrl:'/groups/list.html', controller:GroupsCtrl})
+			.when('/groups/edit/:groupId', {templateUrl:'/groups/edit.html', controller:GroupsCtrl})
+			.when('/subgroups/create/', {templateUrl:'/subgroups/create.html', controller:SubgroupsCtrl})
+			.when('/subgroups', {templateUrl:'/subgroups/list.html', controller:SubgroupsCtrl})
+			.when('/subgroups/edit/:subgroupId', {templateUrl:'/subgroups/edit.html', controller:SubgroupsCtrl})
+			.when('/accounts', {templateUrl:'/accounts/list.html', controller:AccountsCtrl})
+			.when('/accounts/create/', {templateUrl:'/accounts/create.html', controller:AccountsCtrl})
+			.when('/accounts/edit/:accountId', {templateUrl:'/accounts/edit.html', controller:AccountsCtrl})
+			.when('/regions/create/', {templateUrl:'/regions/create.html', controller:RegionsCtrl})
+			.when('/regions', {templateUrl:'/regions/list.html', controller:RegionsCtrl})
+			.when('/regions/edit/:regionId', {templateUrl:'/regions/edit.html', controller:RegionsCtrl})
+			.when('/countries/create/', {templateUrl:'/countries/create.html', controller:CountriesCtrl})
+			.when('/countries', {templateUrl:'/countries/list.html', controller:CountriesCtrl})
+			.when('/countries/edit/:countryId', {templateUrl:'/countries/edit.html', controller:CountriesCtrl})
+			.when('/segments/create/', {templateUrl:'/segments/create.html', controller:SegmentsCtrl})
+			.when('/segments', {templateUrl:'/segments/list.html', controller:SegmentsCtrl})
+			.when('/segments/edit/:segmentId', {templateUrl:'/segments/edit.html', controller:SegmentsCtrl})
+			.when('/users', {templateUrl:'/users/list.html', controller:UsersCtrl})
+			.when('/users/edit/:userId', {templateUrl:'/users/edit.html', controller:UsersCtrl});
+	}])
+
+	// register listener to watch for route changes
+	.run(function ($rootScope, $location, Session, $timeout) {
+		$rootScope.headerRedirect = '';
+
+		// watch loggedInUser and control headerRedirect which is the header logo's redirect anchor reference
+		// used in angular.html.erb file
+		$rootScope.$watch('loggedInUser', function () {
+			if ($rootScope.loggedInUser === true) {
+				$rootScope.headerRedirect = '#';
+			} else {
+				$rootScope.headerRedirect = '#/users/login'
+			}
+		});
+
+		Session.checkUserLoggedIn()
+			.then(function(response) {
+				if (response.info == null) {
+					$location.path("/users/login");
+					$rootScope.loggedInUser = false;
+					$rootScope.email = null;
+				} else if (response.info == 'Logged in') {
+					$rootScope.loggedInUser = true;
+					$rootScope.email = response.user.email;
 				}
 
-		   });
-			
+				// this event will fire every time the route changes
+				$rootScope.$on("$routeChangeStart", function (event, next, current) {
+
+					if (!$rootScope.loggedInUser) {
+						// no logged user, we should be going to the login route
+						if (next.templateUrl === "/users/login.html" || next.templateUrl === "/users/register.html") {
+							// don't redirect anon users on the login or register routes
+						} else {
+							// redirect all dashboard routes to login
+							$location.path("/users/login");
+						}
+
+					}
+
+					// Only ADMIN users can access user based pages
+					if (next.templateUrl) {
+						if (next.templateUrl.indexOf('/users/') > -1 &&
+							next.templateUrl != "/users/login.html" && next.templateUrl != "/users/register.html" && $rootScope.userRole != 'Administrator') {
+							$location.path("/config");
+						}
+					}
+
+				});
+
+			});
+
+
 	});
-     
-    
-});
 
 
   

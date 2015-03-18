@@ -1,0 +1,30 @@
+.brand {
+    line-height: 48px !important;
+}
+
+.back-button {
+    position: relative;
+    top: 30px;
+}
+
+.sign-in-wrapper {
+    padding-top: 40px !important;
+}
+
+.teal-button {
+    background: #2BAAB1 !important;
+    color: white !important;
+    border: none !important;
+}
+
+.teal-tag {
+    background: #4C5F70 !important;
+    padding: 6px;
+    margin: 4px;
+    color: white;
+    line-height: 40px;
+}
+
+.fa-spin {
+    font-size: 64px !important;
+}

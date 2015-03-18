@@ -68,15 +68,17 @@ Radd::Application.routes.draw do
   devise_for :users
 
   # Connect Site
+=begin
   resource :facebook, :except => :create do
     get :callback, action: :create
   end
+  
   resource :facebooks, :only=>:index do
     collection do
       get 'index'
     end
   end
-  
+
   resource :twitter, :except => :create do
     get :callback, action: :create
   end
@@ -85,6 +87,8 @@ Radd::Application.routes.draw do
       get 'index'
     end
   end
+=end
+
   namespace :api, defaults: {format: :json} do
     scope module: :v2, constraints: ApiConstraints.new(version: 1, default: :true) do
 
@@ -93,11 +97,10 @@ Radd::Application.routes.draw do
         match '/sessions' => 'sessions#destroy', :via => :delete
       end
 
-      match '/facebook/*path' => "facebooks#index", via: [:get]
-      match '/twitter/*path' => "twitters#index", via: [:get]
-      match '/reports' => "reports#index", via: [:get,:post]
-
-      match '/sitecatalyst/*path' => "sitecatalyst#index", via: [:get]
+      # 3/18/15 match '/facebook/*path' => "facebooks#index", via: [:get]
+      # 3/18/15 match '/twitter/*path' => "twitters#index", via: [:get]
+      # 3/18/15 match '/reports' => "reports#index", via: [:get,:post]
+      # 3/18/15 match '/sitecatalyst/*path' => "sitecatalyst#index", via: [:get]
       
       resources :record do
         collection do
@@ -133,7 +136,7 @@ Radd::Application.routes.draw do
         end
       end
       
-      resources :facebooks, :only=>:index
+      # 3/18/15  resources :facebooks, :only=>:index
       
       # match '/users' => 'users#show', :via => :get 
       # match '/users' => 'users#update', :via => :put
@@ -148,13 +151,14 @@ Radd::Application.routes.draw do
         get 'fetch'
       end
     end
+=begin 
+    3/18/15 
     resources :fb_pages do
       as_routes
     end
     resources :tw_timelines do
       as_routes
     end
-    
     resources :accounts,:facebook_accounts,:twitter_accounts do
       as_routes
       collection do
@@ -201,7 +205,7 @@ Radd::Application.routes.draw do
     resources :accounts_users do
       as_routes
     end
-    
+=end    
     resources :users do
       as_routes
       member do

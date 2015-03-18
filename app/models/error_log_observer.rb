@@ -6,7 +6,7 @@ class ErrorLogObserver < ActiveRecord::Observer
       begin
         UserMailer.
            alert(receivers, error_log.subject, error_log.message).
-           deliver
+           deliver_now
         error_log.email_sent = true
         error_log.save
       rescue

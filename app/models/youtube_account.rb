@@ -108,7 +108,7 @@ class YoutubeAccount < Account
     log_duration started, ended
     @bulk_insert = []
   end
-  handle_asynchronously :retrieve, :run_at => Proc.new {10.seconds.from_now }
+  # handle_asynchronously :retrieve, :run_at => Proc.new {10.seconds.from_now }
   
   def summarize init_date=nil
     videos = self.yt_videos

@@ -3,6 +3,9 @@ class Account < ActiveRecord::Base
   
   before_create :record_new
   
+  has_one :account_profile, foreign_key: :account_id, 
+      dependent: :destroy
+
   RETRY_SLEEP = 15  # seconds
   SLEEP = 20
   belongs_to :account_type
@@ -56,6 +59,22 @@ class Account < ActiveRecord::Base
     end
   end
 
+  def update_profile options
+    options.symbolize_keys!
+    options[:name] = self.object_name
+    attr = {}
+    AccountProfile.column_names.each do |col|
+      if options.has_key? col.to_sym
+        attr[col.to_sym] = options[col.to_sym]
+      end
+    end
+    if !self.account_profile
+      self.create_account_profile attr
+    else
+      self.account_profile.update_attributes attr
+    end
+  end
+  
   # options = {:group_ids=>[1,2,3], 
   #           :region_ids=>[1,2,3], 
   #           :group_ids=>[1,2,3],
@@ -232,6 +251,31 @@ class Account < ActiveRecord::Base
     read_attribute(:new_item) rescue false
   end
   
+  # used by FacebookAccount#save_lifetime_data
+  def self.fetch(url, limit = 3)
+    raise ArgumentError, 'HTTP redirect too deep' if limit == 0
+    uri = URI.parse(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.read_timeout = 180
+       # http.set_debug_output($stdout)
+    if uri.scheme == 'https'
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    end
+    response = http.get(uri.request_uri)
+    case response
+       when (Net::HTTPOK || Net::HTTPSuccess)
+          return response
+       when Net::HTTPRedirection
+          new_url = redirect_url(response)
+          logger.debug "Redirect to " + new_url
+          return fetch(new_url, limit - 1)
+       else
+         response.error!
+    end
+    response
+  end
+
   protected
    def obj_name
      self.object_name.split('/')[0]

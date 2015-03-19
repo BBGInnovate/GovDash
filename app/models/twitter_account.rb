@@ -491,7 +491,18 @@ class TwitterAccount < Account
     rabbit.connection.close
   end
   
-  
+  def update_profile options={}
+    user = twitter_user
+    options[:platform_type] = 'TW'
+    options[:display_name] = user.name
+    options[:description] = user.description
+    options[:avatar] = user.profile_image_url.to_s
+    options[:total_followers] = user.followers_count
+    options[:location] = user.location
+    options[:url] = user.url.to_s
+    options[:verified] = user.verified?
+    super
+  end
   
   def create_today_timeline
     # create or update Today's timeline for lifetime data
@@ -507,11 +518,14 @@ class TwitterAccount < Account
     end
     begin
       user = twitter_user
+      
+      update_profile
+      
       hsh = {}
       hsh['lifetime'] = user
       S3Model.new.store(s3_filepath+"show.json", hsh.to_json) 
     rescue Exception=>error
-      logger.error "AAA #{error.message}"
+      logger.error "  #{error.message}"
       raise "create_today_timeline #{error.message}"
     end
     if tl[0].total_followers      
@@ -593,9 +607,10 @@ class TwitterAccount < Account
               Twitter::Error::GatewayTimeout,
               Twitter::Error::RequestTimeout]
     begin
-     @num_attempts += 1
-     @twitter_user = client.user self.object_name
+      @num_attempts += 1
+      @twitter_user ||= client.user self.object_name
     rescue *errors => error
+      @twitter_user = nil
       if @num_attempts < self.max_attempts
         # NOTE: Your process could go to sleep for up to 15 minutes but if you
         # retry any sooner, it will almost certainly fail with the same exception.
@@ -609,6 +624,7 @@ class TwitterAccount < Account
         raise
       end
     rescue Exception => error
+      @twitter_user=nil
       msg = "Error get Twitter show.json #{error.message}"
       log_fail msg     
       logger.error msg

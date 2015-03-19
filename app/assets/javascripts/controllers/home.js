@@ -522,7 +522,15 @@
 
  }
  */
-function HomeCtrl($scope, APIData) {
+function HomeCtrl($scope, APIData2) {
+
+	// Initialize start and end dates
+	$scope.startDate =  moment().subtract(7, 'days').calendar();
+	$scope.endDate = moment().format('L');
+
+	/*
+	// When content loads, display and initialize modal
+	$scope.$on('$viewContentLoaded', loadModal);
 
 	// get all data on page load
 	APIData.getInitialData().then(function(response) {
@@ -536,6 +544,7 @@ function HomeCtrl($scope, APIData) {
 
 
 	});
+	*/
 
 
 	// This function is here so the tabs on the initial modal don't try to control
@@ -563,15 +572,46 @@ function HomeCtrl($scope, APIData) {
 	};
 
 
-	$scope.finish = function () {
+//	$scope.finish = function () {
 		var startDate = $('#start-date').val();
 		var endDate = $('#end-date').val();
 
-		console.log(startDate + '   ' + endDate);
+		//console.log(startDate + '   ' + endDate);
 
-		var data = APIData.getData($scope.selectedCountries, $scope.selectedLanguages);
+	//	var data = APIData.getData($scope.selectedCountries, $scope.selectedLanguages);
+	//	console.log(APIData2.getPostData());
+		APIData2.getData().then(function(response) {
+			console.log(response);
 
-		// top level data
+			$scope.facebookInteractions = response.fbTotalInteractions;
+			$scope.twitterInteractions = response.twTotalInteractions;
+			$scope.youtubeInteractions = response.youtubeTotalInteractions;
+
+			$scope.totalInteractions = $scope.facebookInteractions + $scope.twitterInteractions +
+				$scope.youtubeInteractions;
+
+			// Bar Chart Data
+			$scope.barChartData = response.barChartData;
+
+			// Spark Chart Data
+			$scope.chartData = response.fbSparkChart;
+			$scope.chartData2 = response.twSparkChart;
+			$scope.chartData3 = response.youtubeSparkChart;
+
+			// Pie Chart Breakdown Data
+			$scope.fbPieChartData = response.fbBreakdownChart;
+			$scope.twPieChartData = response.twBreakdownChart;
+			$scope.youtubePieChartData = response.youtubeBreakdownChart;
+
+			// Account Table Data
+			$scope.fbAccounts = response.fbAccounts;
+			$scope.twAccounts = response.twAccounts;
+			$scope.youtubeAccounts = response.youtubeAccounts;
+		});
+
+	// top level data
+
+	/*
 		$scope.totalInteractions = data.barChartData[0].a;
 		$scope.facebookInteractions = data.barChartData[0].b;
 		$scope.twitterInteractions = data.barChartData[0].c;
@@ -597,12 +637,11 @@ function HomeCtrl($scope, APIData) {
 		$scope.fbPieChartData = data.fbPieChartData;
 		$scope.twPieChartData = data.twPieChartData;
 		$scope.youtubePieChartData = data.youtubePieChartData;
+	*/
+//	};
 
-	};
 
 
-	// When content loads, display and initialize modal
-	$scope.$on('$viewContentLoaded', loadModal);
 
 
 }

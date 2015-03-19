@@ -11,7 +11,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150316133915) do
+ActiveRecord::Schema.define(version: 20150319201321) do
+
+  create_table "account_profiles", force: :cascade do |t|
+    t.integer  "account_id",      limit: 4
+    t.string   "platform_type",   limit: 20
+    t.string   "name",            limit: 40
+    t.string   "display_name",    limit: 255
+    t.string   "description",     limit: 255
+    t.string   "location",        limit: 255
+    t.string   "url",             limit: 255
+    t.string   "avatar",          limit: 255
+    t.integer  "total_followers", limit: 4
+    t.boolean  "verified",        limit: 1
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "account_types", force: :cascade do |t|
     t.string   "name",       limit: 20
@@ -21,22 +36,20 @@ ActiveRecord::Schema.define(version: 20150316133915) do
   end
 
   create_table "accounts", force: :cascade do |t|
-    t.string   "name",              limit: 40
-    t.string   "description",       limit: 255
-    t.string   "object_name",       limit: 40
-    t.boolean  "status",            limit: 1,   default: true
-    t.boolean  "page_admin",        limit: 1,   default: false
-    t.string   "media_type_name",   limit: 20,  default: "FacebookAccount"
-    t.integer  "account_type_id",   limit: 4
-    t.integer  "language_id",       limit: 4
-    t.string   "contact",           limit: 255
-    t.string   "user_access_token", limit: 255
-    t.string   "page_access_token", limit: 255
-    t.boolean  "is_active",         limit: 1,   default: true
+    t.string   "name",            limit: 40
+    t.string   "description",     limit: 255
+    t.string   "object_name",     limit: 40
+    t.boolean  "status",          limit: 1,   default: true
+    t.boolean  "page_admin",      limit: 1,   default: false
+    t.string   "media_type_name", limit: 20,  default: "FacebookAccount"
+    t.integer  "account_type_id", limit: 4
+    t.integer  "organization_id", limit: 4
+    t.string   "contact",         limit: 255
+    t.boolean  "is_active",       limit: 1,   default: true
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "sc_segment_id",     limit: 4
-    t.boolean  "new_item",          limit: 1,   default: false
+    t.integer  "sc_segment_id",   limit: 4
+    t.boolean  "new_item",        limit: 1,   default: false
   end
 
   create_table "accounts_countries", force: :cascade do |t|
@@ -221,6 +234,14 @@ ActiveRecord::Schema.define(version: 20150316133915) do
     t.datetime "updated_at"
   end
 
+  create_table "networks", force: :cascade do |t|
+    t.string   "name",        limit: 10
+    t.string   "description", limit: 255
+    t.boolean  "is_active",   limit: 1,   default: true
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "organizations", force: :cascade do |t|
     t.string   "name",       limit: 255
     t.datetime "created_at",             null: false
@@ -271,6 +292,15 @@ ActiveRecord::Schema.define(version: 20150316133915) do
     t.string   "name",       limit: 255
     t.string   "sc_id",      limit: 255
     t.integer  "account_id", limit: 4
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "services", force: :cascade do |t|
+    t.string   "name",        limit: 40
+    t.string   "description", limit: 255
+    t.string   "network_id",  limit: 255
+    t.boolean  "is_active",   limit: 1,   default: true
     t.datetime "created_at"
     t.datetime "updated_at"
   end

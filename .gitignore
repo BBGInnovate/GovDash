@@ -1,6 +1,6 @@
-log/
-.idea/
-tmp/
+/log
+/.idea
+/tmp/
 Gemfile.lock
 /.bundle
 /vendor/bundle
@@ -8,3 +8,4 @@ Gemfile.lock
 /vendor/assets/bower_components
 *.bowerrc
 bower.json
+/config

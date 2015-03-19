@@ -12,7 +12,7 @@
                     <label class="col-lg-2 control-label">Start Date</label>
                     <div class="col-lg-10">
                         <div class="input-group">
-                            <input type="text" id="start-date" value="08/10/2014" class="datepicker-input form-control" date-picker>
+                            <input type="text" id="start-date" class="datepicker-input form-control" date-picker data-date="{{ startDate }}">
                             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
                         </div>
                     </div><!-- /.col -->
@@ -22,7 +22,7 @@
                     <label class="col-lg-2 control-label">End Date</label>
                     <div class="col-lg-10">
                         <div class="input-group">
-                            <input type="text" id="end-date" value="08/10/2014" class="datepicker-input form-control" date-picker>
+                            <input type="text" id="end-date" class="datepicker-input form-control" date-picker data-date="{{ endDate }}">
                             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
                         </div>
                     </div><!-- /.col -->
@@ -146,7 +146,7 @@
             <div class="col-sm-6 text-right text-right-sm p-top-sm">
                 <div class="btn-group">
                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                        Select Dates <span class="caret"></span>
+                        {{ startDate }} - {{ endDate }} <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu pull-right" role="menu">
                         <li><a href="">Last Week</a></li>
@@ -169,7 +169,7 @@
                     </div>
 
                     <div class="statistic-value">
-                        {{ totalInteractions }}
+                        {{ totalInteractions | number: 0 }}
                     </div>
 
                     <div class="m-top-md">{{ totalInteractionsChange }}% Higher than last week</div>
@@ -187,7 +187,7 @@
                     </div>
 
                     <div class="statistic-value">
-                        {{ facebookInteractions }}
+                        {{ facebookInteractions | number: 0 }}
                     </div>
 
                     <div class="m-top-md">{{ facebookInteractionsChange }}% Higher than last week</div>
@@ -205,7 +205,7 @@
                     </div>
 
                     <div class="statistic-value">
-                        {{ twitterInteractions }}
+                        {{ twitterInteractions | number: 0 }}
                     </div>
 
                     <div class="m-top-md">{{ twitterInteractionsChange }}% Higher than last week</div>
@@ -223,7 +223,7 @@
                     </div>
 
                     <div class="statistic-value">
-                        {{ youtubeInteractions }}
+                        {{ youtubeInteractions | number: 0 }}
                     </div>
 
                     <div class="m-top-md">{{ youtubeInteractionsChange }}% Higher than last week</div>
@@ -272,7 +272,7 @@
                         <div class="smart-widget-body no-padding">
                             <div class="padding-md">
 
-                                <div ng-if="chartData" style="height:250px;" spark-chart data="chartData" pointcolor="#3278B3" shadecolor="#C0D2E0"></div>
+                                <div style="height:250px;" spark-chart data="chartData" pointcolor="#3278B3" shadecolor="#C0D2E0"></div>
 
                             </div>
 
@@ -291,7 +291,7 @@
                         <div class="smart-widget-body no-padding">
                             <div class="padding-md">
 
-                                <div ng-if="chartData2" style="height:250px;" spark-chart data="chartData2" pointcolor="#23B7E5" shadecolor="#C5E1EA"></div>
+                                <div style="height:250px;" spark-chart data="chartData2" pointcolor="#23B7E5" shadecolor="#C5E1EA"></div>
 
                             </div>
                         </div><!-- ./smart-widget-inner -->
@@ -308,7 +308,7 @@
                         <div class="smart-widget-body no-padding">
                             <div class="padding-md">
 
-                                <div ng-if="chartData3" style="height:250px;" spark-chart data="chartData3" pointcolor="#E36159" shadecolor="#E5C0BE"></div>
+                                <div style="height:250px;" spark-chart data="chartData3" pointcolor="#E36159" shadecolor="#E5C0BE"></div>
 
                             </div>
                         </div><!-- ./smart-widget-inner -->
@@ -325,7 +325,7 @@
                         <div class="smart-widget-body no-padding">
                             <div class="padding-md">
 
-                                <div ng-if="fbPieChartData" style="height:250px;" pie-chart data="fbPieChartData" colorone="#0B62A4" colortwo="#3980B5" colorthree="#679DC6" colorfour="#9AB1D2"></div>
+                                <div style="height:250px;" pie-chart data="fbPieChartData" colorone="#0B62A4" colortwo="#3980B5" colorthree="#679DC6" colorfour="#9AB1D2"></div>
 
                             </div>
 
@@ -344,7 +344,7 @@
                         <div class="smart-widget-body no-padding">
                             <div class="padding-md">
 
-                                <div ng-if="twPieChartData" style="height:250px;" pie-chart data="twPieChartData" colorone="#0088A4" colortwo="#08AFC9" colorthree="#1DBFD5" colorfour="#7BD1E0"></div>
+                                <div style="height:250px;" pie-chart data="twPieChartData" colorone="#0088A4" colortwo="#08AFC9" colorthree="#1DBFD5" colorfour="#7BD1E0"></div>
 
                             </div>
                         </div><!-- ./smart-widget-inner -->
@@ -361,7 +361,7 @@
                         <div class="smart-widget-body no-padding">
                             <div class="padding-md">
 
-                                <div ng-if="youtubePieChartData" style="height:250px;" pie-chart data="youtubePieChartData" colorone="#A30504" colortwo="#BA1C1B" colorthree="#E36159" colorfour="#E09A96"></div>
+                                <div style="height:250px;" pie-chart data="youtubePieChartData" colorone="#A30504" colortwo="#BA1C1B" colorthree="#E36159" colorfour="#E09A96"></div>
 
 
                             </div>
@@ -382,7 +382,7 @@
 
                         </div>
                         <div class="smart-widget-inner table-responsive">
-                            <table class="table table-striped no-margin">
+                            <table class="table table-striped no-margin" ng-if="fbAccounts.length > 0">
                                 <thead>
                                 <tr>
                                     <th class="text-left">Name</th>
@@ -394,12 +394,14 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr>
-                                    <td class="text-left">Account 1</td>
-                                    <td class="text-left">12,214</td>
-                                    <td class="text-left">315</td>
-                                    <td class="text-left">62</td>
-                                    <td class="text-left">841</td>
+                                <tr ng-repeat="account in fbAccounts">
+                                    <td class="text-left">{{ account.name }}</td>
+                                    <td class="text-left">{{ account.values[0].totals | number: 0 }}</td>
+                                    <td class="text-left">{{ account.values[0].page_likes | number: 0 }}</td>
+                                    <td class="text-left">{{ account.values[0].story_likes | number: 0 }}</td>
+                                    <td class="text-left">{{ account.values[0].shares | number: 0 }}</td>
+                                    <td class="text-left">{{ account.values[0].comments | number: 0 }}</td>
+                                    <!--
                                     <td class="text-left">
                                         <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
                                             <div class="progress-bar progress-bar-success" style="width: 54.41%;">
@@ -409,57 +411,11 @@
 
                                         <span class="m-left-sm vertical-top">54.41%</span>
                                     </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-left">Account 1</td>
-                                    <td class="text-left">24,241</td>
-                                    <td class="text-left">49</td>
-                                    <td class="text-left">721</td>
-                                    <td class="text-left">21</td>
-                                    <td class="text-left">
-                                        <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
-                                            <div class="progress-bar progress-bar-warning" style="width: 69.92%;">
-                                                <span class="sr-only">69.92% Complete</span>
-                                            </div>
-                                        </div>
-
-                                        <span class="m-left-sm vertical-top">69.92%</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-left">Account 1</td>
-                                    <td class="text-left">14,251</td>
-                                    <td class="text-left">168</td>
-                                    <td class="text-left">231</td>
-                                    <td class="text-left">582</td>
-                                    <td class="text-left">
-                                        <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
-                                            <div class="progress-bar progress-bar-danger" style="width: 43.17%;">
-                                                <span class="sr-only">43.17% Complete</span>
-                                            </div>
-                                        </div>
-
-                                        <span class="m-left-sm vertical-top">43.17%</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-left">Account 1</td>
-                                    <td class="text-left">2,241</td>
-                                    <td class="text-left">923</td>
-                                    <td class="text-left">111</td>
-                                    <td class="text-left">121</td>
-                                    <td class="text-left">
-                                        <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
-                                            <div class="progress-bar progress-bar-success" style="width: 12.11%;">
-                                                <span class="sr-only">12.11% Complete</span>
-                                            </div>
-                                        </div>
-
-                                        <span class="m-left-sm vertical-top">12.11%</span>
-                                    </td>
+                                    -->
                                 </tr>
                                 </tbody>
                             </table>
+                            <p class="no-data-found" ng-if="fbAccounts.length === 0">There are no accounts</p>
                         </div><!-- ./smart-widget-inner -->
                     </div><!-- ./smart-widget -->
                 </div><!-- ./col -->
@@ -470,7 +426,7 @@
 
                         </div>
                         <div class="smart-widget-inner table-responsive">
-                            <table class="table table-striped no-margin">
+                            <table class="table table-striped no-margin" ng-if="twAccounts.length > 0">
                                 <thead>
                                 <tr>
                                     <th class="text-left">Name</th>
@@ -482,12 +438,14 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr>
-                                    <td class="text-left">Account 1</td>
-                                    <td class="text-left">12,214</td>
-                                    <td class="text-left">213</td>
-                                    <td class="text-left">457</td>
-                                    <td class="text-left">452</td>
+                                <tr ng-repeat="account in twAccounts">
+                                    <td class="text-left">{{ account.name }}</td>
+                                    <td class="text-left">{{ account.values[0].totals | number: 0 }}</td>
+                                    <td class="text-left">{{ account.values[0].page_likes | number: 0 }}</td>
+                                    <td class="text-left">{{ account.values[0].story_likes | number: 0 }}</td>
+                                    <td class="text-left">{{ account.values[0].shares | number: 0 }}</td>
+                                    <td class="text-left">{{ account.values[0].comments | number: 0 }}</td>
+                                    <!--
                                     <td class="text-left">
                                         <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
                                             <div class="progress-bar progress-bar-success" style="width: 54.41%;">
@@ -497,57 +455,11 @@
 
                                         <span class="m-left-sm vertical-top">54.41%</span>
                                     </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-left">Account 1</td>
-                                    <td class="text-left">875</td>
-                                    <td class="text-left">234</td>
-                                    <td class="text-left">241</td>
-                                    <td class="text-left">123</td>
-                                    <td class="text-left">
-                                        <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
-                                            <div class="progress-bar progress-bar-warning" style="width: 69.92%;">
-                                                <span class="sr-only">69.92% Complete</span>
-                                            </div>
-                                        </div>
-
-                                        <span class="m-left-sm vertical-top">69.92%</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-left">Account 1</td>
-                                    <td class="text-left">846</td>
-                                    <td class="text-left">153</td>
-                                    <td class="text-left">11</td>
-                                    <td class="text-left">251</td>
-                                    <td class="text-left">
-                                        <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
-                                            <div class="progress-bar progress-bar-danger" style="width: 43.17%;">
-                                                <span class="sr-only">43.17% Complete</span>
-                                            </div>
-                                        </div>
-
-                                        <span class="m-left-sm vertical-top">43.17%</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-left">Account 1</td>
-                                    <td class="text-left">2,241</td>
-                                    <td class="text-left">586</td>
-                                    <td class="text-left">845</td>
-                                    <td class="text-left">10</td>
-                                    <td class="text-left">
-                                        <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
-                                            <div class="progress-bar progress-bar-success" style="width: 12.11%;">
-                                                <span class="sr-only">12.11% Complete</span>
-                                            </div>
-                                        </div>
-
-                                        <span class="m-left-sm vertical-top">12.11%</span>
-                                    </td>
+                                    -->
                                 </tr>
                                 </tbody>
                             </table>
+                            <p class="no-data-found" ng-if="twAccounts.length === 0">There are no accounts</p>
                         </div><!-- ./smart-widget-inner -->
                     </div><!-- ./smart-widget -->
                 </div><!-- ./col -->
@@ -556,25 +468,27 @@
                         <div class="smart-widget-header" style="background: #E36159; color: white">
                             YouTube Accounts
                         </div>
-                        <div class="smart-widget-inner table-responsive">
+                        <div class="smart-widget-inner table-responsive" ng-if="youtubeAccounts.length > 0">
                             <table class="table table-striped no-margin">
                                 <thead>
                                 <tr>
                                     <th class="text-left">Name</th>
                                     <th class="text-left">Actions</th>
-                                    <th class="text-left">New Subscriptions</th>
+                                    <th class="text-left">Views</th>
                                     <th class="text-left">Video Likes</th>
-                                    <th class="text-left">Shares</th>
+                                    <th class="text-left">Subscribers</th>
                                     <th class="text-left">Comments</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr>
-                                    <td class="text-left">Account 1</td>
-                                    <td class="text-left">12,214</td>
-                                    <td class="text-left">214</td>
-                                    <td class="text-left">467</td>
-                                    <td class="text-left">41</td>
+                                <tr ng-repeat="account in youtubeAccounts">
+                                    <td class="text-left">{{ account.name }}</td>
+                                    <td class="text-left">{{ account.values[0].totals | number: 0 }}</td>
+                                    <td class="text-left">{{ account.values[0].views | number: 0 }}</td>
+                                    <td class="text-left">{{ account.values[0].likes | number: 0 }}</td>
+                                    <td class="text-left">{{ account.values[0].subscribers | number: 0 }}</td>
+                                    <td class="text-left">{{ account.values[0].comments | number: 0 }}</td>
+                                    <!--
                                     <td class="text-left">
                                         <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
                                             <div class="progress-bar progress-bar-success" style="width: 54.41%;">
@@ -584,57 +498,11 @@
 
                                         <span class="m-left-sm vertical-top">54.41%</span>
                                     </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-left">Account 1</td>
-                                    <td class="text-left">24,241</td>
-                                    <td class="text-left">499</td>
-                                    <td class="text-left">7,231</td>
-                                    <td class="text-left">21</td>
-                                    <td class="text-left">
-                                        <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
-                                            <div class="progress-bar progress-bar-warning" style="width: 69.92%;">
-                                                <span class="sr-only">69.92% Complete</span>
-                                            </div>
-                                        </div>
-
-                                        <span class="m-left-sm vertical-top">69.92%</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-left">Account 1</td>
-                                    <td class="text-left">14,251</td>
-                                    <td class="text-left">1,368</td>
-                                    <td class="text-left">321</td>
-                                    <td class="text-left">508</td>
-                                    <td class="text-left">
-                                        <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
-                                            <div class="progress-bar progress-bar-danger" style="width: 43.17%;">
-                                                <span class="sr-only">43.17% Complete</span>
-                                            </div>
-                                        </div>
-
-                                        <span class="m-left-sm vertical-top">43.17%</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-left">Account 1</td>
-                                    <td class="text-left">2,241</td>
-                                    <td class="text-left">92</td>
-                                    <td class="text-left">1,191</td>
-                                    <td class="text-left">1,021</td>
-                                    <td class="text-left">
-                                        <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
-                                            <div class="progress-bar progress-bar-success" style="width: 12.11%;">
-                                                <span class="sr-only">12.11% Complete</span>
-                                            </div>
-                                        </div>
-
-                                        <span class="m-left-sm vertical-top">12.11%</span>
-                                    </td>
+                                    -->
                                 </tr>
                                 </tbody>
                             </table>
+                            <p class="no-data-found" ng-if="youtubeAccounts.length === 0">There are no accounts</p>
                         </div><!-- ./smart-widget-inner -->
                     </div><!-- ./smart-widget -->
                 </div>

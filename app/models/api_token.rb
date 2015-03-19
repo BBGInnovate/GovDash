@@ -1,4 +1,5 @@
 # this model is to be replaced by AppToken
+=begin
 class ApiToken < ActiveRecord::Base
  
   belongs_to :facebook_account, foreign_key: :account_id
@@ -35,3 +36,5 @@ class ApiToken < ActiveRecord::Base
     end
   end
 end
+=end
+

@@ -11,7 +11,8 @@ class TwitterAccount < Account
      begin
        records = where(:is_active=>true).all
        retrieve_range = TwitterApp.config[:retrieve_range] || records.size
-       records[eval retrieve_range].each_with_index do |a, i|
+       records.each_with_index do |a, i|
+         Rails.logger.debug "Start Twitter #{a.id}"
          if a.retrieve
            count += 1
          end

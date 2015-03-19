@@ -529,7 +529,7 @@ class TwitterAccount < Account
       logger.error "  #{error.message}"
       raise "create_today_timeline #{error.message}"
     end
-    if tl[0].total_followers      
+    if tl[0] && tl[0].total_followers      
       net_followers_for_day = user.followers_count - tl[0].total_followers.to_i
     else
       net_followers_for_day = 0

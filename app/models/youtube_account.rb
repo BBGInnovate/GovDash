@@ -67,7 +67,7 @@ class YoutubeAccount < Account
     sincedate = eval("#{n}.#{unit}.#{arr[2]}")
     
     @bulk_insert = []
-    say "Started #{self.class.name}#retrieve"
+    say "Started #{self.class.name}#retrieve #{self.id}"
     
     process_channel
    
@@ -145,7 +145,11 @@ class YoutubeAccount < Account
   
   def channel
     @channel ||=
-       Yt::Channel.new url: "youtube.com/#{object_name}"
+       begin
+         Yt::Channel.new url: "youtube.com/#{object_name}"
+       rescue
+         Yt::Channel.new id: "youtube.com/#{object_name}"
+       end
   end
   
   protected

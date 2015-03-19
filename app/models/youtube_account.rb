@@ -146,10 +146,14 @@ class YoutubeAccount < Account
   def channel
     @channel ||=
        begin
-         Yt::Channel.new url: "youtube.com/#{object_name}"
+         puts "  Youtube by channel url"
+         @channel = Yt::Channel.new url: "youtube.com/#{object_name}"
+         @channel.id
        rescue
-         Yt::Channel.new id: "youtube.com/#{object_name}"
+         puts "  Youtube by channel id"
+         @channel = Yt::Channel.new id: object_name
        end
+       @channel
   end
   
   protected

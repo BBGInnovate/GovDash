@@ -76,66 +76,79 @@ angular.module('directives', []).
 	.directive('sparkChart', ['$parse', function($parse) {
 		return {
 			link: function(scope, element, attrs) {
-				//Flot Chart (Total Sales)
-				var d1 = $parse(attrs.data)(scope);
+
+				scope.$watch(attrs.data, function (newval, oldval) {
+					//Flot Chart (Total Sales)
+					var d1 = $parse(attrs.data)(scope);
+
+					if (d1 && d1.length > 0) {
+
+						function plotWithOptions() {
+							$.plot(element, [d1], {
+								series: {
+									lines: {
+										show: true,
+										fill: true,
+										fillColor: attrs.shadecolor,
+										steps: false
+
+									},
+									points: {
+										show: true,
+										fill: false
+									}
+								},
+								xaxis: {
+									mode: "categories",
+									tickLength: 0
+								},
+								grid: {
+									color: '#fff',
+									hoverable: true,
+									autoHighlight: true
+								},
+								colors: [attrs.pointcolor]
+							});
 
 
-				function plotWithOptions() {
-					$.plot(element, [d1], {
-						series: {
-							lines: {
-								show: true,
-								fill: true,
-								fillColor: attrs.shadecolor,
-								steps: false
+						}
 
-							},
-							points: {
-								show: true,
-								fill: false
+						$("<div id='tooltip'></div>").css({
+							position: "absolute",
+							display: "none",
+							border: "1px solid #222",
+							padding: "4px",
+							color: "#fff",
+							"border-radius": "4px",
+							"background-color": "rgb(0,0,0)",
+							opacity: 0.80
+						}).appendTo("body");
+
+						element.bind("plothover", function (event, pos, item) {
+
+							var str = "(" + pos.x.toFixed(2) + ", " + pos.y.toFixed(2) + ")";
+							$("#hoverdata").text(str);
+
+							if (item) {
+								var x = item.datapoint[0],
+									y = item.datapoint[1];
+
+								$("#tooltip").html("Interactions : " + y)
+									.css({top: item.pageY + 5, left: item.pageX + 5})
+									.fadeIn(350);
+							} else {
+								$("#tooltip").hide();
 							}
-						},
+						});
 
-						grid: {
-							color: '#fff',
-							hoverable: true,
-							autoHighlight: true
-						},
-						colors: [attrs.pointcolor]
-					});
-
-
-				}
-
-				$("<div id='tooltip'></div>").css({
-					position: "absolute",
-					display: "none",
-					border: "1px solid #222",
-					padding: "4px",
-					color: "#fff",
-					"border-radius": "4px",
-					"background-color": "rgb(0,0,0)",
-					opacity: 0.80
-				}).appendTo("body");
-
-				element.bind("plothover", function (event, pos, item) {
-
-					var str = "(" + pos.x.toFixed(2) + ", " + pos.y.toFixed(2) + ")";
-					$("#hoverdata").text(str);
-
-					if (item) {
-						var x = item.datapoint[0],
-							y = item.datapoint[1];
-
-						$("#tooltip").html("Interactions : " + y)
-							.css({top: item.pageY+5, left: item.pageX+5})
-							.fadeIn(350);
+						plotWithOptions();
 					} else {
-						$("#tooltip").hide();
+						element.html('<p class="no-data-found">No data found</p>');
 					}
+
 				});
 
-				plotWithOptions();
+
 			}
 		};
 	}])
@@ -144,17 +157,22 @@ angular.module('directives', []).
 			link: function(scope, element, attrs) {
 				var data = $parse(attrs.data)(scope);
 
-				new Morris.Bar({
-					// ID of the element in which to draw the chart.
-					element: element,
-					// Chart data records -- each entry in this array corresponds to a point on
-					// the chart.
-					data: data,
-					xkey: 'y',
-					ykeys: ['a', 'b', 'c', 'd'],
-					labels: ['All', 'Facebook', 'Twitter', 'YouTube'],
-					barColors: ['#2BAAB1', '#3278B3', '#23B7E5', '#E36159']
-				});
+				if (data) {
+
+					new Morris.Bar({
+						// ID of the element in which to draw the chart.
+						element: element,
+						// Chart data records -- each entry in this array corresponds to a point on
+						// the chart.
+						data: data,
+						xkey: 'y',
+						ykeys: ['a', 'b', 'c', 'd'],
+						labels: ['All', 'Facebook', 'Twitter', 'YouTube'],
+						barColors: ['#2BAAB1', '#3278B3', '#23B7E5', '#E36159']
+					});
+				} else {
+					element.html('<p class="no-data-found">No data found</p>');
+				}
 
 			}
 		};
@@ -162,13 +180,26 @@ angular.module('directives', []).
 	.directive('pieChart', ['$parse', function($parse) {
 		return {
 			link: function(scope, element, attrs) {
-				var data = $parse(attrs.data)(scope);
 
-				Morris.Donut({
-					element: element,
-					data: data,
-					colors: [attrs.colorone, attrs.colortwo, attrs.colorthree, attrs.colorfour]
+				scope.$watch(attrs.data, function (newval, oldval) {
+
+					var data = $parse(attrs.data)(scope);
+
+					if (data) {
+
+						Morris.Donut({
+							element: element,
+							data: data,
+							colors: [attrs.colorone, attrs.colortwo, attrs.colorthree, attrs.colorfour]
+						});
+
+
+					} else {
+						element.html('<p class="no-data-found">No data found</p>');
+					}
+
 				});
+
 
 
 			}
@@ -208,11 +239,9 @@ angular.module('directives', []).
 
 				//Date & Time Picker
 				$(element).datetimepicker({
+					defaultDate: attrs.date,
 					pickTime: false
 				});
-
-
-
 			}
 		};
 	}]);

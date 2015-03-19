@@ -28,3 +28,29 @@
 .fa-spin {
     font-size: 64px !important;
 }
+
+.delete-icon {
+    color: #E36159;
+    cursor: pointer;
+}
+
+.modal-sm {
+    background: white;
+}
+
+div.xAxis div.tickLabel
+{
+    margin-top: 8px;
+    transform: rotate(-70deg);
+    -ms-transform:rotate(-70deg); /* IE 9 */
+    -moz-transform:rotate(-70deg); /* Firefox */
+    -webkit-transform:rotate(-70deg); /* Safari and Chrome */
+    -o-transform:rotate(-70deg); /* Opera */
+    /*rotation-point:50% 50%;*/ /* CSS3 */
+    /*rotation:270deg;*/ /* CSS3 */
+}
+
+.no-data-found {
+    text-align: center;
+    padding: 20px;
+}

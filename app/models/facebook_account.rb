@@ -103,7 +103,7 @@ class FacebookAccount < Account
      begin
        records = where("is_active=1").to_a 
        retrieve_range = Facebook.config[:retrieve_range] || records.size
-       records[eval retrieve_range].each_with_index do |a,i|
+       records.each_with_index do |a,i|
          if !!a.graph_api
            if a.retrieve
              Rails.logger.debug "Sleep #{SLEEP} seconds for next account"
@@ -385,13 +385,24 @@ class FacebookAccount < Account
       
       options[:platform_type] = 'FB'
       options[:display_name] = json['name']
-      options[:description] = json['description'][0..254]
-      options[:avatar] = json['cover']['source']
+      if json['description']
+        options[:description] = json['description'][0..254]
+      end
+      if json['cover']
+        options[:avatar] = json['cover']['source']
+      end
       options[:total_followers] =json['likes'].to_i
-      options[:location] = json['location']
+      if json['location']
+        options[:location] = json['location']
+      end
+      if json['link']
       options[:url] = json['link']
-      options[:verified] = json['is_verified']
- 
+      end
+      if json['is_verified']
+        options[:verified] = json['is_verified']
+      else
+        options[:verified] = 0
+      end
       self.update_profile options
       
     rescue Exception=>error

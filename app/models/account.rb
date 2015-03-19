@@ -145,9 +145,11 @@ class Account < ActiveRecord::Base
            map{|a| a.account_id}
       combined_account_ids << subgroup_account_ids
     end
-    
-    account_ids = consolidate_account_ids combined_account_ids
-  
+    if combined_account_ids.empty?
+      account_ids = Account.where("is_active=1").map(&:id)
+    else
+      account_ids = consolidate_account_ids combined_account_ids
+    end
   end
   
   def self.consolidate_account_ids account_ids_array

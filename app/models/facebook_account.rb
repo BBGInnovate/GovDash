@@ -4,9 +4,9 @@ class FacebookAccount < Account
   attr_accessor :graph_api
   
   has_many :fb_pages, -> { order 'post_created_time desc' }, 
-      foreign_key: :account_id, dependent: :destroy
+      foreign_key: :account_id
   has_many :fb_posts, -> { order 'post_created_time desc' }, 
-      foreign_key: :account_id, dependent: :destroy
+      foreign_key: :account_id
 
   after_initialize :do_this_after_initialize
   
@@ -367,10 +367,62 @@ class FacebookAccount < Account
      aggregate_data 1,'day', true
      
      # recent_page available after aggregate_data
-     today_page.save_lifetime_data
-    
+     save_lifetime_data
   end
 
+  def save_lifetime_data
+    begin
+      options = {}
+      # link = "https://graph.facebook.com/?id=#{self.obj_name}"
+      # response = self.class.fetch link
+      # json = JSON.parse response.body
+      
+      json = graph_api.get_object object_name, 
+        :fields=>"is_verified,cover,description,name,likes,location,link,talking_about_count, website"
+    
+      talking_about = json['talking_about_count'].to_i
+      websites = json['website'].split(' ')
+      
+      options[:platform_type] = 'FB'
+      options[:display_name] = json['name']
+      options[:description] = json['description'][0..254]
+      options[:avatar] = json['cover']['source']
+      options[:total_followers] =json['likes'].to_i
+      options[:location] = json['location']
+      options[:url] = json['link']
+      options[:verified] = json['is_verified']
+ 
+      self.update_profile options
+      
+    rescue Exception=>error
+      logger.error error.message
+      logger.debug error.backtrace
+      return
+    end
+       
+    shares = 0
+    begin
+      websites.each do |website|
+        if !website.match(/http:\/\/|https:\/\//)
+          website = "http://#{website}"
+        end
+        link = "https://graph.facebook.com/?id=#{website}"
+        response = self.class.fetch link
+        json = JSON.parse response.body
+        shares += json['shares'].to_i
+      end
+    rescue Exception=>error
+      logger.debug "  FbPAge#save_lifetime_data #{error.message}"
+      logger.debug "  #{error.backtrace}"
+    end
+    # @page = self.account.graph_api.get_object self.obj_name
+    res = FbPage.where(:account_id=>self.id).select("sum(comments) AS comments").first
+    today_page.update_attributes :total_shares=>shares, 
+         :total_likes=>options[:total_followers], 
+         :total_comments => res.comments,
+         :total_talking_about=>talking_about
+  end
+  
   def get_replies_to_comment(f)
     replies_to_comment = 0
     if f['comments'] && f['comments']['data']
@@ -441,8 +493,8 @@ class FacebookAccount < Account
   end
   
   def today_page
-    @today_page = FbPage.find_or_create_by account_id: self.id,
-       post_created_time: DateTime.now.utc.end_of_day,
+    @today_page ||= FbPage.find_or_create_by account_id: self.id,
+       post_created_time: (DateTime.now.utc.beginning_of_day..DateTime.now.utc.end_of_day),
        object_name: self.object_name
   end
 
@@ -471,7 +523,7 @@ class FacebookAccount < Account
   end
   
   def graph_api(access_token=nil)
-    Koala.config.api_version = "v2.2"
+    # Koala.config.api_version = "v2.2"
     if !access_token
       access_token = self.app_token.get_access_token
     end

@@ -179,6 +179,8 @@ class YoutubeAccount < Account
     yt_ch.comments = channel.comment_count
     yt_ch.videos = channel.video_count
     yt_ch.subscribers = channel.subscriber_count
+
+    self.update_profile
     
     pre_day = (published-1.day).to_s(:db)
     pre_ch = self.yt_channels.where("published_at = '#{pre_day}'").last
@@ -187,7 +189,27 @@ class YoutubeAccount < Account
     end
     yt_ch.save
   end
-    
+
+  def update_profile options={}
+    url = "https://www.youtube.com/user/#{channel.username}"
+    options[:platform_type] = 'YT'
+    options[:display_name] = channel.title
+    options[:description] = channel.description
+    options[:avatar] = channel.thumbnail_url
+    options[:total_followers] = channel.subscriber_count
+    options[:url] = url
+    if !account_profile || !account_profile.verified
+      html=Nokogiri::HTML(open url)
+      if html.css("span.qualified-channel-title-badge").empty?
+        options[:verified] = false
+      else
+        options[:verified] = true
+      end
+    end  
+    # options[:location] = 
+    super 
+  end
+  
   def log_duration started, ended
     total_seconds = (ended - started)
     seconds = total_seconds % 60

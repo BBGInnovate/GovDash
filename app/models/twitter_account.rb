@@ -62,7 +62,7 @@ class TwitterAccount < Account
   def delayed_retrieve()
     retrieve
   end
-  handle_asynchronously :delayed_retrieve,:run_at => Proc.new { 1.hour.from_now }
+  # handle_asynchronously :delayed_retrieve,:run_at => Proc.new { 1.hour.from_now }
   
   # timeline.json
   def request_twitter timelines=nil

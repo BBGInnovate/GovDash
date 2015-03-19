@@ -194,7 +194,9 @@ class YoutubeAccount < Account
     url = "https://www.youtube.com/user/#{channel.username}"
     options[:platform_type] = 'YT'
     options[:display_name] = channel.title
-    options[:description] = channel.description
+    if channel.description
+      options[:description] = channel.description[0..254]
+    end
     options[:avatar] = channel.thumbnail_url
     options[:total_followers] = channel.subscriber_count
     options[:url] = url

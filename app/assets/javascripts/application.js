@@ -38,6 +38,7 @@
 //= require moment
 //= require bootstrap-datetimepicker
 //= require jquery.flot.min
+//= require jquery.flot.categories
 //= require jquery.slimscroll.min
 //= require rapheal.min
 //= require morris.min
@@ -55,7 +56,7 @@
 angular.module('radd', ['sessionService','recordService', 'roleService', 'regionService',
 	'countryService', 'organizationService', 'groupService', 'subgroupService', 'accountService',
 	'accountTypeService', 'mediaTypeService', 'languageService', 'reportService', 'userService',
-	'dateService', 'apiService', 'segmentService', '$strap.directives', 'directives', 'filters', 'ngRoute'])
+	'dateService', 'apiService', 'apiService2', 'segmentService', '$strap.directives', 'directives', 'filters', 'ngRoute'])
 
 
 	.config(['$httpProvider', function($httpProvider){

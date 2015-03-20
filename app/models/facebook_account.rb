@@ -378,7 +378,7 @@ class FacebookAccount < Account
       # json = JSON.parse response.body
       
       json = graph_api.get_object object_name, 
-        :fields=>"is_verified,cover,description,name,likes,location,link,talking_about_count, website"
+        :fields=>"picture,is_verified,description,name,likes,location,link,talking_about_count, website"
     
       talking_about = json['talking_about_count'].to_i
       websites = json['website'].split(' ')
@@ -388,8 +388,8 @@ class FacebookAccount < Account
       if json['description']
         options[:description] = json['description'][0..254]
       end
-      if json['cover']
-        options[:avatar] = json['cover']['source']
+      if json['picture']['data']
+        options[:avatar] = json['picture']['data']['url']
       end
       options[:total_followers] =json['likes'].to_i
       if json['location']

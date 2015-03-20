@@ -106,6 +106,7 @@ class FacebookAccount < Account
        records.each_with_index do |a,i|
          if !!a.graph_api
            if a.retrieve
+             count += 1
              Rails.logger.debug "Sleep #{SLEEP} seconds for next account"
              sleep SLEEP
            else

@@ -415,6 +415,9 @@ class FacebookAccount < Account
     shares = 0
     begin
       websites.each do |website|
+        unless website =~ URI::regexp(%w(http https))
+          next
+        end
         if !website.match(/http:\/\/|https:\/\//)
           website = "http://#{website}"
         end

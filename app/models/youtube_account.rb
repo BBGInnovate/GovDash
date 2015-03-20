@@ -199,6 +199,10 @@ class YoutubeAccount < Account
   end
 
   def update_profile options={}
+    loc = "https://gdata.youtube.com/feeds/api/users/#{channel.username}"
+    doc = Nokogiri::Slop open(loc)    
+    options[:location] = doc.xpath('//location').text rescue ''
+    
     url = "https://www.youtube.com/user/#{channel.username}"
     options[:platform_type] = 'YT'
     options[:display_name] = channel.title
@@ -216,7 +220,6 @@ class YoutubeAccount < Account
         options[:verified] = true
       end
     end  
-    # options[:location] = 
     super 
   end
   

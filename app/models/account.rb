@@ -61,6 +61,7 @@ class Account < ActiveRecord::Base
 
   def update_profile options
     options.symbolize_keys!
+    # options[:description].gsub(/\n/, " ").truncate(255)
     options[:name] = self.object_name
     attr = {}
     AccountProfile.column_names.each do |col|

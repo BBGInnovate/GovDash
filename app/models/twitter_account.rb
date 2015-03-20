@@ -496,7 +496,7 @@ class TwitterAccount < Account
     user = twitter_user
     options[:platform_type] = 'TW'
     options[:display_name] = user.name
-    options[:description] = user.description[0..254]
+    options[:description] = user.description
     options[:avatar] = user.profile_image_url.to_s
     options[:total_followers] = user.followers_count
     options[:location] = user.location

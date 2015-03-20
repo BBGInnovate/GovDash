@@ -387,7 +387,7 @@ class FacebookAccount < Account
       options[:platform_type] = 'FB'
       options[:display_name] = json['name']
       if json['description']
-        options[:description] = json['description'][0..254]
+        options[:description] = json['description']
       end
       if json['picture']['data']
         options[:avatar] = json['picture']['data']['url']

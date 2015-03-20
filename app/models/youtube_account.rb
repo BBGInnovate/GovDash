@@ -203,7 +203,7 @@ class YoutubeAccount < Account
     options[:platform_type] = 'YT'
     options[:display_name] = channel.title
     if channel.description
-      options[:description] = channel.description[0..254]
+      options[:description] = channel.description
     end
     options[:avatar] = channel.thumbnail_url
     options[:total_followers] = channel.subscriber_count

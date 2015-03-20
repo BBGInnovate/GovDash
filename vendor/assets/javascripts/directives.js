@@ -159,7 +159,11 @@ angular.module('directives', []).
 
 				if (data) {
 
-					new Morris.Bar({
+					$(window).resize(function() {
+						window.m.redraw();
+					});
+
+					window.m = Morris.Bar({
 						// ID of the element in which to draw the chart.
 						element: element,
 						// Chart data records -- each entry in this array corresponds to a point on
@@ -168,7 +172,9 @@ angular.module('directives', []).
 						xkey: 'y',
 						ykeys: ['a', 'b', 'c', 'd'],
 						labels: ['All', 'Facebook', 'Twitter', 'YouTube'],
-						barColors: ['#2BAAB1', '#3278B3', '#23B7E5', '#E36159']
+						barColors: ['#2BAAB1', '#3278B3', '#23B7E5', '#E36159'],
+						resize: true,
+						redraw: true
 					});
 				} else {
 					element.html('<p class="no-data-found">No data found</p>');

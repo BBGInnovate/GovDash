@@ -39,15 +39,10 @@
 //= require bootstrap-datetimepicker
 //= require jquery.flot.min
 //= require jquery.flot.categories
-//= require jquery.slimscroll.min
+//= require jquery.flot.resize
 //= require rapheal.min
 //= require morris.min
-//= require datepicker-simplify
-//= require sparkline.min
 //= require skycons
-//= require jquery.popupoverlay.min
-//= require jquery.easypiechart.min
-//= require jquery.steps.min
 //= require modernizr.min
 //= require simplify
 //= require main
@@ -56,7 +51,7 @@
 angular.module('radd', ['sessionService','recordService', 'roleService', 'regionService',
 	'countryService', 'organizationService', 'groupService', 'subgroupService', 'accountService',
 	'accountTypeService', 'mediaTypeService', 'languageService', 'reportService', 'userService',
-	'dateService', 'apiService', 'apiService2', 'segmentService', '$strap.directives', 'directives', 'filters', 'ngRoute'])
+	'dateService', 'apiService', 'apiQueryService', 'segmentService', '$strap.directives', 'directives', 'filters', 'ngRoute'])
 
 
 	.config(['$httpProvider', function($httpProvider){

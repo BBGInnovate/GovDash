@@ -522,13 +522,22 @@
 
  }
  */
-function HomeCtrl($scope, APIData2) {
+function HomeCtrl($scope, APIData, APIQueryData) {
 
 	// Initialize start and end dates
-	$scope.startDate =  moment().subtract(7, 'days').calendar();
 	$scope.endDate = moment().format('L');
+	$scope.startDate =  moment($scope.endDate,"MM/DD/YYYY").subtract(6,'day').format('MM/DD/YYYY');
 
-	/*
+
+	for(var i = 0; i<6; i++){
+		console.log(
+			moment($scope.endDate,"MM/DD/YYYY")
+				.add(i,'day') //changed to i
+				.format('YYYY/MM/DD') //make it a string
+		);
+	}
+
+
 	// When content loads, display and initialize modal
 	$scope.$on('$viewContentLoaded', loadModal);
 
@@ -544,7 +553,7 @@ function HomeCtrl($scope, APIData2) {
 
 
 	});
-	*/
+
 
 
 	// This function is here so the tabs on the initial modal don't try to control
@@ -572,15 +581,26 @@ function HomeCtrl($scope, APIData2) {
 	};
 
 
-//	$scope.finish = function () {
-		var startDate = $('#start-date').val();
-		var endDate = $('#end-date').val();
+	$scope.finish = function () {
+	//	var startDate = $('#start-date').val();
+	//	var endDate = $('#end-date').val();
 
 		//console.log(startDate + '   ' + endDate);
 
 	//	var data = APIData.getData($scope.selectedCountries, $scope.selectedLanguages);
 	//	console.log(APIData2.getPostData());
-		APIData2.getData().then(function(response) {
+
+		// Build out object to send to Angular Service
+		var queryData = {
+			regions: $scope.selectedRegions,
+			countries: $scope.selectedCountries,
+			languages: $scope.selectedLanguages,
+			networks: $scope.selectedNetworks,
+			startDate: $scope.startDate,
+			endDate: $scope.endDate
+		};
+
+		APIQueryData.getData(queryData).then(function(response) {
 			console.log(response);
 
 			$scope.facebookInteractions = response.fbTotalInteractions;
@@ -638,7 +658,9 @@ function HomeCtrl($scope, APIData2) {
 		$scope.twPieChartData = data.twPieChartData;
 		$scope.youtubePieChartData = data.youtubePieChartData;
 	*/
-//	};
+
+
+	};
 
 
 

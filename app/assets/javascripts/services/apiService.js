@@ -1,9 +1,10 @@
 'use strict';
 
+// This factory is used for pulling the initial data and handling arrays of objects
 angular.module('apiService', []).factory('APIData', ['$http', '$q', function($http, $q){
 
-
 	return {
+		// This function will poll the initial data
 		getInitialData: function () {
 			return $q.all([
 				// $q will keep the list of promises in a array
@@ -39,126 +40,46 @@ angular.module('apiService', []).factory('APIData', ['$http', '$q', function($ht
 				return aggregatedData;
 			});
 		},
-		getData: function(countries, languages) {
-			/*
-			var countryIds = GetArray.byId(countries);
-			var languageIds = [];
-			var networkIds = [];
-			var regionIds = [];
-			*/
-
-
-			/* Spark Chart Data */
-			var d1 = [];
-			for (var i = 0; i <= 31; i += 1) {
-				d1.push([i, parseInt(Math.random() * 999)]);
-			}
-
-			var d2 = [];
-			for (var i = 0; i <= 31; i += 1) {
-				d2.push([i, parseInt(Math.random() * 999)]);
-			}
-
-			var d3 = [];
-			for (var i = 0; i <= 31; i += 1) {
-				d3.push([i, parseInt(Math.random() * 999)]);
-			}
-
-			/* Bar Chart Data */
-			var facebookInteractions = parseInt(Math.random() * 999);
-			var twitterInteractions = parseInt(Math.random() * 999);
-			var youtubeInteractions = parseInt(Math.random() * 999);
-			var totalInteractions = facebookInteractions + twitterInteractions + youtubeInteractions;
-
-
-			var barChartData = [{ y: 'Total Interactions', a: totalInteractions, b: facebookInteractions, c: twitterInteractions, d: youtubeInteractions }];
-
-			var fbPieChartData = [
-				{label: "Comments", value: parseInt(Math.random() * 99)},
-				{label: "Story Likes", value: parseInt(Math.random() * 99)},
-				{label: "Shares", value: parseInt(Math.random() * 99)},
-				{label: "Page Likes", value: parseInt(Math.random() * 99)}
-			];
-
-			var twPieChartData = [
-				{label: "Retweets", value: parseInt(Math.random() * 99)},
-				{label: "@Mentions", value: parseInt(Math.random() * 99)},
-				{label: "Favorites", value: parseInt(Math.random() * 99)},
-				{label: "Followers", value: parseInt(Math.random() * 99)}
-			];
-
-			var youtubePieChartData = [
-				{label: "Views", value: parseInt(Math.random() * 99)},
-				{label: "Likes", value: parseInt(Math.random() * 99)},
-				{label: "Comments", value: parseInt(Math.random() * 99)},
-				{label: "Subscriptions", value: parseInt(Math.random() * 99)}
-			];
-
-			var data = {
-				chartOne: d1,	// Facebook Spark Chart
-				chartTwo: d2,	// Twitter Spark Chart
-				chartThree: d3,	// YouTube Spark Chart
-				barChartData: barChartData,
-				fbPieChartData: fbPieChartData,
-				twPieChartData: twPieChartData,
-				youtubePieChartData: youtubePieChartData
-			};
-
-
-
-			return data;
-			/*
-			 return $http.post('http://govdash-lb-1074229924.us-east-1.elb.amazonaws.com/api/reports', {options: {source: "all", country_ids: countryIds, region_ids: regionIds, language_ids: languageIds } }).then(function(response) {
-
-			 //return $http.post('/api/reports', {options: {source: "all", country_ids: countryIds, region_ids: regionIds, language_ids: languageIds, network_ids: networkIds, start_date: startDate, end_date: endDate } }).then(function(response) {
-			 return response.data;
-			 }, function(err) {
-			 console.log(err);
-			 });
-			 */
-		},
+		// This function will take in an array and return back the IDs of the array
 		getIds: function (array) {
 			var ids = [];
-			for (var i = 0; i < array.length; i++) {
-				ids.push(array[i].id);
-			}
-			return ids;
-		},
-		getPostData: function () {
-			var data = {};
-			//$http.post('/api/reports', {options: {source: "all", country_ids: countryIds, region_ids: regionIds, language_ids: languageIds, network_ids: networkIds, start_date: startDate, end_date: endDate } }).then(function(response) {
-			$http.post('/api/reports', {options: {source: "all", country_ids: [1] }}).then(function(response) {
-				var apiData = response.data;
-
-				var fbDailyTrend = [];
-				for (var i = 0; i <= apiData.facebook.values.trend; i++) {
-					fbDailyTrend.push([i, apiData.facebook.values.trend[i].totals]);
+			if (array) {
+				for (var i = 0; i < array.length; i++) {
+					ids.push(array[i].id);
 				}
-
-				data = response.data;
-
-
-			}, function(err) {
-				console.log(err);
-			});
-
-			return data;
+				return ids;
+			} else {
+				return [];
+			}
 		}
 
 	};
 }]);
 
-angular.module('apiService2', [])
-	.factory('APIData2', function($location, $http) {
+// This is the factory that will take the data passed in and query the back-end for data
+angular.module('apiQueryService', [])
+	.factory('APIQueryData', function($location, $http, APIData) {
 
 		var data = {
 
-			getData: function() {
-				return $http.post('/api/reports', {options: {source: "all", language_ids:[9], period:"1.week", end_date:"2015-03-18" }}).then(function(response) {
+			getData: function(queryData) {
+
+				var countryIds = APIData.getIds(queryData.countries);
+				var regionIds = APIData.getIds(queryData.regions);
+				var languageIds = APIData.getIds(queryData.languages);
+				var networkIds = APIData.getIds(queryData.networks);
+
+				var startDate = moment(queryData.startDate, 'MM/DD/YYYY').format('YYYY/MM/DD');
+				var endDate = moment(queryData.endDate, 'MM/DD/YYYY').format('YYYY/MM/DD');
+
+
+			  //return $http.post('/api/reports', {options: {source: "all", language_ids:[9], start_date: startDate, end_date: endDate }}).then(function(response) {
+				return $http.post('/api/reports', {options: {source: "all", country_ids: countryIds, region_ids: regionIds, language_ids: languageIds, network_ids: networkIds, start_date: startDate, end_date: endDate } }).then(function(response) {
 					data = response.data;
 
 					console.log(data);
 
+					// Initialize data here
 					var fbTotalInteractions = 0;
 					var twTotalInteractions = 0;
 					var youtubeTotalInteractions = 0;
@@ -203,10 +124,19 @@ angular.module('apiService2', [])
 
 					// If Twitter data exists
 					if (response.data.twitter) {
+						twTotalInteractions = response.data.twitter.values.period[0].totals;
+
 						// Process Twitter Spark Chart Data
 						for (var i = 0; i < response.data.twitter.values.trend.length; i++) {
 							twSparkChart.push([response.data.twitter.values.trend[i].date.substring(5, 10), response.data.twitter.values.trend[i].totals]);
 						}
+
+						twPieChart = [
+							{label: "Retweets", value: response.data.twitter.values.period[0].retweets},
+							{label: "@Mentions", value: response.data.twitter.values.period[0].mentions},
+							{label: "Favorites", value: response.data.twitter.values.period[0].favorites},
+							{label: "Followers", value: response.data.twitter.values.period[0].followers}
+						];
 
 						// Process Account Data
 						for (var i = 0; i < response.data.twitter.values.accounts.length; i++) {
@@ -242,6 +172,8 @@ angular.module('apiService2', [])
 					var barChartData = [{ y: 'Total Interactions', a: totalInteractions, b: fbTotalInteractions, c: twTotalInteractions, d: youtubeTotalInteractions }];
 
 
+
+					// Build object to return to controller
 					var formattedData = {
 						fbTotalInteractions: fbTotalInteractions,
 						twTotalInteractions: twTotalInteractions,
@@ -268,25 +200,3 @@ angular.module('apiService2', [])
 		return data;
 	});
 
-/*
-angular.module('apiService', []).factory('GetArray', function(){
-
-
-	return {
-
-		byId: function (array) {
-			var ids = [];
-			if (array) {
-				for (var i = 0; i < array.length; i++) {
-					ids.push(array[i].id);
-				}
-				return ids;
-			} else {
-				return [];
-			}
-
-		}
-
-	};
-});
-	*/

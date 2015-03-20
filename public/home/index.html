@@ -251,7 +251,7 @@
                             <div class="bg-grey">
                                 <div class="row">
                                     <div class="col-md-12 text-center">
-                                        <h3 class="m-top-sm">{{ totalInteractions }}</h3>
+                                        <h3 class="m-top-sm">{{ totalInteractions | number: 0 }}</h3>
                                         <small class="m-bottom-sm block">Total Interactions</small>
                                     </div>
                                 </div>
@@ -381,26 +381,26 @@
                             Facebook Accounts
 
                         </div>
-                        <div class="smart-widget-inner table-responsive">
+                        <div class="smart-widget-inner table-responsive" id="no-more-tables">
                             <table class="table table-striped no-margin" ng-if="fbAccounts.length > 0">
                                 <thead>
                                 <tr>
                                     <th class="text-left">Name</th>
-                                    <th class="text-left">Actions</th>
-                                    <th class="text-left">New Fans</th>
-                                    <th class="text-left">Story Likes</th>
-                                    <th class="text-left">Shares</th>
-                                    <th class="text-left">Comments</th>
+                                    <th class="text-left numeric">Actions</th>
+                                    <th class="text-left numeric">New Fans</th>
+                                    <th class="text-left numeric">Story Likes</th>
+                                    <th class="text-left numeric">Shares</th>
+                                    <th class="text-left numeric">Comments</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr ng-repeat="account in fbAccounts">
-                                    <td class="text-left">{{ account.name }}</td>
-                                    <td class="text-left">{{ account.values[0].totals | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].page_likes | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].story_likes | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].shares | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].comments | number: 0 }}</td>
+                                    <td data-title="Name" class="text-left">{{ account.name }}</td>
+                                    <td data-title="Actions" class="text-left">{{ account.values[0].totals | number: 0 }}</td>
+                                    <td data-title="New Fans" class="text-left">{{ account.values[0].page_likes | number: 0 }}</td>
+                                    <td data-title="Story Likes" class="text-left">{{ account.values[0].story_likes | number: 0 }}</td>
+                                    <td data-title="Shares" class="text-left">{{ account.values[0].shares | number: 0 }}</td>
+                                    <td data-title="Comments" class="text-left">{{ account.values[0].comments | number: 0 }}</td>
                                     <!--
                                     <td class="text-left">
                                         <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
@@ -425,26 +425,26 @@
                             Twitter Accounts
 
                         </div>
-                        <div class="smart-widget-inner table-responsive">
+                        <div class="smart-widget-inner table-responsive" id="no-more-tables">
                             <table class="table table-striped no-margin" ng-if="twAccounts.length > 0">
                                 <thead>
                                 <tr>
                                     <th class="text-left">Name</th>
-                                    <th class="text-left">Actions</th>
-                                    <th class="text-left">New Followers</th>
-                                    <th class="text-left">Favorites</th>
-                                    <th class="text-left">Retweets</th>
-                                    <th class="text-left">Mentions</th>
+                                    <th class="text-left numeric">Actions</th>
+                                    <th class="text-left numeric">New Followers</th>
+                                    <th class="text-left numeric">Favorites</th>
+                                    <th class="text-left numeric">Retweets</th>
+                                    <th class="text-left numeric">Mentions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr ng-repeat="account in twAccounts">
-                                    <td class="text-left">{{ account.name }}</td>
-                                    <td class="text-left">{{ account.values[0].totals | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].page_likes | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].story_likes | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].shares | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].comments | number: 0 }}</td>
+                                    <td data-title="Name" class="text-left">{{ account.name }}</td>
+                                    <td data-title="Actions" class="text-left">{{ account.values[0].totals | number: 0 }}</td>
+                                    <td data-title="Followers" class="text-left">{{ account.values[0].followers | number: 0 }}</td>
+                                    <td data-title="Favorites" class="text-left">{{ account.values[0].favorites | number: 0 }}</td>
+                                    <td data-title="Retweets" class="text-left">{{ account.values[0].retweets | number: 0 }}</td>
+                                    <td data-title="Mentions" class="text-left">{{ account.values[0].mentions | number: 0 }}</td>
                                     <!--
                                     <td class="text-left">
                                         <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
@@ -468,26 +468,26 @@
                         <div class="smart-widget-header" style="background: #E36159; color: white">
                             YouTube Accounts
                         </div>
-                        <div class="smart-widget-inner table-responsive" ng-if="youtubeAccounts.length > 0">
-                            <table class="table table-striped no-margin">
+                        <div class="smart-widget-inner table-responsive"  id="no-more-tables">
+                            <table class="table table-striped no-margin" ng-if="youtubeAccounts.length > 0">
                                 <thead>
                                 <tr>
                                     <th class="text-left">Name</th>
-                                    <th class="text-left">Actions</th>
-                                    <th class="text-left">Views</th>
-                                    <th class="text-left">Video Likes</th>
-                                    <th class="text-left">Subscribers</th>
-                                    <th class="text-left">Comments</th>
+                                    <th class="text-left numeric">Actions</th>
+                                    <th class="text-left numeric">Views</th>
+                                    <th class="text-left numeric">Video Likes</th>
+                                    <th class="text-left numeric">Subscribers</th>
+                                    <th class="text-left numeric">Comments</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr ng-repeat="account in youtubeAccounts">
-                                    <td class="text-left">{{ account.name }}</td>
-                                    <td class="text-left">{{ account.values[0].totals | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].views | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].likes | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].subscribers | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].comments | number: 0 }}</td>
+                                    <td data-title="Name" class="text-left">{{ account.name }}</td>
+                                    <td data-title="Actions" class="text-left">{{ account.values[0].totals | number: 0 }}</td>
+                                    <td data-title="Views" class="text-left">{{ account.values[0].views | number: 0 }}</td>
+                                    <td data-title="Video Likes" class="text-left">{{ account.values[0].likes | number: 0 }}</td>
+                                    <td data-title="Subscribers" class="text-left">{{ account.values[0].subscribers | number: 0 }}</td>
+                                    <td data-title="Comments" class="text-left">{{ account.values[0].comments | number: 0 }}</td>
                                     <!--
                                     <td class="text-left">
                                         <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">

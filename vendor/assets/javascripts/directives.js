@@ -73,7 +73,7 @@ angular.module('directives', []).
 			}
 		};
 	}])
-	.directive('sparkChart', ['$parse', function($parse) {
+	.directive('sparkChart', ['$parse', '$filter', function($parse, $filter) {
 		return {
 			link: function(scope, element, attrs) {
 
@@ -83,13 +83,17 @@ angular.module('directives', []).
 
 					if (d1 && d1.length > 0) {
 
+						var colors = $filter('socialMediaColors')(attrs.socialmediatype);
+						console.log(colors);
+
 						function plotWithOptions() {
 							$.plot(element, [d1], {
 								series: {
 									lines: {
 										show: true,
 										fill: true,
-										fillColor: attrs.shadecolor,
+									//	fillColor: attrs.shadecolor,
+										fillColor: colors[3],
 										steps: false
 
 									},
@@ -107,7 +111,8 @@ angular.module('directives', []).
 									hoverable: true,
 									autoHighlight: true
 								},
-								colors: [attrs.pointcolor]
+								//colors: [attrs.pointcolor]
+								colors: [colors[1]]
 							});
 
 
@@ -183,7 +188,7 @@ angular.module('directives', []).
 			}
 		};
 	}])
-	.directive('pieChart', ['$parse', function($parse) {
+	.directive('pieChart', ['$parse', '$filter', function($parse, $filter) {
 		return {
 			link: function(scope, element, attrs) {
 
@@ -192,12 +197,16 @@ angular.module('directives', []).
 					var data = $parse(attrs.data)(scope);
 
 					if (data) {
+						// Set Timeout for bootstrap modal
+						setTimeout( function(){
+							var colors = $filter('socialMediaColors')(attrs.socialmediatype);
 
-						Morris.Donut({
-							element: element,
-							data: data,
-							colors: [attrs.colorone, attrs.colortwo, attrs.colorthree, attrs.colorfour]
-						});
+							Morris.Donut({
+								element: element,
+								data: data,
+								colors: [colors[0], colors[1], colors[2], colors[3]]
+							});
+						}, 300);
 
 
 					} else {

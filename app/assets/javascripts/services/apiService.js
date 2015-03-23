@@ -58,7 +58,7 @@ angular.module('apiService', []).factory('APIData', ['$http', '$q', function($ht
 
 // This is the factory that will take the data passed in and query the back-end for data
 angular.module('apiQueryService', [])
-	.factory('APIQueryData', function($location, $http, APIData) {
+	.factory('APIQueryData', function($location, $http, APIData, $rootScope) {
 
 		var data = {
 
@@ -72,9 +72,14 @@ angular.module('apiQueryService', [])
 				var startDate = moment(queryData.startDate, 'MM/DD/YYYY').format('YYYY/MM/DD');
 				var endDate = moment(queryData.endDate, 'MM/DD/YYYY').format('YYYY/MM/DD');
 
+				var period = queryData.period;
 
-			  //return $http.post('/api/reports', {options: {source: "all", language_ids:[9], start_date: startDate, end_date: endDate }}).then(function(response) {
-				return $http.post('/api/reports', {options: {source: "all", country_ids: countryIds, region_ids: regionIds, language_ids: languageIds, network_ids: networkIds, start_date: startDate, end_date: endDate } }).then(function(response) {
+				// If 'Last Week' or 'Last Month' is selected, set startDate to null
+				if (period === '1.week' || period === '1.month') {
+					startDate = null;
+				}
+
+				return $http.post('/api/reports', {options: {source: "all", country_ids: countryIds, region_ids: regionIds, language_ids: languageIds, network_ids: networkIds, start_date: startDate, end_date: endDate, period: period } }).then(function(response) {
 					data = response.data;
 
 					console.log(data);
@@ -166,6 +171,8 @@ angular.module('apiQueryService', [])
 							youtubeAccounts.push(response.data.youtube.values.accounts[i]);
 						}
 					}
+
+					$rootScope.accounts = fbAccounts.concat(twAccounts).concat(youtubeAccounts);
 
 
 					var totalInteractions = fbTotalInteractions + twTotalInteractions + youtubeTotalInteractions;

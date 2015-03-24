@@ -514,14 +514,20 @@ class FacebookAccount < Account
   end
 
   def insert_account_country loc
-    street=loc['street']
-    city=loc['city']
-    country=loc['country']
-    cn = Country.find_by name: country
-    if cn
-      ac = AccountsCountry.find_or_create_by account_id: self.id, country_id: cn.id
+    if loc
+      begin
+        street=loc['street']
+        city=loc['city']
+        country=loc['country']
+        cn = Country.find_by name: country
+        if cn
+          ac = AccountsCountry.find_or_create_by account_id: self.id, country_id: cn.id
+        end
+        "#{street}; #{city}; #{country}"
+      rescue Exception=>ex
+      
+      end
     end
-    "#{street}; #{city}; #{country}"
   end
   
 =begin

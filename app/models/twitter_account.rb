@@ -4,7 +4,7 @@ class TwitterAccount < Account
   has_many :tw_tweets,  -> { order 'tweet_created_at desc' }, :foreign_key=>:account_id
   
   # Run it in rails console for testing 
-  def self.retrieve
+  def self.retrieve sincedate=nil
      started = Time.now
      count = 0
      
@@ -13,6 +13,9 @@ class TwitterAccount < Account
        retrieve_range = TwitterApp.config[:retrieve_range] || records.size
        records.each_with_index do |a, i|
          Rails.logger.debug "Start Twitter #{a.id}"
+         if sincedate
+           a.since_date = sincedate
+         end
          if a.retrieve
            count += 1
          end

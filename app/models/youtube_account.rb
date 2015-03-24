@@ -94,7 +94,8 @@ class YoutubeAccount < Account
           end
 =end
         rescue Exception=>ex
-          logger.error "  #{self.class.name}#initial_load #{ex.message}"
+          logger.error "  #{self.class.name}#retrieve Id: #{self.id} Video Id: #{v.id}"
+          logger.error "  #{self.class.name}#retrieve #{ex.message}"
         end
       else
         logger.debug "  Skip #{v.published_at.to_s(:db)}"
@@ -144,16 +145,26 @@ class YoutubeAccount < Account
   end
   
   def channel
-    @channel ||=
-       begin
-         logger.debug "  Youtube find by url" 
-         @channel = Yt::Channel.new url: "youtube.com/#{object_name}"
-         @channel.id
-         @channel
-       rescue
-         logger.debug "  Youtube find by id" 
-         @channel = Yt::Channel.new id: object_name
-       end
+    if @channel
+      return @channel
+    end
+    begin
+      if self.respond_to?(:object_name_type) && self.object_name_type == 'channel_id'
+        logger.debug "  Youtube find by ID"
+        @channel = Yt::Channel.new id: object_name
+      else
+        logger.debug "  Youtube find by url"
+        @channel = Yt::Channel.new url: "youtube.com/#{object_name}"
+      end
+      # if object_name is a channel_id then
+      # @channel.id will throw exception
+      @channel.id
+      @channel
+    rescue Exception=>ex
+      logger.error "  channel #{ex.message}" 
+      logger.debug "  Youtube find by id" 
+      @channel = Yt::Channel.new id: object_name
+    end
   end
   
   protected
@@ -181,46 +192,78 @@ class YoutubeAccount < Account
   def process_channel
     # create daily yt_channel based on created_at
     published = Time.now.middle_of_day
-    yt_ch = self.yt_channels.find_or_create_by channel_id: channel.id, published_at: published.to_s(:db)
-    yt_ch.account_id=self.id
-    yt_ch.views = channel.view_count
-    yt_ch.comments = channel.comment_count
-    yt_ch.videos = channel.video_count
-    yt_ch.subscribers = channel.subscriber_count
-
-    self.update_profile
-    
+    yt_ch = self.yt_channels.find_or_create_by account_id: self.id,
+       channel_id: channel.id, published_at: published.to_s(:db)
+    begin
+      yt_ch.subscribers = channel.subscriber_count
+      yt_ch.views = channel.view_count
+      yt_ch.comments = channel.comment_count
+      yt_ch.videos = channel.video_count
+    rescue Exception=>ex
+      logger.error "  process_channel #{ex.message}"
+    end
     pre_day = (published-1.day).to_s(:db)
     pre_ch = self.yt_channels.where("published_at = '#{pre_day}'").last
     if pre_ch
       yt_ch.video_subscribers = (yt_ch.subscribers.to_i - pre_ch.subscribers.to_i)
     end
+    self.update_profile
     yt_ch.save
   end
 
+  def insert_account_country loc
+    if loc && loc.size == 2
+      cn = Country.find_by code: loc
+      if cn
+        ac = AccountsCountry.find_or_create_by account_id: self.id, country_id: cn.id
+      end
+    end
+  end
+  
   def update_profile options={}
     begin
-      loc = "https://gdata.youtube.com/feeds/api/users/#{channel.username}"
-      doc = Nokogiri::Slop open(loc)    
+      # loc = "https://gdata.youtube.com/feeds/api/users/#{channel.username}"
+      loc = "https://gdata.youtube.com/feeds/api/users/#{self.object_name}"   
+      doc = Nokogiri::Slop open(loc)
       options[:location] = doc.xpath('//location').text
-    rescue
+    rescue Exception=> ex
+      logger.debug "1 YoutubeAccount#update_profile #{ex.message}"
+      loc="https://www.youtube.com/channel/UCNZGxJAZ4H7r8E68L8sNPNw"
+      doc = Nokogiri::HTML open(loc) 
+      begin     
+        username = doc.xpath("//meta[@property='fb:profile_id']/@content").first.text   
+      rescue Exception=> ex 
+        raise logger.debug "2 YoutubeAccount#update_profile #{ex.message}"
+      end
     end
-    
-    url = "https://www.youtube.com/user/#{channel.username}"
+    if channel.username
+      url = "https://www.youtube.com/user/#{channel.username}"
+    else
+      url = "https://www.youtube.com/channel/#{self.object_name}"
+    end
+        
     options[:platform_type] = 'YT'
-    options[:display_name] = channel.title
+    options[:display_name] = doc.xpath('//title').text 
+      # channel.title
     if channel.description
-      options[:description] = channel.description
+      options[:description] = doc.xpath('//content').first.text
+        # channel.description
     end
-    options[:avatar] = channel.thumbnail_url
-    options[:total_followers] = channel.subscriber_count
+    options[:avatar] = doc.xpath('//thumbnail').attr('url').text
+      # channel.thumbnail_url
+    options[:total_followers] = doc.xpath('//statistics').attr('subscribercount').text.to_i
+       # channel.subscriber_count
     options[:url] = url
     if !account_profile || !account_profile.verified
       html=Nokogiri::HTML(open url)
-      if html.css("span.qualified-channel-title-badge").empty?
-        options[:verified] = false
-      else
-        options[:verified] = true
+      qualified = html.css("span.qualified-channel-title-badge").first
+      if qualified
+        txt = qualified.xpath('span').attr('aria-label').text
+        if txt == 'Verified'
+          options[:verified] = true
+        else
+          options[:verified] = false
+        end
       end
     end  
     super 

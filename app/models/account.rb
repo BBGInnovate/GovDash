@@ -59,6 +59,11 @@ class Account < ActiveRecord::Base
     end
   end
 
+  # override by subclass
+  def location hsh
+    hsh
+  end
+  
   def update_profile options
     options.symbolize_keys!
     # options[:description].gsub(/\n/, " ").truncate(255)
@@ -69,11 +74,14 @@ class Account < ActiveRecord::Base
         attr[col.to_sym] = options[col.to_sym]
       end
     end
+    
+    self.insert_account_country options[:location]
     if !self.account_profile
       self.create_account_profile attr
     else
       self.account_profile.update_attributes attr
     end
+    
   end
   
   # options = {:group_ids=>[1,2,3], 

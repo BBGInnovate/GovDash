@@ -3,5 +3,6 @@ YoutubeConf =
 
 Yt.configure do |config|
   config.api_key = YoutubeConf[:api_key]
+  config.log_level = :debug
 end
 

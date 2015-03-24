@@ -1,51 +1,11 @@
-<!-- DatePicker Modal -->
-<div class="modal fade" id="datePickerModal">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title">Date Picker</h4>
-            </div>
-            <div class="modal-body">
-
-                <div class="form-group">
-                    <label class="col-lg-2 control-label">Start Date</label>
-                    <div class="col-lg-10">
-                        <div class="input-group">
-                            <input type="text" id="start-date" class="datepicker-input form-control" date-picker data-date="{{ startDate }}">
-                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                        </div>
-                    </div><!-- /.col -->
-                </div><!-- /form-group -->
-
-                <div class="form-group">
-                    <label class="col-lg-2 control-label">End Date</label>
-                    <div class="col-lg-10">
-                        <div class="input-group">
-                            <input type="text" id="end-date" class="datepicker-input form-control" date-picker data-date="{{ endDate }}">
-                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                        </div>
-                    </div><!-- /.col -->
-                </div><!-- /form-group -->
-
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default teal-button" data-dismiss="modal" ng-click="finish()">Save</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
-<!-- Large Modal -->
+<!-- Page Load Modal -->
 <div class="modal fade" id="largeModal">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-body">
-                <h3 class="m-left-xs header-text m-top-xs">Welcome to GovDash</h3>
+                <h3 class="m-left-xs header-text m-top-xs" style="margin-bottom: -10px">Welcome to GovDash</h3>
                 <p ng-show="!countries" class="m-bottom-md" style="text-align: center"><i class="fa fa-spinner fa-spin"></i></p>
-                <div class="smart-widget widget-dark"  ng-show="countries">
+                <div class="smart-widget widget-dark"  ng-show="countries" style="margin-bottom: 0px">
 
                     <div class="smart-widget-inner">
 
@@ -101,7 +61,7 @@
                             </div><!-- ./tab-content -->
                         </div>
                     </div>
-                    <div class="m-left-md m-bottom-md">
+                    <div class="m-left-md m-bottom-sm modal-filters">
                         <span>Selected Filters:</span>
                         <span class="tag teal-tag" ng-repeat="region in selectedRegions"><span>{{ region.name }}&nbsp;&nbsp;</span><a href="" ng-click="removeRegion($index)" title="Removing tag" style="color: white">x</a></span>
                         <span class="tag teal-tag" ng-repeat="country in selectedCountries"><span>{{ country.name }}&nbsp;&nbsp;</span><a href="" ng-click="removeCountry($index)" title="Removing tag" style="color: white">x</a></span>
@@ -118,12 +78,109 @@
                 <!--
                 <button type="button" class="btn btn-default" data-dismiss="modal" >Close</button>
                 -->
-                <button type="button" class="btn btn-primary" ng-click="finish()" data-dismiss="modal" style="background: #2BAAB1; border: none">Finish</button>
+                <button type="button" class="btn btn-primary" ng-click="finish('current')" data-dismiss="modal" style="background: #2BAAB1; border: none">Finish</button>
             </div>
 
         </div>
     </div>
 </div>
+
+<!-- Account Modal -->
+<div class="modal fade" id="accountModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h3 class="m-left-xs header-text m-top-xs">{{ account.name }}</h3>
+
+
+                <div class="col-md-6">
+                    <div class="smart-widget widget-dark-blue">
+                        <div class="smart-widget-header" style="background: {{ accountColor }}">
+                            Breakdown
+                        </div>
+                        <div class="smart-widget-inner">
+                            <div class="smart-widget-body no-padding">
+                                <div class="padding-md">
+
+                                    <div style="height:200px;" pie-chart data="accountPieChartData" socialmediatype="{{ socialMediaType }}"></div>
+
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="col-md-6">
+                    <div class="smart-widget widget-dark-blue">
+                        <div class="smart-widget-header" style="background: {{ accountColor }}">
+                            Trend
+                        </div>
+                        <div class="smart-widget-inner">
+                            <div class="smart-widget-body no-padding">
+                                <div class="padding-md">
+
+                                    <div style="height:200px;" pie-chart data="fbPieChartData" colorone="#0B62A4" colortwo="#3980B5" colorthree="#679DC6" colorfour="#9AB1D2"></div>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- DatePicker Modal -->
+<div class="modal fade" id="datePickerModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Date Picker</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="form-group">
+                    <label class="col-lg-2 control-label">Start Date</label>
+                    <div class="col-lg-10">
+                        <div class="input-group">
+                            <input type="text" id="start-date" class="datepicker-input form-control" date-picker data-date="{{ startDate }}">
+                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                        </div>
+                    </div><!-- /.col -->
+                </div><!-- /form-group -->
+
+                <div class="form-group">
+                    <label class="col-lg-2 control-label">End Date</label>
+                    <div class="col-lg-10">
+                        <div class="input-group">
+                            <input type="text" id="end-date" class="datepicker-input form-control" date-picker data-date="{{ endDate }}">
+                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                        </div>
+                    </div><!-- /.col -->
+                </div><!-- /form-group -->
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default teal-button" data-dismiss="modal" ng-click="finish('custom')">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 
@@ -137,10 +194,10 @@
                 </div>
                 <div class="page-sub-header">
                     Includes accounts targeting: <i class="fa fa-map-marker text-danger"></i>
-                    <span class="tag teal-tag" ng-repeat="region in selectedRegions"><span>{{ region.name }}</span>
-                    <span class="tag teal-tag" ng-repeat="country in selectedCountries"><span>{{ country.name }}</span>
-                    <span class="tag teal-tag" ng-repeat="language in selectedLanguages"><span>{{ language.name }}</span>
-                    <span class="tag teal-tag" ng-repeat="network in selectedNetworks"><span>{{ network.name }}</span>
+                    <span class="tag teal-tag" ng-repeat="region in selectedRegions">{{ region.name }}</span>
+                    <span class="tag teal-tag" ng-repeat="country in selectedCountries">{{ country.name }}</span>
+                    <span class="tag teal-tag" ng-repeat="language in selectedLanguages">{{ language.name }}</span>
+                    <span class="tag teal-tag" ng-repeat="network in selectedNetworks">{{ network.name }}</span>
                 </div>
             </div>
             <div class="col-sm-6 text-right text-right-sm p-top-sm">
@@ -149,9 +206,11 @@
                         {{ startDate }} - {{ endDate }} <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu pull-right" role="menu">
-                        <li><a href="">Last Week</a></li>
-                        <li><a href="">Last Month</a></li>
+                        <li><a href="" ng-click="finish('1.week')">Last Week</a></li>
+                        <li><a href="" ng-click="finish('1.month')">Last Month</a></li>
+                        <!--
                         <li><a href="">Last Quarter</a></li>
+                        -->
                         <li class="divider"></li>
                         <li><a href="" data-toggle="modal" data-target="#datePickerModal">Custom Date Range</a></li>
                     </ul>
@@ -251,7 +310,7 @@
                             <div class="bg-grey">
                                 <div class="row">
                                     <div class="col-md-12 text-center">
-                                        <h3 class="m-top-sm">{{ totalInteractions }}</h3>
+                                        <h3 class="m-top-sm">{{ totalInteractions | number: 0 }}</h3>
                                         <small class="m-bottom-sm block">Total Interactions</small>
                                     </div>
                                 </div>
@@ -272,7 +331,7 @@
                         <div class="smart-widget-body no-padding">
                             <div class="padding-md">
 
-                                <div style="height:250px;" spark-chart data="chartData" pointcolor="#3278B3" shadecolor="#C0D2E0"></div>
+                                <div style="height:250px;" spark-chart data="fbSparkChart" socialmediatype="fb"></div>
 
                             </div>
 
@@ -291,7 +350,7 @@
                         <div class="smart-widget-body no-padding">
                             <div class="padding-md">
 
-                                <div style="height:250px;" spark-chart data="chartData2" pointcolor="#23B7E5" shadecolor="#C5E1EA"></div>
+                                <div style="height:250px;" spark-chart data="twSparkChart" socialmediatype="tw"></div>
 
                             </div>
                         </div><!-- ./smart-widget-inner -->
@@ -308,7 +367,7 @@
                         <div class="smart-widget-body no-padding">
                             <div class="padding-md">
 
-                                <div style="height:250px;" spark-chart data="chartData3" pointcolor="#E36159" shadecolor="#E5C0BE"></div>
+                                <div style="height:250px;" spark-chart data="youtubeSparkChart" socialmediatype="yt"></div>
 
                             </div>
                         </div><!-- ./smart-widget-inner -->
@@ -325,7 +384,7 @@
                         <div class="smart-widget-body no-padding">
                             <div class="padding-md">
 
-                                <div style="height:250px;" pie-chart data="fbPieChartData" colorone="#0B62A4" colortwo="#3980B5" colorthree="#679DC6" colorfour="#9AB1D2"></div>
+                                <div style="height:250px;" pie-chart data="fbPieChartData" socialmediatype="fb"></div>
 
                             </div>
 
@@ -344,7 +403,7 @@
                         <div class="smart-widget-body no-padding">
                             <div class="padding-md">
 
-                                <div style="height:250px;" pie-chart data="twPieChartData" colorone="#0088A4" colortwo="#08AFC9" colorthree="#1DBFD5" colorfour="#7BD1E0"></div>
+                                <div style="height:250px;" pie-chart data="twPieChartData" socialmediatype="tw"></div>
 
                             </div>
                         </div><!-- ./smart-widget-inner -->
@@ -361,7 +420,7 @@
                         <div class="smart-widget-body no-padding">
                             <div class="padding-md">
 
-                                <div style="height:250px;" pie-chart data="youtubePieChartData" colorone="#A30504" colortwo="#BA1C1B" colorthree="#E36159" colorfour="#E09A96"></div>
+                                <div style="height:250px;" pie-chart data="youtubePieChartData" socialmediatype="yt"></div>
 
 
                             </div>
@@ -381,26 +440,26 @@
                             Facebook Accounts
 
                         </div>
-                        <div class="smart-widget-inner table-responsive">
+                        <div class="smart-widget-inner table-responsive" id="no-more-tables">
                             <table class="table table-striped no-margin" ng-if="fbAccounts.length > 0">
                                 <thead>
                                 <tr>
                                     <th class="text-left">Name</th>
-                                    <th class="text-left">Actions</th>
-                                    <th class="text-left">New Fans</th>
-                                    <th class="text-left">Story Likes</th>
-                                    <th class="text-left">Shares</th>
-                                    <th class="text-left">Comments</th>
+                                    <th class="text-left numeric">Actions</th>
+                                    <th class="text-left numeric">New Fans</th>
+                                    <th class="text-left numeric">Story Likes</th>
+                                    <th class="text-left numeric">Shares</th>
+                                    <th class="text-left numeric">Comments</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr ng-repeat="account in fbAccounts">
-                                    <td class="text-left">{{ account.name }}</td>
-                                    <td class="text-left">{{ account.values[0].totals | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].page_likes | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].story_likes | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].shares | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].comments | number: 0 }}</td>
+                                    <td data-title="Name" class="text-left"><a href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'fb')">{{ account.name }}</a></td>
+                                    <td data-title="Actions" class="text-left">{{ account.values[0].totals | number: 0 }}</td>
+                                    <td data-title="New Fans" class="text-left">{{ account.values[0].page_likes | number: 0 }}</td>
+                                    <td data-title="Story Likes" class="text-left">{{ account.values[0].story_likes | number: 0 }}</td>
+                                    <td data-title="Shares" class="text-left">{{ account.values[0].shares | number: 0 }}</td>
+                                    <td data-title="Comments" class="text-left">{{ account.values[0].comments | number: 0 }}</td>
                                     <!--
                                     <td class="text-left">
                                         <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
@@ -425,26 +484,26 @@
                             Twitter Accounts
 
                         </div>
-                        <div class="smart-widget-inner table-responsive">
+                        <div class="smart-widget-inner table-responsive" id="no-more-tables">
                             <table class="table table-striped no-margin" ng-if="twAccounts.length > 0">
                                 <thead>
                                 <tr>
                                     <th class="text-left">Name</th>
-                                    <th class="text-left">Actions</th>
-                                    <th class="text-left">New Followers</th>
-                                    <th class="text-left">Favorites</th>
-                                    <th class="text-left">Retweets</th>
-                                    <th class="text-left">Mentions</th>
+                                    <th class="text-left numeric">Actions</th>
+                                    <th class="text-left numeric">New Followers</th>
+                                    <th class="text-left numeric">Favorites</th>
+                                    <th class="text-left numeric">Retweets</th>
+                                    <th class="text-left numeric">Mentions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr ng-repeat="account in twAccounts">
-                                    <td class="text-left">{{ account.name }}</td>
-                                    <td class="text-left">{{ account.values[0].totals | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].page_likes | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].story_likes | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].shares | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].comments | number: 0 }}</td>
+                                    <td data-title="Name" class="text-left"><a href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'tw')">{{ account.name }}</a></td>
+                                    <td data-title="Actions" class="text-left">{{ account.values[0].totals | number: 0 }}</td>
+                                    <td data-title="Followers" class="text-left">{{ account.values[0].followers | number: 0 }}</td>
+                                    <td data-title="Favorites" class="text-left">{{ account.values[0].favorites | number: 0 }}</td>
+                                    <td data-title="Retweets" class="text-left">{{ account.values[0].retweets | number: 0 }}</td>
+                                    <td data-title="Mentions" class="text-left">{{ account.values[0].mentions | number: 0 }}</td>
                                     <!--
                                     <td class="text-left">
                                         <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">
@@ -468,26 +527,26 @@
                         <div class="smart-widget-header" style="background: #E36159; color: white">
                             YouTube Accounts
                         </div>
-                        <div class="smart-widget-inner table-responsive" ng-if="youtubeAccounts.length > 0">
-                            <table class="table table-striped no-margin">
+                        <div class="smart-widget-inner table-responsive"  id="no-more-tables">
+                            <table class="table table-striped no-margin" ng-if="youtubeAccounts.length > 0">
                                 <thead>
                                 <tr>
                                     <th class="text-left">Name</th>
-                                    <th class="text-left">Actions</th>
-                                    <th class="text-left">Views</th>
-                                    <th class="text-left">Video Likes</th>
-                                    <th class="text-left">Subscribers</th>
-                                    <th class="text-left">Comments</th>
+                                    <th class="text-left numeric">Actions</th>
+                                    <th class="text-left numeric">Views</th>
+                                    <th class="text-left numeric">Video Likes</th>
+                                    <th class="text-left numeric">Subscribers</th>
+                                    <th class="text-left numeric">Comments</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr ng-repeat="account in youtubeAccounts">
-                                    <td class="text-left">{{ account.name }}</td>
-                                    <td class="text-left">{{ account.values[0].totals | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].views | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].likes | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].subscribers | number: 0 }}</td>
-                                    <td class="text-left">{{ account.values[0].comments | number: 0 }}</td>
+                                    <td data-title="Name" class="text-left"><a href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'yt')">{{ account.name }}</a></td>
+                                    <td data-title="Actions" class="text-left">{{ account.values[0].totals | number: 0 }}</td>
+                                    <td data-title="Views" class="text-left">{{ account.values[0].views | number: 0 }}</td>
+                                    <td data-title="Video Likes" class="text-left">{{ account.values[0].likes | number: 0 }}</td>
+                                    <td data-title="Subscribers" class="text-left">{{ account.values[0].subscribers | number: 0 }}</td>
+                                    <td data-title="Comments" class="text-left">{{ account.values[0].comments | number: 0 }}</td>
                                     <!--
                                     <td class="text-left">
                                         <div class="progress progress-sm inline-block m-bottom-none" style="width:50px; margin-top:6px">

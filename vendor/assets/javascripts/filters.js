@@ -184,4 +184,54 @@ angular.module('filters', []).
 				return arrayString;
 			}
         };
-    });
+    })
+	// returns array for social media colors by name
+	.filter('socialMediaColors', function () {
+		return function (socialMediaType) {
+			if (socialMediaType) {
+				var array = [];
+
+				if (socialMediaType === 'fb') {
+					array = ['#3278B3', '#5B93C2', '#84AED1', '#ADC9E0'];
+				} else if (socialMediaType === 'tw') {
+					array = ['#23B7E5', '#4FC6EA', '#7BD4EF', '#A7E2F4'];
+				} else if (socialMediaType === 'yt') {
+					array = ['#E36159', '#E87F7A', '#EE9F9B', '#F3BFBC'];
+				}
+
+				return array;
+			}
+		};
+	})
+	// returns the labels for social media account
+	.filter('socialMediaLabels', function () {
+		return function (socialMediaType) {
+			if (socialMediaType) {
+				var array = [];
+
+				if (socialMediaType === 'fb') {
+					array = ['comments', 'story_likes', 'shares', 'page_likes'];
+				} else if (socialMediaType === 'tw') {
+					array = ['retweets', 'mentions', 'favorites', 'followers'];
+				} else if (socialMediaType === 'yt') {
+					array = ['views', 'likes', 'comments', 'subscribers'];
+				}
+
+				return array;
+			}
+		};
+	})
+	// formats chart label properly
+	.filter('labelFormat', function () {
+		return function (label) {
+			if (label) {
+				if (label.indexOf('_') > -1) {
+					var labels = label.split('_');
+					return labels[0][0].toUpperCase() + labels[0].slice(1) + ' ' + labels[1][0].toUpperCase() + labels[1].slice(1);
+				} else {
+					return label[0].toUpperCase() + label.slice(1);
+				}
+
+			}
+		};
+	});

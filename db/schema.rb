@@ -11,14 +11,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150319201321) do
+ActiveRecord::Schema.define(version: 20150320183049) do
 
   create_table "account_profiles", force: :cascade do |t|
     t.integer  "account_id",      limit: 4
     t.string   "platform_type",   limit: 20
     t.string   "name",            limit: 40
     t.string   "display_name",    limit: 255
-    t.string   "description",     limit: 255
+    t.text     "description",     limit: 65535
     t.string   "location",        limit: 255
     t.string   "url",             limit: 255
     t.string   "avatar",          limit: 255

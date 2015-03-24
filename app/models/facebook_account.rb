@@ -96,7 +96,7 @@ class FacebookAccount < Account
     logger.info "   finished retrieve #{started} - #{ended}"
   end
   
-  def self.retrieve 
+  def self.retrieve sincedate=nil
      started = Time.now.utc
      count = 0
      no_count = 0
@@ -104,6 +104,9 @@ class FacebookAccount < Account
        records = where("is_active=1").to_a 
        retrieve_range = Facebook.config[:retrieve_range] || records.size
        records.each_with_index do |a,i|
+         if sincedate
+           a.since_date = sincedate
+         end
          if !!a.graph_api
            if a.retrieve
              count += 1

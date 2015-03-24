@@ -10,8 +10,11 @@ class YoutubeAccount < Account
     end
   end
   
-  def self.retrieve
+  def self.retrieve sincedate=nil
     YoutubeAccount.where("is_active is not null").to_a.each do | yt |
+      if sincedate
+        yt.since_date = sincedate
+      end
       yt.retrieve
     end
   end

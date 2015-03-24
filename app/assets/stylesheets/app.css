@@ -87,3 +87,15 @@ div.xAxis div.tickLabel
 .user-content {
     margin-left: 0px !important;
 }
+
+.account-modal-footer {
+    border-top: none !important;
+}
+
+.account-header-text {
+    border-bottom: 5px solid #ddd;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    padding-left: 20px;
+    padding-top: 10px;
+}

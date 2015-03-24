@@ -10,7 +10,7 @@
             <i class="fa fa-database m-right-xs"></i> <strong class="text-skin">Login</strong>
         </div>
 
-        <form name="loginForm" class="auth-form">
+        <form name="loginForm" class="auth-form" ng-enter="login(user)">
             <!--  <h2 class="auth-form-heading">Please sign in</h2><br/> -->
             <div class="alert alert-warning" ng-show="authReason">
                 {{authReason}}

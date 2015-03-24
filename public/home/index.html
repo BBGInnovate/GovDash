@@ -14,7 +14,7 @@
                                 <li class="active"><a ng-click="do($event)" href="#regions" data-toggle="tab"> Regions</a></li>
                                 <li class=""><a ng-click="do($event)" href="#countries" data-toggle="tab"> Countries</a></li>
                                 <li class=""><a ng-click="do($event)"  href="#languages" data-toggle="tab"> Languages</a></li>
-                                <li class=""><a ng-click="do($event)" href="#networks" data-toggle="tab"> Networks</a></li>
+                                <li class=""><a ng-click="do($event)" href="#groups" data-toggle="tab"> Groups</a></li>
                             </ul>
                         </div>
                         <div class="smart-widget-body">
@@ -51,11 +51,11 @@
 
 
                                 </div><!-- ./tab-pane -->
-                                <div class="tab-pane fade" id="networks">
-                                    <div class="block h4"><strong>Networks</strong></div>
+                                <div class="tab-pane fade" id="groups">
+                                    <div class="block h4"><strong>Groups</strong></div>
 
                                     <div class="col-lg-10">
-                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedNetworks" ng-options="network.name for network in networks"></select>
+                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedGroups" ng-options="group.name for group in groups"></select>
                                     </div>
                                 </div><!-- ./tab-pane -->
                             </div><!-- ./tab-content -->
@@ -66,7 +66,7 @@
                         <span class="tag teal-tag" ng-repeat="region in selectedRegions"><span>{{ region.name }}&nbsp;&nbsp;</span><a href="" ng-click="removeRegion($index)" title="Removing tag" style="color: white">x</a></span>
                         <span class="tag teal-tag" ng-repeat="country in selectedCountries"><span>{{ country.name }}&nbsp;&nbsp;</span><a href="" ng-click="removeCountry($index)" title="Removing tag" style="color: white">x</a></span>
                         <span class="tag teal-tag" ng-repeat="language in selectedLanguages"><span>{{ language.name }}&nbsp;&nbsp;</span><a href="" ng-click="removeLanguage($index)" title="Removing tag" style="color: white">x</a></span>
-                        <span class="tag teal-tag" ng-repeat="network in selectedNetworks"><span>{{ network.name }}&nbsp;&nbsp;</span><a href="" ng-click="removeNetwork($index)" title="Removing tag" style="color: white">x</a></span>
+                        <span class="tag teal-tag" ng-repeat="group in selectedGroups"><span>{{ group.name }}&nbsp;&nbsp;</span><a href="" ng-click="removeGroup($index)" title="Removing tag" style="color: white">x</a></span>
 
 
                     </div>
@@ -90,19 +90,95 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-body">
-                <h3 class="m-left-xs header-text m-top-xs">{{ account.name }}</h3>
+                <h3 class="account-header-text" style="background: {{ accountColor }}; color: white">
+                    <i class="ion-social-{{ socialMediaType | smLongName }}"></i><span style="margin-left: 20px">{{ account.name }}</span>
+                </h3>
+
+
+
+                <div class="col-sm-3">
+                    <div class="statistic-box bg-gray m-bottom-md">
+                        <div class="statistic-title">
+                            {{ accountBlockOne }}
+                        </div>
+
+                        <div class="statistic-value">
+                            2,245
+                        </div>
+
+                        <div class="m-top-md">3534</div>
+
+                        <div class="statistic-icon-background">
+                            <i class="ion-social-{{ socialMediaType | smLongName }}"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="statistic-box bg-gray m-bottom-md">
+                        <div class="statistic-title">
+                            {{ accountBlockTwo }}
+                        </div>
+
+                        <div class="statistic-value">
+                            2,245
+                        </div>
+
+                        <div class="m-top-md">3534</div>
+
+                        <div class="statistic-icon-background">
+                            <i class="ion-social-{{ socialMediaType | smLongName }}"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="statistic-box bg-gray m-bottom-md">
+                        <div class="statistic-title">
+                            {{ accountBlockThree }}
+                        </div>
+
+                        <div class="statistic-value">
+                            2,245
+                        </div>
+
+                        <div class="m-top-md">3534</div>
+
+                        <div class="statistic-icon-background">
+                            <i class="ion-social-{{ socialMediaType | smLongName }}"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="statistic-box bg-gray m-bottom-md">
+                        <div class="statistic-title">
+                            {{ accountBlockFour }}
+                        </div>
+
+                        <div class="statistic-value">
+                            2,245
+                        </div>
+
+                        <div class="m-top-md">3534</div>
+
+                        <div class="statistic-icon-background">
+                            <i class="ion-social-{{ socialMediaType | smLongName }}"></i>
+                        </div>
+                    </div>
+                </div>
+
+
+
 
 
                 <div class="col-md-6">
                     <div class="smart-widget widget-dark-blue">
-                        <div class="smart-widget-header" style="background: {{ accountColor }}">
+                        <div class="smart-widget-header" style="background: {{ accountColor }}; padding: 8px">
                             Breakdown
                         </div>
                         <div class="smart-widget-inner">
                             <div class="smart-widget-body no-padding">
                                 <div class="padding-md">
 
-                                    <div style="height:200px;" pie-chart data="accountPieChartData" socialmediatype="{{ socialMediaType }}"></div>
+                                    <div style="height:200px;" pie-chart data="accountPieChartData" socialmediatype="{{ socialMediaType }}" modal="true"></div>
 
 
                                 </div>
@@ -115,14 +191,14 @@
 
                 <div class="col-md-6">
                     <div class="smart-widget widget-dark-blue">
-                        <div class="smart-widget-header" style="background: {{ accountColor }}">
+                        <div class="smart-widget-header" style="background: {{ accountColor }}; padding: 8px">
                             Trend
                         </div>
                         <div class="smart-widget-inner">
                             <div class="smart-widget-body no-padding">
                                 <div class="padding-md">
 
-                                    <div style="height:200px;" pie-chart data="fbPieChartData" colorone="#0B62A4" colortwo="#3980B5" colorthree="#679DC6" colorfour="#9AB1D2"></div>
+                                    <div style="height:200px; width: 100%" spark-chart data="accountSparkChartData" socialmediatype="{{ socialMediaType }}"></div>
 
                                 </div>
 
@@ -135,7 +211,7 @@
 
             </div>
 
-            <div class="modal-footer">
+            <div class="modal-footer account-modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
 
@@ -197,7 +273,7 @@
                     <span class="tag teal-tag" ng-repeat="region in selectedRegions">{{ region.name }}</span>
                     <span class="tag teal-tag" ng-repeat="country in selectedCountries">{{ country.name }}</span>
                     <span class="tag teal-tag" ng-repeat="language in selectedLanguages">{{ language.name }}</span>
-                    <span class="tag teal-tag" ng-repeat="network in selectedNetworks">{{ network.name }}</span>
+                    <span class="tag teal-tag" ng-repeat="group in selectedGroups">{{ group.name }}</span>
                 </div>
             </div>
             <div class="col-sm-6 text-right text-right-sm p-top-sm">
@@ -231,7 +307,7 @@
                         {{ totalInteractions | number: 0 }}
                     </div>
 
-                    <div class="m-top-md">{{ totalInteractionsChange }}% Higher than last week</div>
+                    <div class="m-top-md"><span ng-show="totalPercentChange">{{ totalPercentChange | percentChange }} than last week</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-eye"></i>
@@ -249,7 +325,7 @@
                         {{ facebookInteractions | number: 0 }}
                     </div>
 
-                    <div class="m-top-md">{{ facebookInteractionsChange }}% Higher than last week</div>
+                    <div class="m-top-md"><span ng-show="facebookPercentChange">{{ facebookPercentChange | percentChange }} than last week</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-social-facebook"></i>
@@ -267,7 +343,7 @@
                         {{ twitterInteractions | number: 0 }}
                     </div>
 
-                    <div class="m-top-md">{{ twitterInteractionsChange }}% Higher than last week</div>
+                    <div class="m-top-md"><span ng-show="twitterPercentChange">{{ twitterPercentChange | percentChange }} than last week</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-social-twitter"></i>
@@ -285,7 +361,7 @@
                         {{ youtubeInteractions | number: 0 }}
                     </div>
 
-                    <div class="m-top-md">{{ youtubeInteractionsChange }}% Higher than last week</div>
+                    <div class="m-top-md"><span ng-show="youtubePercentChange">{{ youtubePercentChange | percentChange }} than last week</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-social-youtube"></i>

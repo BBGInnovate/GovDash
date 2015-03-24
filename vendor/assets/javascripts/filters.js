@@ -234,4 +234,33 @@ angular.module('filters', []).
 
 			}
 		};
+	})
+	// formats percent change on the tiles
+	.filter('percentChange', function () {
+		return function (label) {
+			if (label) {
+				label = label.replace(' ', '');
+				if (label.indexOf('-') > -1) {
+					return label.replace('-', '') + ' less';
+				} else {
+					return label + ' greater';
+				}
+
+			}
+		};
+	})
+	// formats percent change on the tiles
+	.filter('smLongName', function () {
+		return function (label) {
+			if (label) {
+				if (label === 'fb') {
+					return 'facebook';
+				} else if (label === 'tw') {
+					return 'twitter';
+				} else if (label === 'yt') {
+					return 'youtube';
+				}
+
+			}
+		};
 	});

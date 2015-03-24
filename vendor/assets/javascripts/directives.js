@@ -82,12 +82,17 @@ angular.module('directives', []).
 					var d1 = $parse(attrs.data)(scope);
 
 					if (d1 && d1.length > 0) {
+						var data = [];
+
+						// Process Spark Chart Data
+						for (var i = 0; i < d1.length; i++) {
+							data.push([d1[i].date.substring(5, 10).replace('-', '/'), d1[i].totals]);
+						}
 
 						var colors = $filter('socialMediaColors')(attrs.socialmediatype);
-						console.log(colors);
 
 						function plotWithOptions() {
-							$.plot(element, [d1], {
+							$.plot(element, [data], {
 								series: {
 									lines: {
 										show: true,
@@ -173,7 +178,11 @@ angular.module('directives', []).
 						element: element,
 						// Chart data records -- each entry in this array corresponds to a point on
 						// the chart.
-						data: data,
+						data: [{ y: 'Total Interactions',
+							a: data.totalInteractions,
+							b: data.fbInteractions,
+							c: data.twInteractions,
+							d: data.youtubeInteractions }],
 						xkey: 'y',
 						ykeys: ['a', 'b', 'c', 'd'],
 						labels: ['All', 'Facebook', 'Twitter', 'YouTube'],
@@ -196,17 +205,24 @@ angular.module('directives', []).
 
 					var data = $parse(attrs.data)(scope);
 
-					if (data) {
-						// Set Timeout for bootstrap modal
-						setTimeout( function(){
-							var colors = $filter('socialMediaColors')(attrs.socialmediatype);
+					if (data && data.length === undefined) {
+						// Get the colors and labels from the angular filters function
+						// for the proper socialmediatype (facebook, twitter, youtube)
+						var colors = $filter('socialMediaColors')(attrs.socialmediatype);
+						var labels = $filter('socialMediaLabels')(attrs.socialmediatype);
 
-							Morris.Donut({
-								element: element,
-								data: data,
-								colors: [colors[0], colors[1], colors[2], colors[3]]
-							});
-						}, 300);
+						// If it's a modal, use the setTimeout to give the chart time to load
+						// on the modal
+						if (attrs.modal) {
+							// Set Timeout for bootstrap modal
+							setTimeout(function () {
+								buildChart(element, data, labels, colors);
+							}, 300);
+
+						// This is for initial filter selection load
+						} else {
+							buildChart(element, data, labels, colors);
+						}
 
 
 					} else {
@@ -214,6 +230,19 @@ angular.module('directives', []).
 					}
 
 				});
+
+				function buildChart(element, data, labels, colors) {
+					Morris.Donut({
+						element: element,
+						data:  [
+							{label: $filter('labelFormat')(labels[0]), value: data[labels[0]]},
+							{label: $filter('labelFormat')(labels[1]), value: data[labels[1]]},
+							{label: $filter('labelFormat')(labels[2]), value: data[labels[2]]},
+							{label: $filter('labelFormat')(labels[3]), value: data[labels[3]]}
+						],
+						colors: [colors[0], colors[1], colors[2], colors[3]]
+					});
+				}
 
 
 
@@ -247,6 +276,20 @@ angular.module('directives', []).
 				});
 			}
 		}
+	}])
+	.directive('ngEnter', [function() {
+		return function(scope, element, attrs) {
+			element.bind("keydown keypress", function(event) {
+
+				if(event.which === 13) {
+					scope.$apply(function(){
+						scope.$eval(attrs.ngEnter, {'event': event});
+					});
+
+					event.preventDefault();
+				}
+			});
+		};
 	}])
 	.directive('datePicker', [function() {
 		return {

@@ -10,13 +10,13 @@ angular.module('apiService', []).factory('APIData', ['$http', '$q', function($ht
 				// $q will keep the list of promises in a array
 				$http.get('/api/regions'),
 				$http.get('/api/languages'),
-				$http.get('/api/organizations' ),
+				$http.get('/api/groups' ),
 				$http.get('/api/countries')
 			]).then(function (results) {
 				// once all the promises are completed .then() will be executed
 				// and results will have the object that contains the data
 				var aggregatedData = [];
-				var listData = ['regions', 'languages', 'organizations', 'countries'];
+				var listData = ['regions', 'languages', 'groups', 'countries'];
 				var listCount = 0;
 
 				angular.forEach(results, function (result) {
@@ -26,7 +26,7 @@ angular.module('apiService', []).factory('APIData', ['$http', '$q', function($ht
 						} else if (listCount == 1) {
 							aggregatedData.push({ 'languages' : result.data});
 						} else if (listCount == 2) {
-							aggregatedData.push({ 'organizations' : result.data});
+							aggregatedData.push({ 'groups' : result.data});
 						} else if (listCount == 3) {
 							aggregatedData.push({ 'countries' : result.data});
 						}
@@ -67,7 +67,7 @@ angular.module('apiQueryService', [])
 				var countryIds = APIData.getIds(queryData.countries);
 				var regionIds = APIData.getIds(queryData.regions);
 				var languageIds = APIData.getIds(queryData.languages);
-				var networkIds = APIData.getIds(queryData.networks);
+				var groupIds = APIData.getIds(queryData.groups);
 
 				var startDate = moment(queryData.startDate, 'MM/DD/YYYY').format('YYYY/MM/DD');
 				var endDate = moment(queryData.endDate, 'MM/DD/YYYY').format('YYYY/MM/DD');
@@ -79,15 +79,21 @@ angular.module('apiQueryService', [])
 					startDate = null;
 				}
 
-				return $http.post('/api/reports', {options: {source: "all", country_ids: countryIds, region_ids: regionIds, language_ids: languageIds, network_ids: networkIds, start_date: startDate, end_date: endDate, period: period } }).then(function(response) {
+				return $http.post('/api/reports', {options: {source: "all", country_ids: countryIds, region_ids: regionIds, language_ids: languageIds, group_ids: groupIds, start_date: startDate, end_date: endDate, period: period } }).then(function(response) {
 					data = response.data;
 
 					console.log(data);
+
+					var numAccounts = 0;
 
 					// Initialize data here
 					var fbTotalInteractions = 0;
 					var twTotalInteractions = 0;
 					var youtubeTotalInteractions = 0;
+
+					var fbPercentChange = '';
+					var twPercentChange = '';
+					var youtubePercentChange = '';
 
 					var fbSparkChart = [];
 					var twSparkChart = [];
@@ -105,25 +111,15 @@ angular.module('apiQueryService', [])
 					if (response.data.facebook) {
 						fbTotalInteractions = response.data.facebook.values.period[0].totals;
 
-						// Process FB Spark Chart Data
-						for (var i = 0; i < response.data.facebook.values.trend.length; i++) {
-							fbSparkChart.push([response.data.facebook.values.trend[i].date.substring(5, 10), response.data.facebook.values.trend[i].totals]);
-						}
+						fbSparkChart = response.data.facebook.values.trend;
 
-						// Process FB Breakdown Pie Chart
-						fbPieChart = [
-							{label: "Comments", value: response.data.facebook.values.period[0].comments},
-							{label: "Story Likes", value: response.data.facebook.values.period[0].story_likes},
-							{label: "Shares", value: response.data.facebook.values.period[0].shares},
-							{label: "Page Likes", value: response.data.facebook.values.period[0].page_likes}
-						];
+						fbPieChart = response.data.facebook.values.period[0];
 
-						// Process Account Data
-						for (var i = 0; i < response.data.facebook.values.accounts.length; i++) {
-							fbAccounts.push(response.data.facebook.values.accounts[i]);
-						}
+						fbAccounts = response.data.facebook.values.accounts;
 
+						fbPercentChange = response.data.facebook.values.period[0].changes.totals;
 
+						numAccounts++;
 
 					}
 
@@ -131,60 +127,57 @@ angular.module('apiQueryService', [])
 					if (response.data.twitter) {
 						twTotalInteractions = response.data.twitter.values.period[0].totals;
 
-						// Process Twitter Spark Chart Data
-						for (var i = 0; i < response.data.twitter.values.trend.length; i++) {
-							twSparkChart.push([response.data.twitter.values.trend[i].date.substring(5, 10), response.data.twitter.values.trend[i].totals]);
-						}
+						twSparkChart = response.data.twitter.values.trend;
 
-						twPieChart = [
-							{label: "Retweets", value: response.data.twitter.values.period[0].retweets},
-							{label: "@Mentions", value: response.data.twitter.values.period[0].mentions},
-							{label: "Favorites", value: response.data.twitter.values.period[0].favorites},
-							{label: "Followers", value: response.data.twitter.values.period[0].followers}
-						];
+						twPieChart = response.data.twitter.values.period[0];
 
-						// Process Account Data
-						for (var i = 0; i < response.data.twitter.values.accounts.length; i++) {
-							twAccounts.push(response.data.twitter.values.accounts[i]);
-						}
+						twAccounts = response.data.twitter.values.accounts;
+
+						twPercentChange = response.data.twitter.values.period[0].changes.totals;
+
+						numAccounts++;
+
 					}
 
 					// If YouTube data exists
 					if (response.data.youtube) {
 						youtubeTotalInteractions = response.data.youtube.values.period[0].totals;
 
-						// Process YouTube Spark Chart Data
-						for (var i = 0; i < response.data.youtube.values.trend.length; i++) {
-							youtubeSparkChart.push([response.data.youtube.values.trend[i].date.substring(5, 10), response.data.youtube.values.trend[i].totals]);
-						}
+						youtubeSparkChart = response.data.youtube.values.trend;
 
-						// Process YouTube Breakdown Pie Chart
-						youtubePieChart = [
-							{label: "Views", value: response.data.youtube.values.period[0].views},
-							{label: "Likes", value: response.data.youtube.values.period[0].likes},
-							{label: "Comments", value: response.data.youtube.values.period[0].comments},
-							{label: "Subscribers", value: response.data.youtube.values.period[0].subscribers}
-						];
+						youtubePieChart = response.data.youtube.values.period[0];
 
-						// Process Account Data
-						for (var i = 0; i < response.data.youtube.values.accounts.length; i++) {
-							youtubeAccounts.push(response.data.youtube.values.accounts[i]);
-						}
+						youtubeAccounts = response.data.youtube.values.accounts;
+
+						youtubePercentChange = response.data.youtube.values.period[0].changes.totals;
+
+						numAccounts++;
+
 					}
 
-					$rootScope.accounts = fbAccounts.concat(twAccounts).concat(youtubeAccounts);
-
-
 					var totalInteractions = fbTotalInteractions + twTotalInteractions + youtubeTotalInteractions;
-					var barChartData = [{ y: 'Total Interactions', a: totalInteractions, b: fbTotalInteractions, c: twTotalInteractions, d: youtubeTotalInteractions }];
+					var barChartData = {
+						totalInteractions: totalInteractions,
+						fbInteractions: fbTotalInteractions,
+						twInteractions: twTotalInteractions,
+						youtubeInteractions: youtubeTotalInteractions
+					};
+
+					var totalPercentChange = (Math.round((parseInt(fbPercentChange.replace(' ', '').replace('%', '') || 0) +
+						parseInt(twPercentChange.replace(' ', '').replace('%', '') || 0) +
+						parseInt(youtubePercentChange.replace(' ', '').replace('%', '') || 0)) / numAccounts)).toString() + ' %';
 
 
 
 					// Build object to return to controller
 					var formattedData = {
+						totalPercentChange: totalPercentChange,
 						fbTotalInteractions: fbTotalInteractions,
+						fbPercentChange: fbPercentChange,
 						twTotalInteractions: twTotalInteractions,
+						twPercentChange: twPercentChange,
 						youtubeTotalInteractions: youtubeTotalInteractions,
+						youtubePercentChange: youtubePercentChange,
 						barChartData: barChartData,
 						fbSparkChart: fbSparkChart,
 						twSparkChart: twSparkChart,

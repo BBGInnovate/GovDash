@@ -15,7 +15,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 		$scope.countries = response[3].countries;
 		$scope.regions = response[0].regions;
 		$scope.languages = response[1].languages;
-		$scope.networks = response[2].networks;
+		$scope.groups = response[2].groups;
 
 	});
 
@@ -33,8 +33,8 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 		$scope.selectedLanguages.splice(index, 1);
 	};
 
-	$scope.removeNetwork = function (index) {
-		$scope.selectedNetworks.splice(index, 1);
+	$scope.removeGroup = function (index) {
+		$scope.selectedGroups.splice(index, 1);
 	};
 
 
@@ -55,7 +55,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 			regions: $scope.selectedRegions,
 			countries: $scope.selectedCountries,
 			languages: $scope.selectedLanguages,
-			networks: $scope.selectedNetworks,
+			groups: $scope.selectedGroups,
 			startDate: $scope.startDate,
 			endDate: $scope.endDate,
 			period: period
@@ -64,12 +64,20 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 		APIQueryData.getData(queryData).then(function(response) {
 			console.log(response);
 
+			// Top 4 boxes Interactions
 			$scope.facebookInteractions = response.fbTotalInteractions;
+			$scope.facebookPercentChange = response.fbPercentChange;
+
 			$scope.twitterInteractions = response.twTotalInteractions;
+			$scope.twitterPercentChange = response.twPercentChange;
+
 			$scope.youtubeInteractions = response.youtubeTotalInteractions;
+			$scope.youtubePercentChange = response.youtubePercentChange;
 
 			$scope.totalInteractions = $scope.facebookInteractions + $scope.twitterInteractions +
 				$scope.youtubeInteractions;
+
+			$scope.totalPercentChange = response.totalPercentChange;
 
 			// Bar Chart Data
 			$scope.barChartData = response.barChartData;
@@ -94,6 +102,29 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 
 	};
 
+	$scope.findAccount = function (account, accountType) {
+		console.log(account);
+
+		var colors = $filter('socialMediaColors')(accountType);
+		var labels = $filter('socialMediaLabels')(accountType);
+
+		$scope.account = account;
+
+		$scope.socialMediaType = accountType;
+		$scope.accountColor = colors[0];
+
+		$scope.accountPieChartData = $scope.account.values[0];
+		$scope.accountSparkChartData = $scope.account.trend;
+
+		$scope.accountBlockOne = $filter('labelFormat')(labels[0]);
+		$scope.accountBlockTwo = $filter('labelFormat')(labels[1]);
+		$scope.accountBlockThree = $filter('labelFormat')(labels[2]);
+		$scope.accountBlockFour = $filter('labelFormat')(labels[3]);
+
+
+
+	};
+
 
 
 
@@ -104,32 +135,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 	};
 
 
-	$scope.findAccount = function (account, accountType) {
-		console.log(account);
 
-		var labels = $filter('socialMediaLabels')(accountType);
-		var colors = $filter('socialMediaColors')(accountType);
-
-		$scope.account = account;
-
-		$scope.socialMediaType = accountType;
-		$scope.accountColor = colors[0];
-
-
-
-		var pieChartData = [
-			{label: $filter('labelFormat')(labels[0]), value: account.values[0][labels[0]]},
-			{label: $filter('labelFormat')(labels[1]), value: account.values[0][labels[1]]},
-			{label: $filter('labelFormat')(labels[2]), value: account.values[0][labels[2]]},
-			{label: $filter('labelFormat')(labels[3]), value: account.values[0][labels[3]]}
-		];
-
-		$scope.accountPieChartData = pieChartData;
-
-
-
-
-	};
 
 
 }

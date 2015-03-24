@@ -97,7 +97,7 @@ class FacebookAccount < Account
   end
   
   def self.retrieve 
-     started = DateTime.now.utc
+     started = Time.now.utc
      count = 0
      no_count = 0
      begin
@@ -121,7 +121,7 @@ class FacebookAccount < Account
        Rails.logger.error "  FacebookAccount#retrieve  #{ex.message}"  
      end
      server = ActionMailer::Base.default_url_options[:server]
-     ended = DateTime.now.utc
+     ended = Time.now.utc
      size = records.size - no_count
      total_seconds=(ended-started).to_i
      duration=Time.at(total_seconds).utc.strftime("%H:%M:%S")
@@ -514,6 +514,9 @@ class FacebookAccount < Account
   end
 
   def insert_account_country loc
+    # not to insert
+    return
+    
     if loc
       begin
         street=loc['street']
@@ -1063,6 +1066,40 @@ end
     end
     show_raw ? results : merge_arrays(arrays)
   end
+  
+  # copy accounts from smdata to GovDash
+  def copy
+     Account.all.each do |a|
+       hsh={}
+       hsh[:name]=a.name
+       hsh[:description]=a.description
+       hsh[:object_name]=a.object_name
+       hsh[:media_type_name]=a.media_type_name
+       hsh[:account_type_id]=a.account_type_id if a.account_type_id
+       hsh[:contact]=a.contact if a.contact
+       hsh[:sc_segment_id]=a.sc_segment_id if a.sc_segment_id
+       Rails.logger.info "acc=Account.find_or_create_by media_type_name: '#{a.media_type_name}', object_name: '#{a.object_name}'"
+       Rails.logger.info "acc.update_attributes(#{hsh})"
+    end; nil;
+    # test if FacebookAccount copied
+    # in smdata 
+    Account.where("media_type_name='FacebookAccount'").select("distinct object_name").map(&:object_name)
+    old_fb=["Sawa", "alhurra", "voaindonesia", "parazitparazit", "voalearningenglish", "voakhmer", "voiceofamerica", "VoA.Burmese.News", "voaurdu", "voapersian", "VOATiengViet", "DuniaKita", "voapashto", "voahausa", "KarwanTV", "VOAStraightTalkAfrica", "OnTenOnTen", "voadari", "voaamharic", "voastudentu", "zeriamerikes", "oddidevelopers", "alyoumshow", "RadioSvoboda.Org", "radiosvoboda", "radio.farda", "AzadiR", "mashaalradio", "azadiradio", "radiosvobodakrym.org", "rfacambodia", "RadioFreeAsia", "RFA-Burmese/39218993127", "RFAVietnam", "cantonese.rfa", "LaosRFA", "RFAChinese", "rfa.tibetan", "Erkin-Asiya-Radiosi/106605925076", "RFA-Korean/117459698841", "martinoticias", "1800Online", "voacantonese", "voachina", "voadeewa", "LaVoixdelAmerique", "voalao", "voasomali1", "LaVozdeAmerica", "voatibetan", "voa.azerbaijani", "voabangla", "studiowashington", "amerikiskhma", "RadiyoyacuVOA", "glasnaamerika", "voalivetalk", "voaportugues", "voakurdish", "otvorenistudio", "voaswahili", "voa-tigrigna", "chastime", "voa.uzbek"]
+    # in GovDash    
+    new_fb=Account.where("media_type_name='FacebookAccount'").where(["object_name in (?)", old_fb])
+    old_fb.size == new_fb    
+    # test if TwitterAccount copied
+    # in smdata 
+    Account.where("media_type_name='TwitterAccount'").select("distinct object_name").map(&:object_name)
+    old_tw=["GolosAmeriki", "VOA_News", "VOAIran", "VOALearnEnglish", "voaindonesia", "chastime", "voachina", "VOANoticias", "voahausa", "voakhmer", "URDUVOA", "VOATurkish", "VOA_Somali", "zeriamerikes", "Voaburmese", "VOAAmharic", "VOAPashto", "voadeewa", "VOADariAfghan", "radiosvoboda", "radiosawa", "alhurranews", "alyoum", "SvobodaRadio", "RadioFarda_", "RadioAzadi", "svaboda", "RadioAzadliq", "iraqhurr", "RSE_Balkan", "Radio_Azattyk", "ozodlik", "RFA_Chinese", "DaiAChauTuDo", "RadioFreeAsia", "cantonese", "khmernews", "burmesenews", "laonews", "uyghurnews", "rfatibet", "koreannews", "martinoticias", "reportacuba", "MartiTempranito", "convozpropiarm", "@testme", "voaurdu", "VOABosnian", "VOAMacedonian", "Otvorenistudio", "VOAArmenian", "voaazeri", "voage", "AmerikaOvozi", "voacantonese", "VOA_Korean", "voa_thai", "VOA_Tibet_News", "VOATiengViet", "VOABANGLA", "VOAAfaanOromoo", "VOAFrench", "RadiyoyacuVOA", "Studio7VOA", "VOAPortugues", "VOASwahili", "VOATigrigna", "VOAKreyol", "VOA_Kurdish", "RFE_Kosova", "armenialiberty", "CurrentTimeTv"]
+    # in GovDash    
+    new_tw=Account.where("media_type_name='TwitterAccount'").where(["object_name in (?)", old_tw])
+    old_tw.size == new_tw
+    
+    tw=new_tw.map(&:object_name)
+    old_tw-tw=["chastime", "voadeewa", "radiosvoboda", "RadioFreeAsia"]
+  end
+  
 =end
 
 

@@ -513,10 +513,15 @@ class FacebookAccount < Account
        object_name: self.object_name
   end
 
-  # return hash
-  # {"city"=>"Washington", "country"=>"United States", "state"=>"DC"}
-  def location
-    loc = JSON.parse self.account_profile.location.gsub('=>',':')
+  def insert_account_country loc
+    street=loc['street']
+    city=loc['city']
+    country=loc['country']
+    cn = Country.find_by name: country
+    if cn
+      ac = AccountsCountry.find_or_create_by account_id: self.id, country_id: cn.id
+    end
+    "#{street}; #{city}; #{country}"
   end
   
 =begin
@@ -651,7 +656,7 @@ class FacebookAccount < Account
         where(post_created_time: (beginning_of..end_of)).
         first
   end
-
+  
 end
 =begin
   def get_likes_count(post_id)

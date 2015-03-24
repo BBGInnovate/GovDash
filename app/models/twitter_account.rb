@@ -492,6 +492,15 @@ class TwitterAccount < Account
     rabbit.connection.close
   end
   
+  def insert_account_country loc
+    str = loc.split(',').last
+    cn = Country.find_by name: str.strip
+    if cn
+      ac = AccountsCountry.find_or_create_by account_id: self.id, 
+          country_id: cn.id
+    end
+  end
+  
   def update_profile options={}
     user = twitter_user
     options[:platform_type] = 'TW'

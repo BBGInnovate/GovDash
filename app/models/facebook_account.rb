@@ -516,24 +516,19 @@ class FacebookAccount < Account
        object_name: self.object_name
   end
 
-  def insert_account_country loc
-    # not to insert
-    return
-    
+  def find_account_country loc
+    cn = nil
     if loc
       begin
         street=loc['street']
         city=loc['city']
         country=loc['country']
         cn = Country.find_by name: country
-        if cn
-          ac = AccountsCountry.find_or_create_by account_id: self.id, country_id: cn.id
-        end
-        "#{street}; #{city}; #{country}"
       rescue Exception=>ex
       
       end
     end
+    cn
   end
   
 =begin

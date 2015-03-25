@@ -214,12 +214,11 @@ class YoutubeAccount < Account
     yt_ch.save
   end
 
-  def insert_account_country loc
+  def find_account_country loc
     if loc && loc.size == 2
       cn = Country.find_by code: loc
-      if cn
-        ac = AccountsCountry.find_or_create_by account_id: self.id, country_id: cn.id
-      end
+    else
+      nil
     end
   end
   

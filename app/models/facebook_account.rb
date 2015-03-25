@@ -202,9 +202,9 @@ class FacebookAccount < Account
         return false
       end
       if @num_attempts < self.max_attempts
-        sleep RETRY_SLEEP
-        retry
-      else
+      #  sleep RETRY_SLEEP
+      #  retry
+      # else
         self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
         log_fail "Tried #{@num_attempts} times. #{error.message}", 5
         logger.error "Tried #{@num_attempts} times. #{error.backtrace}"

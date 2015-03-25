@@ -98,6 +98,14 @@ class Api::V2::BaseController <  ActionController::Base
   
   def update 
     @data = model_class.find(params[:id])
+    #set the groups join for subgroups
+    if model_name == "subgroup" && params[:subgroup] && params[:subgroup][:group_ids]
+      params[:subgroup][:group_ids].each do |gid|
+        GroupsSubgroups.find_or_create_by(group_id: gid) do |gs|
+          gs.subgroup_id = params[:subgroup][:id]
+        end
+      end
+    end
     responding
   end
 
@@ -135,7 +143,7 @@ class Api::V2::BaseController <  ActionController::Base
           msg = 'Updated successfully'
         end
         format.json {
-             render :json=>{:error=>msg},
+             render :json=>{:success => msg},
              :content_type=>"text",
              :layout=>false
              }
@@ -229,6 +237,8 @@ class Api::V2::BaseController <  ActionController::Base
       @country_ids ||= (record.delete("country_ids") || [])
       @region_ids ||= (record.delete("region_ids") || [])
       @sc_segment_ids ||= (record.delete("sc_segment_ids") || [])
+    elsif model_name == 'subgroup'
+      @group_ids ||= (record.delete("group_ids") || [])
     end
   end
   

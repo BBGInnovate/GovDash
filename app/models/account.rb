@@ -75,7 +75,8 @@ class Account < ActiveRecord::Base
       end
     end
     
-    self.insert_account_country options[:location]
+    cn = find_account_country options[:location]
+    insert_account_country cn
     if !self.account_profile
       self.create_account_profile attr
     else
@@ -84,6 +85,20 @@ class Account < ActiveRecord::Base
     
   end
   
+  def insert_account_country country
+    if country
+      begin
+        ac = AccountsCountry.find_by account_id: self.id, 
+               country_id: country.id
+        # remove mapping 
+        ac.destroy if ac
+        # ac = AccountsCountry.find_or_create_by account_id: self.id, 
+        # country_id: country.id
+      rescue Exception=>ex
+      
+      end
+    end
+  end
   # options = {:group_ids=>[1,2,3], 
   #           :region_ids=>[1,2,3], 
   #           :group_ids=>[1,2,3],

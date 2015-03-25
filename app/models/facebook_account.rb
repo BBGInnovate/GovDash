@@ -29,8 +29,8 @@ class FacebookAccount < Account
        if !!a.graph
          if a.archive
            count += 1
-           logger.info "Sleep #{SLEEP} seconds for next account"
-           sleep SLEEP
+           logger.info "Sleep 5 seconds for next account"
+           sleep 5
          else
            # delayed_retrieve
            # logger.info "   retrieve scheduled deplayed_job in one hour"
@@ -110,8 +110,8 @@ class FacebookAccount < Account
          # if !!a.graph_api
            if a.retrieve
              count += 1
-             Rails.logger.debug "Sleep #{SLEEP} seconds for next account"
-             sleep SLEEP
+             Rails.logger.debug "Sleep 5 seconds for next account"
+             sleep 5
            else
              # delayed_retrieve
              # logger.info "   retrieve scheduled deplayed_job in one hour"
@@ -202,9 +202,9 @@ class FacebookAccount < Account
         return false
       end
       if @num_attempts < self.max_attempts
-        sleep RETRY_SLEEP
-        retry
-      else
+      #  sleep RETRY_SLEEP
+      #  retry
+      # else
         self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
         log_fail "Tried #{@num_attempts} times. #{error.message}", 5
         logger.error "Tried #{@num_attempts} times. #{error.backtrace}"
@@ -215,7 +215,7 @@ class FacebookAccount < Account
         return false
       end
     rescue Exception=>error
-      log_fail "graph_api.get_connections() #{error.message}"
+      # log_fail "graph_api.get_connections() #{error.message}"
       
       # delayed_do_retrieve(since, hasta)
       logger.error "   retrieve #{error.message}" 
@@ -492,7 +492,7 @@ class FacebookAccount < Account
     @back_to_date
   end
   def recent_posts
-    @recent_posts ||= fb_posts.where("post_created_time > '#{since_date.to_s(:db)}'")
+    @recent_posts = fb_posts.where("post_created_time > '#{since_date.to_s(:db)}'")
   end
   def max_post_date
     begin

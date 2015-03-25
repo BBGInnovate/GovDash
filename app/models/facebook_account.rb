@@ -492,7 +492,7 @@ class FacebookAccount < Account
     @back_to_date
   end
   def recent_posts
-    @recent_posts ||= fb_posts.where("post_created_time > '#{since_date.to_s(:db)}'")
+    @recent_posts = fb_posts.where("post_created_time > '#{since_date.to_s(:db)}'")
   end
   def max_post_date
     begin

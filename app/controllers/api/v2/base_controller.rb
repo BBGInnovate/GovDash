@@ -185,6 +185,8 @@ class Api::V2::BaseController <  ActionController::Base
       ids = subgroups.map{|s| s.id}
       attr['subgroup_ids']= ids
 
+      attr['profile'] = add_profile record
+      
     elsif AccountsLanguage === record
       attr['account_name']= record.account.name if !!record.respond_to?(:account) && record.account
       attr['language_name']= record.language.name if !!record.respond_to?(:language) && record.language

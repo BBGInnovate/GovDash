@@ -94,4 +94,31 @@ class Api::V2::AccountsController < Api::V2::BaseController
     cond
   end
   
+  def add_profile record
+    profile = record.account_profile
+    if profile 
+      info = profile.attributes
+=begin
+      if info['location'] 
+        if info['location'].match('=>')
+          json = JSON.parse(info['location'].gsub('=>', ':'))
+          info['location'] = record.location json
+        end
+      else
+        info['location'] = ''
+      end
+=end
+      filter_attributes info
+    else
+      {}
+    end
+  end
+  
+  def filter_attributes(attr)
+    ['created_at','updated_at'].each do | col |
+      attr.delete col
+    end
+    attr
+  end
+  
 end

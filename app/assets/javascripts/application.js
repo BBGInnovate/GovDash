@@ -44,6 +44,7 @@
 //= require morris.min
 //= require skycons
 //= require modernizr.min
+//= require countUp.min
 //= require simplify
 //= require main
 

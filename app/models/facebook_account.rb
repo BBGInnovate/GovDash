@@ -107,7 +107,7 @@ class FacebookAccount < Account
          if sincedate
            a.since_date = sincedate
          end
-         if !!a.graph_api
+         # if !!a.graph_api
            if a.retrieve
              count += 1
              Rails.logger.debug "Sleep #{SLEEP} seconds for next account"
@@ -116,9 +116,9 @@ class FacebookAccount < Account
              # delayed_retrieve
              # logger.info "   retrieve scheduled deplayed_job in one hour"
            end
-         else
-           no_count += 1
-         end
+         # else
+         #  no_count += 1
+         # end
        end
      rescue Exception => ex
        Rails.logger.error "  FacebookAccount#retrieve  #{ex.message}"  
@@ -310,10 +310,10 @@ class FacebookAccount < Account
        fin = DateTime.now.utc
        duration = fin.to_i - started.to_i
        if count > 10
-           puts "Sleep #{SLEEP}"
+           puts "Sleep 1"
            started - DateTime.now.utc
            count = 0
-           sleep SLEEP
+           sleep 1
        end
        @num_attempts = 0
        data = {}
@@ -546,7 +546,7 @@ class FacebookAccount < Account
     # where("page_access_token is not null")
     @tokens ||= AppToken.where("platform='Facebook'").
         where("client_id is not null").to_a
-    @access_token = @tokens[self.id % @tokens.size]
+    @access_token = @tokens.sample # [self.id % @tokens.size]
   end
   
   def graph_api(access_token=nil)

@@ -54,7 +54,13 @@ function SubgroupsCtrl($scope, Subgroups, Groups, $routeParams, $rootScope, $loc
   	};
   	
   	$scope.update = function() {
-  		Subgroups.update($routeParams.subgroupId, $scope.subgroup.name, $scope.subgroup.description)
+
+      var groups = [];
+      for (var i = 0; i < $scope.selectedGroup.length; i++) {
+        groups.push($scope.selectedGroup[i].id);
+      }
+
+  		Subgroups.update($routeParams.subgroupId, $scope.subgroup.name, $scope.subgroup.description, groups)
             .then(function(response) {
                $location.path('subgroups');
         });

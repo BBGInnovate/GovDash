@@ -3,7 +3,8 @@ class Subgroup < ActiveRecord::Base
 #  validates_numericality_of :group_id, :on => :create
   
   has_many :accounts
-  has_and_belongs_to_many :groups
+  has_many :groups_subgroups, class_name: GroupsSubgroups
+  has_many :groups, :through => :groups_subgroups
 
   def self.populate
     # place holder

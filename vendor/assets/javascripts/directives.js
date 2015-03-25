@@ -217,7 +217,7 @@ angular.module('directives', []).
 							// Set Timeout for bootstrap modal
 							setTimeout(function () {
 								buildChart(element, data, labels, colors);
-							}, 300);
+							}, 400);
 
 						// This is for initial filter selection load
 						} else {
@@ -291,6 +291,20 @@ angular.module('directives', []).
 			});
 		};
 	}])
+	.directive('countUp', [function() {
+		return {
+			link: function(scope, element, attrs) {
+
+				scope.$watch(element[0].id, function (newval, oldval) {
+					if (attrs.value) {
+						var animation = new countUp(element[0].id, 0, attrs.value, 0, 2.5);
+						animation.start();
+					}
+				});
+
+			}
+		};
+	}])
 	.directive('datePicker', [function() {
 		return {
 			link: function(scope, element, attrs) {
@@ -303,3 +317,4 @@ angular.module('directives', []).
 			}
 		};
 	}]);
+

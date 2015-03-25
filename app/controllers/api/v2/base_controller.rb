@@ -19,7 +19,7 @@ class Api::V2::BaseController <  ActionController::Base
     names = Language.common_names
     
     arrs = []
-    [Group, Subgroup, Region, AccountType,MediaType, Country,Language, ScSegment].each do | p |
+    [Group, Subgroup, Region, AccountType, MediaType, Country, Language, ScSegment].each do | p |
       arr = [{'lookup'=> p.name}]
       hsh = {}
       if p.respond_to? :is_active

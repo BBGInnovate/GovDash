@@ -1,21 +1,20 @@
 class Api::V2::GroupsController < Api::V2::BaseController
 
-  def index 
-    arr = []
-    name = ''
-    model_class.where(condition1).each do |s|
-      attr = add_associate_name(s)
-      arr << attr
-    end
-    pretty_respond arr
-  end
 
-  def condition1
-    pam = {:is_active=>true}
-    [:organization_id].each do |p|
-      pam[p] = params[p] if params[p]
+  def add_related model_object
+    #attach related Subgroups
+    hsh = nil
+    if Group === model_object
+      group_ids = GroupsSubgroups.where(["group_id = ?", model_object.id]).map{|gs| gs.group_id}.uniq
+      if !group_ids.empty?
+        hsh = {:related_subgroups=>[]}
+        group_ids.each do |gid|
+          subgrps = GroupsSubgroups.where(["group_id in (?)", group_ids]).map{ |gs| gs.subgroup.as_json }
+          hsh[:related_subgroups] = subgrps
+        end
+      end 
     end
-    pam
+    hsh
   end
 
   private

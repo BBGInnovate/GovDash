@@ -116,10 +116,17 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 		$scope.accountPieChartData = $scope.account.values[0];
 		$scope.accountSparkChartData = $scope.account.trend;
 
+		// Header names for account modal
 		$scope.accountBlockOne = $filter('labelFormat')(labels[0]);
 		$scope.accountBlockTwo = $filter('labelFormat')(labels[1]);
 		$scope.accountBlockThree = $filter('labelFormat')(labels[2]);
 		$scope.accountBlockFour = $filter('labelFormat')(labels[3]);
+
+		// Header values for account modal
+		$scope.accountBlockOneData = $scope.account.values[0][labels[0]];
+		$scope.accountBlockTwoData = $scope.account.values[0][labels[1]];
+		$scope.accountBlockThreeData = $scope.account.values[0][labels[2]];
+		$scope.accountBlockFourData = $scope.account.values[0][labels[3]];
 
 
 

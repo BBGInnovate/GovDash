@@ -29,8 +29,8 @@ class FacebookAccount < Account
        if !!a.graph
          if a.archive
            count += 1
-           logger.info "Sleep #{SLEEP} seconds for next account"
-           sleep SLEEP
+           logger.info "Sleep 5 seconds for next account"
+           sleep 5
          else
            # delayed_retrieve
            # logger.info "   retrieve scheduled deplayed_job in one hour"
@@ -110,8 +110,8 @@ class FacebookAccount < Account
          # if !!a.graph_api
            if a.retrieve
              count += 1
-             Rails.logger.debug "Sleep #{SLEEP} seconds for next account"
-             sleep SLEEP
+             Rails.logger.debug "Sleep 5 seconds for next account"
+             sleep 5
            else
              # delayed_retrieve
              # logger.info "   retrieve scheduled deplayed_job in one hour"

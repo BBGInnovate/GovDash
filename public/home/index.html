@@ -91,76 +91,62 @@
         <div class="modal-content">
             <div class="modal-body">
                 <h3 class="account-header-text" style="background: {{ accountColor }}; color: white">
-                    <i class="ion-social-{{ socialMediaType | smLongName }}"></i><span style="margin-left: 20px">{{ account.name }}</span>
+                    <i class="ion-social-{{ socialMediaType | smLongName }}"></i>
+                    <span style="margin-left: 20px">{{ account.name }}</span>
+                    <span data-dismiss="modal" class="ion-close modal-close-button"></span>
                 </h3>
 
 
 
-                <div class="col-sm-3">
-                    <div class="statistic-box bg-gray m-bottom-md">
+                <div class="col-lg-3 col-sm-3">
+                    <div class="statistic-box bg-gray m-bottom-md box-small">
                         <div class="statistic-title">
                             {{ accountBlockOne }}
                         </div>
 
-                        <div class="statistic-value">
-                            2,245
-                        </div>
-
-                        <div class="m-top-md">3534</div>
+                        <div class="m-top-md"><span id="accountBlockOneData" count-up data-value="{{ accountBlockOneData }}"></span></div>
 
                         <div class="statistic-icon-background">
-                            <i class="ion-social-{{ socialMediaType | smLongName }}"></i>
+                            <i class="ion-social-{{ socialMediaType | smLongName }} sm-modal-icon"></i>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3">
-                    <div class="statistic-box bg-gray m-bottom-md">
+                <div class="col-lg-3 col-sm-3">
+                    <div class="statistic-box bg-gray m-bottom-md box-small">
                         <div class="statistic-title">
                             {{ accountBlockTwo }}
                         </div>
 
-                        <div class="statistic-value">
-                            2,245
-                        </div>
-
-                        <div class="m-top-md">3534</div>
+                        <div class="m-top-md"><span id="accountBlockTwoData" count-up data-value="{{ accountBlockTwoData }}"></span></div>
 
                         <div class="statistic-icon-background">
-                            <i class="ion-social-{{ socialMediaType | smLongName }}"></i>
+                            <i class="ion-social-{{ socialMediaType | smLongName }} sm-modal-icon"></i>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3">
-                    <div class="statistic-box bg-gray m-bottom-md">
+                <div class="col-lg-3 col-sm-3">
+                    <div class="statistic-box bg-gray m-bottom-md box-small">
                         <div class="statistic-title">
                             {{ accountBlockThree }}
                         </div>
 
-                        <div class="statistic-value">
-                            2,245
-                        </div>
-
-                        <div class="m-top-md">3534</div>
+                        <div class="m-top-md"><span id="accountBlockThreeData" count-up data-value="{{ accountBlockThreeData }}"></span></div>
 
                         <div class="statistic-icon-background">
-                            <i class="ion-social-{{ socialMediaType | smLongName }}"></i>
+                            <i class="ion-social-{{ socialMediaType | smLongName }} sm-modal-icon"></i>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3">
-                    <div class="statistic-box bg-gray m-bottom-md">
+                <div class="col-lg-3 col-sm-3">
+                    <div class="statistic-box bg-gray m-bottom-md box-small">
                         <div class="statistic-title">
                             {{ accountBlockFour }}
                         </div>
 
-                        <div class="statistic-value">
-                            2,245
-                        </div>
-
-                        <div class="m-top-md">3534</div>
+                        <div class="m-top-md"><span id="accountBlockFourData" count-up data-value="{{ accountBlockFourData }}"></span></div>
 
                         <div class="statistic-icon-background">
-                            <i class="ion-social-{{ socialMediaType | smLongName }}"></i>
+                            <i class="ion-social-{{ socialMediaType | smLongName }} sm-modal-icon"></i>
                         </div>
                     </div>
                 </div>
@@ -169,7 +155,7 @@
 
 
 
-                <div class="col-md-6">
+                <div class="col-lg-6 col-sm-6">
                     <div class="smart-widget widget-dark-blue">
                         <div class="smart-widget-header" style="background: {{ accountColor }}; padding: 8px">
                             Breakdown
@@ -189,7 +175,7 @@
                 </div>
 
 
-                <div class="col-md-6">
+                <div class="col-lg-6 col-sm-6">
                     <div class="smart-widget widget-dark-blue">
                         <div class="smart-widget-header" style="background: {{ accountColor }}; padding: 8px">
                             Trend
@@ -304,7 +290,7 @@
                     </div>
 
                     <div class="statistic-value">
-                        {{ totalInteractions | number: 0 }}
+                        <span id="totalInteractions" count-up data-value="{{ totalInteractions }}"></span>
                     </div>
 
                     <div class="m-top-md"><span ng-show="totalPercentChange">{{ totalPercentChange | percentChange }} than last week</span></div>
@@ -322,7 +308,7 @@
                     </div>
 
                     <div class="statistic-value">
-                        {{ facebookInteractions | number: 0 }}
+                       <span id="facebookInteractions" count-up data-value="{{ facebookInteractions }}"></span>
                     </div>
 
                     <div class="m-top-md"><span ng-show="facebookPercentChange">{{ facebookPercentChange | percentChange }} than last week</span></div>
@@ -340,7 +326,7 @@
                     </div>
 
                     <div class="statistic-value">
-                        {{ twitterInteractions | number: 0 }}
+                        <span id="twitterInteractions" count-up data-value="{{ twitterInteractions }}"></span>
                     </div>
 
                     <div class="m-top-md"><span ng-show="twitterPercentChange">{{ twitterPercentChange | percentChange }} than last week</span></div>
@@ -358,7 +344,7 @@
                     </div>
 
                     <div class="statistic-value">
-                        {{ youtubeInteractions | number: 0 }}
+                        <span id="youtubeInteractions" count-up data-value="{{ youtubeInteractions }}"></span>
                     </div>
 
                     <div class="m-top-md"><span ng-show="youtubePercentChange">{{ youtubePercentChange | percentChange }} than last week</span></div>

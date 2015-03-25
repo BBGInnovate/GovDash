@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150320183049) do
+ActiveRecord::Schema.define(version: 20150325141333) do
 
   create_table "account_profiles", force: :cascade do |t|
     t.integer  "account_id",      limit: 4
@@ -36,20 +36,21 @@ ActiveRecord::Schema.define(version: 20150320183049) do
   end
 
   create_table "accounts", force: :cascade do |t|
-    t.string   "name",            limit: 40
-    t.string   "description",     limit: 255
-    t.string   "object_name",     limit: 40
-    t.boolean  "status",          limit: 1,   default: true
-    t.boolean  "page_admin",      limit: 1,   default: false
-    t.string   "media_type_name", limit: 20,  default: "FacebookAccount"
-    t.integer  "account_type_id", limit: 4
-    t.integer  "organization_id", limit: 4
-    t.string   "contact",         limit: 255
-    t.boolean  "is_active",       limit: 1,   default: true
+    t.string   "name",             limit: 40
+    t.string   "description",      limit: 255
+    t.string   "object_name",      limit: 40
+    t.boolean  "status",           limit: 1,   default: true
+    t.boolean  "page_admin",       limit: 1,   default: false
+    t.string   "media_type_name",  limit: 20,  default: "FacebookAccount"
+    t.integer  "account_type_id",  limit: 4
+    t.integer  "organization_id",  limit: 4
+    t.string   "contact",          limit: 255
+    t.boolean  "is_active",        limit: 1,   default: true
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "sc_segment_id",   limit: 4
-    t.boolean  "new_item",        limit: 1,   default: false
+    t.integer  "sc_segment_id",    limit: 4
+    t.boolean  "new_item",         limit: 1,   default: false
+    t.string   "object_name_type", limit: 40
   end
 
   create_table "accounts_countries", force: :cascade do |t|

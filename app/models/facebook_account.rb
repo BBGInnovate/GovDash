@@ -215,7 +215,7 @@ class FacebookAccount < Account
         return false
       end
     rescue Exception=>error
-      log_fail "graph_api.get_connections() #{error.message}"
+      # log_fail "graph_api.get_connections() #{error.message}"
       
       # delayed_do_retrieve(since, hasta)
       logger.error "   retrieve #{error.message}" 

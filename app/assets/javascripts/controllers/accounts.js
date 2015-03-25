@@ -24,10 +24,8 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		}
   		
   		
-  		
-  						// name field				 // object_name field
   		Accounts.create(this.name, this.description, this.object_name, 
-  		this.selectedMediaType.name, this.selectedGroup.id,  subgroups, 
+  		this.selectedMediaType.name, this.selectedOrganization.id, this.selectedGroup.id, subgroups, 
   		this.selectedLanguage.id, regions, countries, this.selectedAccountType.id,
   		segments)
 			.then(function(response) {
@@ -63,6 +61,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		Accounts.getAccountById($routeParams.accountId)
             .then(function(response) {
                $scope.account = response.data[0];
+               var organizationId = $scope.account.organization_id;
                var groupId = $scope.account.group_id;
                var subgroupIds = $scope.account.subgroup_ids;
                var regionIds = $scope.account.region_ids;
@@ -92,7 +91,16 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 					.then(function(response) {
 					   $scope.allData = response.data;
 			  
-					   var groups = $scope.allData[0];
+					   var organizations = $scope.allData[0];
+					   organizations.shift();
+					   $scope.organizations = organizations;
+					   for (var i = 0; i < $scope.organizations.length; i++) {
+							if ($scope.organizations[i].id == organizationId) {
+								 $scope.selectedOrganization = $scope.organizations[i];
+							}
+					   }
+
+					   var groups = $scope.allData[1];
 					   groups.shift();
 					   $scope.groups = groups;
 					   for (var i = 0; i < $scope.groups.length; i++) {
@@ -101,9 +109,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 							}
 					   }
 			   			
-					   // Loop through the subgroupIds and push them to objects so 
-					   // Angular can pre-populate the select dropdown
-					   var subgroups = $scope.allData[1];
+					   var subgroups = $scope.allData[2];
 					   subgroups.shift();
 					   $scope.subgroups = subgroups;
 					   var selectedSubgroups = [];
@@ -116,18 +122,10 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 					   }
 					   $scope.selectedSubgroup = selectedSubgroups;
 
-					   var regions = $scope.allData[2];
+					   var regions = $scope.allData[3];
 					   regions.shift();
 					   $scope.regions = regions;
 					   var selectedRegions = [];
-					   /*
-					   // Loop through the regionIds and push them to objects so 
-					   // Angular can pre-populate the select dropdown
-					   for (var i = 0; i < regionIds.length; i++) {
-							selectedRegions.push($scope.regions[regionIds[i] - 1]);
-					   }
-					   $scope.selectedRegion = selectedRegions;
-					   */
 					   for (var i = 0; i < $scope.regions.length; i++) {
 					   		for (var j = 0; j < regionIds.length; j++) {
 					   			if ($scope.regions[i].id == regionIds[j]) {
@@ -137,7 +135,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 					   }
 					   $scope.selectedRegion = selectedRegions;
 			   
-					   var accountTypes = $scope.allData[3];
+					   var accountTypes = $scope.allData[4];
 					   accountTypes.shift();
 					   $scope.accountTypes = accountTypes;
 					   for (var i = 0; i < $scope.accountTypes.length; i++) {
@@ -146,7 +144,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 							}
 					   }
 			   
-					   var mediaTypes = $scope.allData[4];
+					   var mediaTypes = $scope.allData[5];
 					   mediaTypes.shift();
 					   $scope.mediaTypes = mediaTypes;
 					   for (var i = 0; i < $scope.mediaTypes.length; i++) {
@@ -155,18 +153,10 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 							}
 					   }
 			   
-					   var countries = $scope.allData[5];
+					   var countries = $scope.allData[6];
 					   countries.shift();
 					   $scope.countries = countries;
 					   var selectedCountries = [];
-					   /*
-					   // Loop through the countryIds and push them to objects so 
-					   // Angular can pre-populate the select dropdown
-					   for (var i = 0; i < countryIds.length; i++) {
-							selectedCountries.push($scope.countries[countryIds[i] - 1]);
-					   }
-					   $scope.selectedCountry = selectedCountries;
-					   */
 					   for (var i = 0; i < $scope.countries.length; i++) {
 					   		for (var j = 0; j < countryIds.length; j++) {
 					   			if ($scope.countries[i].id == countryIds[j]) {
@@ -178,7 +168,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 			  
 			  
 			   
-					   var languages = $scope.allData[6];
+					   var languages = $scope.allData[7];
 					   languages.shift();
 					   $scope.languages = languages;
 					   for (var i = 0; i < $scope.languages.length; i++) {
@@ -187,18 +177,10 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 							}
 					   }
 					   
-					   var segments = $scope.allData[7];
+					   var segments = $scope.allData[8];
 					   segments.shift();
 					   $scope.segments = segments;
 					   var selectedSegments = [];
-					   /*
-					   // Loop through the segmentIds and push them to objects so 
-					   // Angular can pre-populate the select dropdown
-					   for (var i = 0; i < segmentIds.length; i++) {
-							selectedSegments.push($scope.segments[segmentIds[i] - 1]);
-					   }
-					   $scope.selectedSegment = selectedSegments;
-					   */
 					   for (var i = 0; i < $scope.segments.length; i++) {
 					   		for (var j = 0; j < segmentIds.length; j++) {
 					   			if ($scope.segments[i].id == segmentIds[j]) {
@@ -219,6 +201,11 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   	};
   	
   	$scope.update = function() {
+  		var subgroups = [];
+  		for (var i = 0; i < $scope.selectedSubgroup.length; i++) {
+  			subgroups.push($scope.selectedSubgroup[i].id);
+  		}
+
   		var regions = [];
   		for (var i = 0; i < $scope.selectedRegion.length; i++) {
   			regions.push($scope.selectedRegion[i].id);
@@ -236,7 +223,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		
   		Accounts.update($routeParams.accountId, $scope.account.name, 
   		$scope.account.description, $scope.account.object_name, $scope.media_type_name, 
-  		$scope.selectedGroup.id, $scope.selectedSubgroup.id, $scope.selectedLanguage.id, 
+  		$scope.selectedGroup.id, subgroups, $scope.selectedLanguage.id, 
   		regions, countries, $scope.selectedAccountType.id, segments)
             .then(function(response) {
                $location.path('accounts');
@@ -300,7 +287,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		
   		Accounts.setInactive(account.id, account.name, 
   		account.description, account.object_name, account.media_type_name, 
-  		account.group_id, account.subgroup_id, account.language_id, 
+  		account.organization_id, account.group_id, account.subgroup_ids, account.language_id, 
   		account.region_ids, account.country_ids, account.account_type_id)
             .then(function(response) {
                $scope.accounts.splice( $scope.accountIndex, 1 );

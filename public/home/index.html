@@ -1,5 +1,6 @@
+
 <!-- Page Load Modal -->
-<div class="modal fade" id="largeModal">
+<div class="modal fade" id="largeModal" modal-show="{{ loggedInUser }}">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-body">
@@ -90,15 +91,18 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-body">
-                <!--
-                <img src="{{ account.profile.url }}" />
-                -->
-                {{ account.profile }}
-                <h3 class="account-header-text" style="background: {{ accountColor }}; color: white">
-                    <i class="ion-social-{{ socialMediaType | smLongName }}"></i>
-                    <span style="margin-left: 20px">{{ account.name }}</span>
-                    <span data-dismiss="modal" class="ion-close modal-close-button"></span>
-                </h3>
+
+
+
+                <div class="account-header-block" style="background: #F2F2F2; color: {{ accountColor }}">
+                    <a target="_blank" href="{{ account.profile.url }}" style="color: {{ accountColor }}">
+                        <img style="float: left" width="50" ng-src="{{ account.profile.avatar }}" />
+                        <p class="account-header-text">{{ account.name }}</p>
+                        <i style="margin-left: 20px" class="ion-social-{{ socialMediaType | smLongName }}"></i>
+                        <span>{{ socialMediaType | smLongNameProper }}</span>
+                        <span data-dismiss="modal" class="ion-close modal-close-button"></span>
+                    </a>
+                </div>
 
 
 
@@ -168,7 +172,7 @@
                             <div class="smart-widget-body no-padding">
                                 <div class="padding-md">
 
-                                    <div style="height:200px;" pie-chart data="accountPieChartData" socialmediatype="{{ socialMediaType }}" modal="true"></div>
+                                    <div style="height:150px;" pie-chart data="accountPieChartData" socialmediatype="{{ socialMediaType }}" modal="true"></div>
 
 
                                 </div>
@@ -188,7 +192,7 @@
                             <div class="smart-widget-body no-padding">
                                 <div class="padding-md">
 
-                                    <div style="height:200px; width: 100%" spark-chart data="accountSparkChartData" socialmediatype="{{ socialMediaType }}"></div>
+                                    <div style="height:150px; width: 100%" spark-chart data="accountSparkChartData" socialmediatype="{{ socialMediaType }}"></div>
 
                                 </div>
 
@@ -281,8 +285,7 @@
                         <li><a href="" data-toggle="modal" data-target="#datePickerModal">Custom Date Range</a></li>
                     </ul>
                 </div>
-
-                <a show-modal class="btn btn-default"><i class="fa fa-cog"></i></a>
+                <a show-modal class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Show Filters"><i class="ion-ios7-settings-strong"></i></a>
             </div>
         </div>
 
@@ -297,7 +300,7 @@
                         <span id="totalInteractions" count-up data-value="{{ totalInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-class="{'vis-hidden': totalPercentChange.length === 0}">{{ totalPercentChange | percentChange }} than last week</span></div>
+                    <div class="m-top-md"><span ng-class="{'vis-hidden': totalPercentChange === 'NaN %'}">{{ totalPercentChange | percentChange }} &nbsp;</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-eye"></i>
@@ -315,7 +318,7 @@
                        <span id="facebookInteractions" count-up data-value="{{ facebookInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-class="{'vis-hidden': facebookPercentChange.length === 0}">{{ facebookPercentChange | percentChange }} than last week</span></div>
+                    <div class="m-top-md"><span ng-class="{'vis-hidden': facebookPercentChange.length === 0}">{{ facebookPercentChange | percentChange }} &nbsp;</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-social-facebook"></i>
@@ -333,7 +336,7 @@
                         <span id="twitterInteractions" count-up data-value="{{ twitterInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-class="{'vis-hidden': twitterPercentChange.length === 0}">{{ twitterPercentChange | percentChange }} than last week</span></div>
+                    <div class="m-top-md"><span ng-class="{'vis-hidden': twitterPercentChange.length === 0}">{{ twitterPercentChange | percentChange }} &nbsp;</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-social-twitter"></i>
@@ -351,7 +354,7 @@
                         <span id="youtubeInteractions" count-up data-value="{{ youtubeInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-class="{'vis-hidden': youtubePercentChange.length === 0}">{{ youtubePercentChange | percentChange }} than last week</span></div>
+                    <div class="m-top-md"><span ng-class="{'vis-hidden': youtubePercentChange.length === 0}">{{ youtubePercentChange | percentChange }} &nbsp;</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-social-youtube"></i>

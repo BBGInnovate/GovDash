@@ -7,7 +7,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 	$scope.startDate =  moment($scope.endDate,"MM/DD/YYYY").subtract(6,'day').format('MM/DD/YYYY');
 
 	// When content loads, display and initialize modal
-	$scope.$on('$viewContentLoaded', loadModal);
+	//$scope.$on('$viewContentLoaded', loadModal);
 
 	// get all data on page load
 	APIData.getInitialData().then(function(response) {
@@ -67,12 +67,14 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 			if (response.fbAccounts.length === 0 && response.twAccounts.length === 0 &&
 				response.youtubeAccounts.length === 0) {
 
+				// Display notification
 				noty({
 					text: 'No results found',
 					type: 'error',
 					layout: 'topCenter',
-					timeout: '3000'
+					timeout: '5000'
 				});
+
 			}
 
 			// Top 4 boxes Interactions

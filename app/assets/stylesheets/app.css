@@ -92,13 +92,20 @@ div.xAxis div.tickLabel
     border-top: none !important;
 }
 
-.account-header-text {
+.account-header-block {
     border-bottom: 5px solid #ddd;
     margin-bottom: 30px;
     padding-bottom: 15px;
     padding-left: 20px;
     padding-top: 10px;
     margin-top: 0;
+}
+
+.account-header-text {
+    font-size: 18px;
+    font-weight: 900;
+    margin-bottom: 0;
+    margin-left: 70px;
 }
 
 .sm-modal-icon {
@@ -113,7 +120,10 @@ div.xAxis div.tickLabel
     float: right;
     margin-right: 16px;
     margin-top: 2px;
-    cursor:pointer
+    cursor:pointer;
+    position :relative;
+    top: -11px;
+    font-weight: 900;
 }
 
 .vis-hidden{
@@ -124,4 +134,8 @@ div.xAxis div.tickLabel
     color: #428bca !important;
     text-decoration: none;
     font-weight: 500;
+}
+
+#tooltip {
+    z-index: 999999999;
 }

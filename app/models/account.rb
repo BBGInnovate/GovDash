@@ -45,9 +45,9 @@ class Account < ActiveRecord::Base
   def info
     begin
      profile_attr=self.account_profile.attributes
-     profile_attr.delete('id')
-     profile_attr.delete('account_id')
-     profile_attr.delete('location')
+     ['id','account_id','location','created_at','updated_at'].each do |rm|
+        profile_attr.delete(rm)
+     end
      {:name=>self.name,:id=>self.id,
       :profile=>profile_attr,
       :groups=>self.groups.map(&:name),

@@ -44,11 +44,20 @@ class Account < ActiveRecord::Base
 
   def info
     begin
+     case self.class.name
+     when 'FacebookAccount'
+       collect_started = fb_pages.last.created_at.to_s(:db)
+     when 'TwitterAccount'
+       collect_started = tw_timelines.last.created_at.to_s(:db)
+     else
+       collect_started = yt_channels.first.created_at.to_s(:db)
+     end
      profile_attr=self.account_profile.attributes
      ['id','account_id','location','created_at','updated_at'].each do |rm|
         profile_attr.delete(rm)
      end
      {:name=>self.name,:id=>self.id,
+      :collect_started=>collect_started,
       :profile=>profile_attr,
       :groups=>self.groups.map(&:name),
       :subgroups=>self.subgroups.map(&:name),

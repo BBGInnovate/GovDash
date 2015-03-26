@@ -100,8 +100,9 @@ class Api::V2::BaseController <  ActionController::Base
     @data = model_class.find(params[:id])
     #set the groups join for subgroups
     if model_name == "subgroup" && params[:subgroup] && params[:subgroup][:group_ids]
+      GroupsSubgroups.where([ "subgroup_id = ?", params[:id] ]).delete_all
       params[:subgroup][:group_ids].each do |gid|
-        GroupsSubgroups.find_or_create_by(group_id: gid) do |gs|
+        GroupsSubgroups.create(group_id: gid) do |gs|
           gs.subgroup_id = params[:subgroup][:id]
         end
       end

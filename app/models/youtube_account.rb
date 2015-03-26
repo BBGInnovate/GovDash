@@ -30,7 +30,7 @@ class YoutubeAccount < Account
     size = records.size
     total_seconds=(ended-started).to_i
     duration=Time.at(total_seconds).utc.strftime("%H:%M:%S")
-    msg = "#{count} out of #{size} Facebook accounts fetched. Started: #{started.to_s(:db)} Duration: #{duration}"    
+    msg = "#{count} out of #{size} Youtube accounts fetched. Started: #{started.to_s(:db)} Duration: #{duration}"    
     puts msg     
   end
 

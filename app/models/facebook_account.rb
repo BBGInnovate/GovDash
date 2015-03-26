@@ -114,8 +114,8 @@ class FacebookAccount < Account
          # if !!a.graph_api
            if a.retrieve
              count += 1
-             Rails.logger.debug "Sleep 15 seconds for next account"
-             sleep 15
+             Rails.logger.debug "Sleep 5 seconds for next account"
+             sleep 5
            else
              # delayed_retrieve
              # logger.info "   retrieve scheduled deplayed_job in one hour"
@@ -147,7 +147,7 @@ class FacebookAccount < Account
     if self.new_item? # !!self.graph
       @since_date = 6.months.ago
     end
-    puts "  retrieve #{since_date}"
+    puts "  retrieve #{self.id} #{since_date}"
     since = since_date
     hasta = until_date
     started=Time.now

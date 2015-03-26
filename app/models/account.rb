@@ -44,7 +44,12 @@ class Account < ActiveRecord::Base
 
   def info
     begin
+     profile_attr=self.account_profile.attributes
+     profile_attr.delete('id')
+     profile_attr.delete('account_id')
+     profile_attr.delete('location')
      {:name=>self.name,:id=>self.id,
+      :profile=>profile_attr,
       :groups=>self.groups.map(&:name),
       :subgroups=>self.subgroups.map(&:name),
       :countries=>self.countries.map{|c| [c.id, c.name]}.to_h,

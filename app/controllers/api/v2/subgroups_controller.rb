@@ -22,7 +22,7 @@ class Api::V2::SubgroupsController < Api::V2::BaseController
         hsh = {:related_groups=>[]}
         subgroup_ids.each do |sgid|
           grps = GroupsSubgroups.where(["subgroup_id in (?)", subgroup_ids]).map{ |gs| gs.group.as_json }
-          hsh[:related_subgroups] = grps
+          hsh[:related_groups] = grps
         end
       end 
     end

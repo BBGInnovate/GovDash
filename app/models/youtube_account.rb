@@ -11,12 +11,27 @@ class YoutubeAccount < Account
   end
   
   def self.retrieve sincedate=nil
-    YoutubeAccount.where("is_active is not null").to_a.each do | yt |
-      if sincedate
-        yt.since_date = sincedate
-      end
-      yt.retrieve
+    started = Time.now.utc
+    count = 0
+    records = where("is_active=1").to_a
+    range = "0..#{records.size-1}"
+    if YoutubeConf[:retrieve_range] &&
+          YoutubeConf[:retrieve_range].match(/(\d+\.\.\d+)/)
+       range = $1
     end
+    records[eval range].each_with_index do |a,i|
+      if sincedate
+        a.since_date = sincedate
+      end
+      a.retrieve
+      count += 1
+    end
+    ended = Time.now.utc
+    size = records.size
+    total_seconds=(ended-started).to_i
+    duration=Time.at(total_seconds).utc.strftime("%H:%M:%S")
+    msg = "#{count} out of #{size} Facebook accounts fetched. Started: #{started.to_s(:db)} Duration: #{duration}"    
+    puts msg     
   end
 
   def initial_load

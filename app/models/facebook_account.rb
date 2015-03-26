@@ -101,9 +101,13 @@ class FacebookAccount < Account
      count = 0
      no_count = 0
      begin
-       records = where("is_active=1").to_a 
-       retrieve_range = Facebook.config[:retrieve_range] || records.size
-       records.each_with_index do |a,i|
+       records = where("is_active=1").to_a
+       range = "0..#{records.size-1}"
+       if Facebook.config[:retrieve_range] &&
+          Facebook.config[:retrieve_range].match(/(\d+\.\.\d+)/)
+           range = $1
+       end
+       records[eval range].each_with_index do |a,i|
          if sincedate
            a.since_date = sincedate
          end
@@ -123,16 +127,16 @@ class FacebookAccount < Account
      rescue Exception => ex
        Rails.logger.error "  FacebookAccount#retrieve  #{ex.message}"  
      end
-     server = ActionMailer::Base.default_url_options[:server]
+     # server = ActionMailer::Base.default_url_options[:server]
      ended = Time.now.utc
      size = records.size - no_count
      total_seconds=(ended-started).to_i
      duration=Time.at(total_seconds).utc.strftime("%H:%M:%S")
-     msg = "#{server} : #{count} out of #{size} Facebook accounts fetched. Started: #{started.to_s(:db)} Duration: #{duration}"
+     msg = "#{count} out of #{size} Facebook accounts fetched. Started: #{started.to_s(:db)} Duration: #{duration}"
      # for cronjob log:     
      puts msg      
      level = ((size-count)/2.0).round % size
-     log_error msg,level
+     # log_error msg,level
      
   end
   #

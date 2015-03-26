@@ -7,11 +7,14 @@ class TwitterAccount < Account
   def self.retrieve sincedate=nil
      started = Time.now
      count = 0
-     
      begin
        records = where(:is_active=>true).all
-       retrieve_range = TwitterApp.config[:retrieve_range] || records.size
-       records.each_with_index do |a, i|
+       range = "0..#{records.size-1}"
+       if TwitterApp.config[:retrieve_range] &&
+          TwitterApp.config[:retrieve_range].match(/(\d+\.\.\d+)/)
+           range = $1
+       end
+       records[eval range].each_with_index do |a,i|
          Rails.logger.debug "Start Twitter #{a.id}"
          if sincedate
            a.since_date = sincedate
@@ -25,7 +28,6 @@ class TwitterAccount < Account
      rescue Exception=>ex
        logger.error "  TwitterAccount#retrieve #{ex.message}"
      end
-     
      ended = Time.now
      size = records.size
      total_seconds=(ended-started).to_i
@@ -33,8 +35,8 @@ class TwitterAccount < Account
      msg = "#{count} out of #{size} Twitter accounts fetched. Started: #{started.to_s(:db)} Duration: #{duration}"
      # for cronjob log:          
      puts msg     
-     level = ((size-count)/2.0).round % size
-     log_error msg,level
+     # level = ((size-count)/2.0).round % size
+     # log_error msg,level
   end
   def retrieve(rabbit_channel=false)
     @bulk_insert = []

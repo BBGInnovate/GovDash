@@ -115,3 +115,13 @@ div.xAxis div.tickLabel
     margin-top: 2px;
     cursor:pointer
 }
+
+.vis-hidden{
+    visibility: hidden;
+}
+
+.account-link {
+    color: #428bca !important;
+    text-decoration: none;
+    font-weight: 500;
+}

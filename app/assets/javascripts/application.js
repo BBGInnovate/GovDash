@@ -45,6 +45,7 @@
 //= require skycons
 //= require modernizr.min
 //= require countUp.min
+//= require jquery.noty.packaged.min
 //= require simplify
 //= require main
 

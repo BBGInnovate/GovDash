@@ -19,7 +19,8 @@ class Api::V2::GroupsController < Api::V2::BaseController
 
   private
   def group_params
-    params.require(:group).permit(:name, :description, :organization_id, :is_active)
+    #params.require(:group).permit(:name, :description, :organization_id, :is_active)
+    _params_
   end
   
 end

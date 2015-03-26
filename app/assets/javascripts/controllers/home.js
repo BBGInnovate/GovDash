@@ -64,6 +64,17 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 		APIQueryData.getData(queryData).then(function(response) {
 			console.log(response);
 
+			if (response.fbAccounts.length === 0 && response.twAccounts.length === 0 &&
+				response.youtubeAccounts.length === 0) {
+
+				noty({
+					text: 'No results found',
+					type: 'error',
+					layout: 'topCenter',
+					timeout: '3000'
+				});
+			}
+
 			// Top 4 boxes Interactions
 			$scope.facebookInteractions = response.fbTotalInteractions;
 			$scope.facebookPercentChange = response.fbPercentChange;

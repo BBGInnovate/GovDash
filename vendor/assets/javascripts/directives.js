@@ -305,6 +305,16 @@ angular.module('directives', []).
 			}
 		};
 	}])
+	// Show the filter selection modal
+	.directive('showModal', [function () {
+		return {
+			link: function ($scope, element, attrs) {
+				element.bind('click', function () {
+					$('#largeModal').modal('show');
+				});
+			}
+		};
+	}])
 	.directive('datePicker', [function() {
 		return {
 			link: function(scope, element, attrs) {

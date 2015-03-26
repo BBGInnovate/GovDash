@@ -1,16 +1,16 @@
 function SubgroupsCtrl($scope, Subgroups, Groups, $routeParams, $rootScope, $location) {"use strict";
 	
-	//possible parent "groups"
-	Groups.getAllGroups()
-		.then(function(response) {
-		   $scope.groups = response.data;
-	});
+  	//possible parent "groups"
+  	// Groups.getAllGroups()
+  	// 	.then(function(response) {
+  	// 	   $scope.groups = response.data;
+  	// });
   
   	$scope.create = function() {
 
       var groups = [];
-      for (var i = 0; i < this.selectedGroup.length; i++) {
-        groups.push(this.selectedGroup[i].id);
+      for (var i = 0; i < this.selectedGroups.length; i++) {
+        groups.push(this.selectedGroups[i].id);
       }
 
   		Subgroups.create(this.name, this.description, groups)
@@ -38,28 +38,33 @@ function SubgroupsCtrl($scope, Subgroups, Groups, $routeParams, $rootScope, $loc
   		Subgroups.getSubgroupById($routeParams.subgroupId)
             .then(function(response) {
                $scope.subgroup = response.data[0];
+               //init array of selected groups
+               var selectedGroups = [];
                //get all groups
                 Groups.getAllGroups()
                   .then(function(response) {
                     $scope.groups = response.data;
-                     for (var i = 0; i < $scope.groups.length; i++) {
-                      //set the group related to this subgroup
-                      if ($scope.group[i].id == $scope.group.group_id) {
-                         $scope.selectedGroup = $scope.group[i];
+                    //set the scope.groups objects that match related_groups to selectedGroups
+                    for (var i = 0; i < $scope.groups.length; i++) {
+                      for (var j = 0; j < $scope.subgroup.related_groups.length; j++) {
+                        if ($scope.groups[i].id == $scope.subgroup.related_groups[j].id){
+                          selectedGroups.push($scope.groups[i]);
+                        }
                       }
-                     }
+                    }
+                    $scope.selectedGroups = selectedGroups;
                 });
         });
   		
   	};
   	
   	$scope.update = function() {
-
+      //init array of "select groups" id's
       var groups = [];
-      for (var i = 0; i < $scope.selectedGroup.length; i++) {
-        groups.push($scope.selectedGroup[i].id);
+      for (var i = 0; i < $scope.selectedGroups.length; i++) {
+        groups.push($scope.selectedGroups[i].id);
       }
-
+      console.log(groups);
   		Subgroups.update($routeParams.subgroupId, $scope.subgroup.name, $scope.subgroup.description, groups)
             .then(function(response) {
                $location.path('subgroups');

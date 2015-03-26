@@ -3,8 +3,8 @@ angular.module('subgroupService', [])
        
         var subgroup = {
             
-            create: function(name, description) {
-                return $http.post('/api/subgroups', {subgroup: {name: name, description: description } })
+            create: function(name, description, groupIds) {
+                return $http.post('/api/subgroups', {subgroup: {name: name, description: description, group_ids: groupIds } })
                 .then(function(response) {
                     console.log('Subgroup Created!');
                 });
@@ -22,10 +22,10 @@ angular.module('subgroupService', [])
 					return subgroup;
 				});
             },
-            update: function(subgroupId, name, description) {
-            	return $http.put('api/subgroups/' + subgroupId, {subgroup: {id: subgroupId, name: name, description: description } })
+            update: function(subgroupId, name, description, groupIds) {
+            	return $http.put('api/subgroups/' + subgroupId, {subgroup: {id: subgroupId, name: name, description: description, group_ids: groupIds } })
 				.then(function(response) {
-                    //console.log('Subgroup Updated!');
+                    console.log('Subgroup Updated!');
                 });
             }
             

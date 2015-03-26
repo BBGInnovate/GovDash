@@ -90,6 +90,10 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-body">
+                <!--
+                <img src="{{ account.profile.url }}" />
+                -->
+                {{ account.profile }}
                 <h3 class="account-header-text" style="background: {{ accountColor }}; color: white">
                     <i class="ion-social-{{ socialMediaType | smLongName }}"></i>
                     <span style="margin-left: 20px">{{ account.name }}</span>
@@ -278,7 +282,7 @@
                     </ul>
                 </div>
 
-                <a class="btn btn-default"><i class="fa fa-cog"></i></a>
+                <a show-modal class="btn btn-default"><i class="fa fa-cog"></i></a>
             </div>
         </div>
 
@@ -293,7 +297,7 @@
                         <span id="totalInteractions" count-up data-value="{{ totalInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-show="totalPercentChange">{{ totalPercentChange | percentChange }} than last week</span></div>
+                    <div class="m-top-md"><span ng-class="{'vis-hidden': totalPercentChange.length === 0}">{{ totalPercentChange | percentChange }} than last week</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-eye"></i>
@@ -311,7 +315,7 @@
                        <span id="facebookInteractions" count-up data-value="{{ facebookInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-show="facebookPercentChange">{{ facebookPercentChange | percentChange }} than last week</span></div>
+                    <div class="m-top-md"><span ng-class="{'vis-hidden': facebookPercentChange.length === 0}">{{ facebookPercentChange | percentChange }} than last week</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-social-facebook"></i>
@@ -329,7 +333,7 @@
                         <span id="twitterInteractions" count-up data-value="{{ twitterInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-show="twitterPercentChange">{{ twitterPercentChange | percentChange }} than last week</span></div>
+                    <div class="m-top-md"><span ng-class="{'vis-hidden': twitterPercentChange.length === 0}">{{ twitterPercentChange | percentChange }} than last week</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-social-twitter"></i>
@@ -347,7 +351,7 @@
                         <span id="youtubeInteractions" count-up data-value="{{ youtubeInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-show="youtubePercentChange">{{ youtubePercentChange | percentChange }} than last week</span></div>
+                    <div class="m-top-md"><span ng-class="{'vis-hidden': youtubePercentChange.length === 0}">{{ youtubePercentChange | percentChange }} than last week</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-social-youtube"></i>
@@ -516,7 +520,7 @@
                                 </thead>
                                 <tbody>
                                 <tr ng-repeat="account in fbAccounts">
-                                    <td data-title="Name" class="text-left"><a href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'fb')">{{ account.name }}</a></td>
+                                    <td data-title="Name" class="text-left"><a class="account-link" href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'fb')">{{ account.name }}</a></td>
                                     <td data-title="Actions" class="text-left">{{ account.values[0].totals | number: 0 }}</td>
                                     <td data-title="New Fans" class="text-left">{{ account.values[0].page_likes | number: 0 }}</td>
                                     <td data-title="Story Likes" class="text-left">{{ account.values[0].story_likes | number: 0 }}</td>
@@ -560,7 +564,7 @@
                                 </thead>
                                 <tbody>
                                 <tr ng-repeat="account in twAccounts">
-                                    <td data-title="Name" class="text-left"><a href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'tw')">{{ account.name }}</a></td>
+                                    <td data-title="Name" class="text-left"><a class="account-link" href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'tw')">{{ account.name }}</a></td>
                                     <td data-title="Actions" class="text-left">{{ account.values[0].totals | number: 0 }}</td>
                                     <td data-title="Followers" class="text-left">{{ account.values[0].followers | number: 0 }}</td>
                                     <td data-title="Favorites" class="text-left">{{ account.values[0].favorites | number: 0 }}</td>
@@ -603,7 +607,7 @@
                                 </thead>
                                 <tbody>
                                 <tr ng-repeat="account in youtubeAccounts">
-                                    <td data-title="Name" class="text-left"><a href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'yt')">{{ account.name }}</a></td>
+                                    <td data-title="Name" class="text-left"><a class="account-link" href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'yt')">{{ account.name }}</a></td>
                                     <td data-title="Actions" class="text-left">{{ account.values[0].totals | number: 0 }}</td>
                                     <td data-title="Views" class="text-left">{{ account.values[0].views | number: 0 }}</td>
                                     <td data-title="Video Likes" class="text-left">{{ account.values[0].likes | number: 0 }}</td>

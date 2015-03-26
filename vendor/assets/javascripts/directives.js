@@ -165,34 +165,40 @@ angular.module('directives', []).
 	.directive('barChart', ['$parse', function($parse) {
 		return {
 			link: function(scope, element, attrs) {
-				var data = $parse(attrs.data)(scope);
 
-				if (data) {
+				scope.$watch(attrs.data, function (newval, oldval) {
 
-					$(window).resize(function() {
-						window.m.redraw();
-					});
+					var data = $parse(attrs.data)(scope);
 
-					window.m = Morris.Bar({
-						// ID of the element in which to draw the chart.
-						element: element,
-						// Chart data records -- each entry in this array corresponds to a point on
-						// the chart.
-						data: [{ y: 'Total Interactions',
-							a: data.totalInteractions,
-							b: data.fbInteractions,
-							c: data.twInteractions,
-							d: data.youtubeInteractions }],
-						xkey: 'y',
-						ykeys: ['a', 'b', 'c', 'd'],
-						labels: ['All', 'Facebook', 'Twitter', 'YouTube'],
-						barColors: ['#2BAAB1', '#3278B3', '#23B7E5', '#E36159'],
-						resize: true,
-						redraw: true
-					});
-				} else {
-					element.html('<p class="no-data-found">No data found</p>');
-				}
+					if (data) {
+						element.empty();
+
+						$(window).resize(function() {
+							window.m.redraw();
+						});
+
+						window.m = Morris.Bar({
+							// ID of the element in which to draw the chart.
+							element: element,
+							// Chart data records -- each entry in this array corresponds to a point on
+							// the chart.
+							data: [{ y: 'Total Interactions',
+								a: data.totalInteractions,
+								b: data.fbInteractions,
+								c: data.twInteractions,
+								d: data.youtubeInteractions }],
+							xkey: 'y',
+							ykeys: ['a', 'b', 'c', 'd'],
+							labels: ['All', 'Facebook', 'Twitter', 'YouTube'],
+							barColors: ['#2BAAB1', '#3278B3', '#23B7E5', '#E36159'],
+							resize: true,
+							redraw: true
+						});
+					} else {
+						element.html('<p class="no-data-found">No data found</p>');
+					}
+
+				});
 
 			}
 		};
@@ -313,6 +319,39 @@ angular.module('directives', []).
 					$('#largeModal').modal('show');
 				});
 			}
+		};
+	}])
+	.directive("modalShow", ['$parse', function ($parse) {
+		return {
+			restrict: "A",
+			link: function (scope, element, attrs) {
+
+				//Hide or show the modal
+				scope.showModal = function (visible, elem) {
+					if (!elem)
+						elem = element;
+
+					if (visible)
+						$(elem).modal("show");
+					else
+						$(elem).modal("hide");
+				};
+
+				//Watch for changes to the modal-visible attribute
+				scope.$watch(attrs.modalShow, function (newValue, oldValue) {
+					scope.showModal(newValue, attrs.$$element);
+				});
+
+				/*
+				//Update the visible value when the dialog is closed through UI actions (Ok, cancel, etc.)
+				$(element).bind("hide.bs.modal", function () {
+					$parse(attrs.modalShow).assign(scope, false);
+					if (!scope.$$phase && !scope.$root.$$phase)
+						scope.$apply();
+				});
+				*/
+			}
+
 		};
 	}])
 	.directive('datePicker', [function() {

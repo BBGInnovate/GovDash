@@ -241,9 +241,24 @@ angular.module('filters', []).
 			if (label) {
 				label = label.replace(' ', '');
 				if (label.indexOf('-') > -1) {
-					return label.replace('-', '') + ' less';
+					return label.replace('-', '') + ' less than last week';
 				} else {
-					return label + ' greater';
+					return label + ' greater than last week';
+				}
+
+			}
+		};
+	})
+	// formats percent change on the account modal
+	.filter('smLongNameProper', function () {
+		return function (label) {
+			if (label) {
+				if (label === 'fb') {
+					return 'Facebook';
+				} else if (label === 'tw') {
+					return 'Twitter';
+				} else if (label === 'yt') {
+					return 'YouTube';
 				}
 
 			}

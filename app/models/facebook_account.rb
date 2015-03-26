@@ -369,8 +369,11 @@ class FacebookAccount < Account
         :fields=>"picture,is_verified,description,name,likes,location,link,talking_about_count, website"
     
       talking_about = json['talking_about_count'].to_i
-      websites = json['website'].split(' ')
-      
+      if json['website']
+        websites = json['website'].split(' ')
+      else
+        websites = []
+      end
       options[:platform_type] = 'FB'
       options[:display_name] = json['name']
       if json['description']

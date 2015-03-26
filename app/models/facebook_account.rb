@@ -101,7 +101,7 @@ class FacebookAccount < Account
      count = 0
      no_count = 0
      begin
-       records = where("is_active=1").to_a
+       records = select('id, object_name,new_item').where("is_active=1").to_a
        range = "0..#{records.size-1}"
        if Facebook.config[:retrieve_range] &&
           Facebook.config[:retrieve_range].match(/(\d+\.\.\d+)/)
@@ -114,8 +114,8 @@ class FacebookAccount < Account
          # if !!a.graph_api
            if a.retrieve
              count += 1
-             Rails.logger.debug "Sleep 5 seconds for next account"
-             sleep 5
+             Rails.logger.debug "Sleep 15 seconds for next account"
+             sleep 15
            else
              # delayed_retrieve
              # logger.info "   retrieve scheduled deplayed_job in one hour"
@@ -147,6 +147,7 @@ class FacebookAccount < Account
     if self.new_item? # !!self.graph
       @since_date = 6.months.ago
     end
+    puts "  retrieve #{since_date}"
     since = since_date
     hasta = until_date
     started=Time.now
@@ -164,6 +165,9 @@ class FacebookAccount < Account
         # not to re retrieve
         if !!data1 && !!data2 
           success = true
+          aggregate_data 1,'day', true
+          # recent_page available after aggregate_data
+          save_lifetime_data
           logger.debug "   SKIP: retrieve archieve #{since.to_s(:db)} - #{hasta.to_s(:db)}"  
         else
           logger.debug "   retrieve archieve #{since.to_s(:db)} - #{hasta.to_s(:db)}"
@@ -177,72 +181,49 @@ class FacebookAccount < Account
       end
       hasta = since - 1
     end
-    if success
-      self.update_attributes :new_item=>false,:status=>true,:updated_at=>DateTime.now.utc
-    else
-      # delayed_retrieve
-      # logger.info "   retrieve scheduled deplayed_job in one hour"   
-    end
+    self.update_attributes :new_item=>false,:status=>success,:updated_at=>DateTime.now.utc
     ended=Time.now
     logger.info "   finished retrieve #{started} - #{ended}"
   end
   
     
   def do_retrieve(since=7.days.ago, hasta=DateTime.now.utc, rabbit=false)
+    ret = false
     started = DateTime.now.utc
-    logger.info "Facebook #{self.object_name} started: #{started.to_s(:db)}" 
-    @num_attempts = 0
+    # @num_attempts = 0
     begin
-      @num_attempts += 1
+      # @num_attempts += 1
       posts = graph_api.get_connections(self.obj_name, "posts", :fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta) || []
       if posts.empty?
         logger.debug "  #{since.to_s(:db)}=#{hasta.to_s(:db)} do_retrieve posts empty   "
       end
+      ret = true
     rescue Koala::Facebook::ClientError=>error
-      if error.fb_error_type == 'OAuthException'
-        log_fail "graph_api.get_connections() #{error.message}"
-        logger.error "graph_api.get_connections() #{error.backtrace}"
-        self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
-        return false
-      end
-      if @num_attempts < self.max_attempts
-      #  sleep RETRY_SLEEP
-      #  retry
-      # else
-        self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
-        log_fail "Tried #{@num_attempts} times. #{error.message}", 5
-        logger.error "Tried #{@num_attempts} times. #{error.backtrace}"
-        
-        # delayed_do_retrieve(since, hasta)
-        # logger.info "   retrieve scheduled deplayed_job in one hour" 
-      
-        return false
-      end
+      # if error.fb_error_type == 'OAuthException'
+        # log_fail "graph_api.get_connections() #{error.message}"
+        logger.error "graph_api.get_connections() #{error.message}"
+      # end
     rescue Exception=>error
       # log_fail "graph_api.get_connections() #{error.message}"
-      
       # delayed_do_retrieve(since, hasta)
       logger.error "   retrieve #{error.message}" 
-      
-      self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
-      return false
     end
-    
-    begin     
-      process_posts(posts)
-      !!rabbit ? send_mq_message(rabbit) : save_post_details
-    rescue Exception=>error
-      logger.debug error.backtrace
-      log_fail "process_posts() #{error.message}"
-      self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
-      
-      # delayed_do_retrieve(since, hasta)
-      logger.info "   retrieve #{error.message}" 
-      
-      return false
+    if ret  
+      begin     
+        process_posts(posts)
+        if !!rabbit
+          send_mq_message(rabbit)
+        else
+          save_post_details
+        end
+      rescue Exception=>error
+        # log_fail "process_posts() #{error.message}"
+        # delayed_do_retrieve(since, hasta)
+        logger.error "   retrieve #{error.message}" 
+      end
     end
-    logger.info "   #{self.id} retrieve success"
-    return 'Success'
+    logger.info "   #{self.id} retrieve #{ret}"
+    ret
   end
   
   def delayed_do_retrieve(since=7.days.ago, hasta=DateTime.now.utc, rabbit=false)
@@ -253,7 +234,7 @@ class FacebookAccount < Account
   def process_posts(posts)
     return true if !posts || posts.empty?
     logger.debug "Process posts #{posts.size}"
-    @bulk_insert = []
+    # @bulk_insert = []
     last_created_time = DateTime.now.utc
     posts.each do |f|
       last_created_time= DateTime.parse(f['created_time'])
@@ -271,6 +252,7 @@ class FacebookAccount < Account
         dbpost.update_attributes insert
       end
     end
+=begin
     unless @bulk_insert.empty?
       last_id = FbPost.import!(@bulk_insert)
       from_id = last_id - @bulk_insert.size
@@ -278,6 +260,7 @@ class FacebookAccount < Account
       RedshiftFbPost.upload from_id
       @bulk_insert = []
     end
+=end
     
     unless posts.size < QUERY_LIMIT 
       if last_created_time > since_date
@@ -290,14 +273,15 @@ class FacebookAccount < Account
             sleep RETRY_SLEEP
             retry
           else
-            log_fail "Tried #{@num_attempts} times. #{error.message}", 5
+            # log_fail "Tried #{@num_attempts} times. #{error.message}", 5
             feeds = []
           end
         end
         begin
           process_posts(feeds)
         rescue Exception=>error
-          log_fail "by process_posts #{error.message}", 2
+          logger.error "  process_posts #{error.message}"
+          # log_fail "by process_posts #{error.message}", 2
         end
       end
     end
@@ -306,18 +290,16 @@ class FacebookAccount < Account
   def save_post_details
      count = 0
      total_processed = 0
-     started = DateTime.now.utc
-     myposts = self.fb_posts.where("post_created_time > '#{since_date}'").to_a
+     myposts = FbPost.select('id, post_id').where(account_id: self.id).
+        where("post_created_time > '#{since_date}'").to_a
+     # myposts = self.fb_posts.where("post_created_time > '#{since_date}'").to_a
      myposts.each do |post|
        count += 1
        total_processed += 1
-       fin = DateTime.now.utc
-       duration = fin.to_i - started.to_i
-       if count > 10
-           puts "Sleep 1"
-           started - DateTime.now.utc
-           count = 0
-           sleep 1
+       if count > 15
+         puts "Sleep 1"
+         count = 0
+         sleep 1
        end
        @num_attempts = 0
        data = {}
@@ -326,7 +308,6 @@ class FacebookAccount < Account
          # insights = graph_api.graph_call("v2.2/#{post.post_id}/insights/post_story_adds_by_action_type")
          # data=insights[0]['values'][0]['value'] rescue {}
          data = graph_api.get_object(post.post_id, :fields => "shares,likes.summary(true),comments.summary(true)")
-         # logger.debug "  GET shares,likes #{data.keys}"
        rescue Koala::Facebook::ClientError, Timeout::Error=>error
          if @num_attempts < self.max_attempts
            sleep RETRY_SLEEP
@@ -335,12 +316,12 @@ class FacebookAccount < Account
            # log_fail "Tried #{@num_attempts} times. #{error.message[0..200]}", 5
            logger.error error.message
          end
-       rescue GraphMethodException=>error
+       rescue Koala::Facebook::GraphMethodException=>error
          # log_fail error.message
          logger.error "   save_post_details GraphMethodException post #{post.post_id}"
        rescue Exception=>error
          # log_fail error.message
-         logger.error error.backtrace
+         logger.error error.message
        end
        completed = ((total_processed.to_f / myposts.size) * 100).to_i
        logger.debug "#{completed} % completed" if ((total_processed % 10)==0 )
@@ -373,7 +354,6 @@ class FacebookAccount < Account
        end
      end
      aggregate_data 1,'day', true
-     
      # recent_page available after aggregate_data
      save_lifetime_data
   end

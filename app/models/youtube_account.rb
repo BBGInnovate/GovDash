@@ -3,6 +3,11 @@ class YoutubeAccount < Account
   has_many :yt_videos, foreign_key: :account_id
   
   BATCH_COUNT = 5000
+  
+  def self.config
+     YoutubeConf
+  end
+  
   # run this only once
   def self.initial_load
     YoutubeAccount.where("is_active is not null").to_a.each do | yt |
@@ -73,6 +78,7 @@ class YoutubeAccount < Account
     # to prevent attack from the youtube.yml, such as
     # YoutubeConf[:since_date] = "Account.destroy_all"
     # 
+ =begin
     arr = YoutubeConf[:since_date].split('.')
     n = arr[0].to_i
     if n == 0
@@ -83,7 +89,8 @@ class YoutubeAccount < Account
       raise "  YoutubeAccount#retrieve incorrect YoutubeConf[:since_date] format"
     end
     sincedate = eval("#{n}.#{unit}.#{arr[2]}")
-    
+=end
+   
     @bulk_insert = []
     say "Started #{self.class.name}#retrieve #{self.id}"
     
@@ -94,7 +101,7 @@ class YoutubeAccount < Account
     started = Time.now
     changed_videos = []
     channel.videos.each do |v|
-      if v.published_at.to_i > sincedate.to_i
+      if v.published_at.to_i > since_date.to_i
         begin
           hs = construct_hash(v)
           video = my_videos.select{|a| a.video_id == v.id}.first

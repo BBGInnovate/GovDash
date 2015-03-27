@@ -98,21 +98,14 @@ class Api::V2::BaseController <  ActionController::Base
   
   def update 
     @data = model_class.find(params[:id])
-    #set the groups join for subgroups
-    if model_name == "subgroup" && params[:subgroup] && params[:subgroup][:group_ids]
-      GroupsSubgroups.where([ "subgroup_id = ?", params[:id] ]).delete_all
-      params[:subgroup][:group_ids].each do |gid|
-        GroupsSubgroups.create(group_id: gid) do |gs|
-          gs.subgroup_id = params[:subgroup][:id]
-        end
-      end
-    end
+    #add_groups_subgroups
     responding
   end
 
   def create
     begin
       @data = model_class.new _params_
+      #add_groups_subgroups 
     rescue
       logger.error "ERR: #{self.class.name}#create #{$!}"
     end
@@ -143,6 +136,10 @@ class Api::V2::BaseController <  ActionController::Base
           @data.update_attributes( _params_ )
           msg = 'Updated successfully'
         end
+        if model_name == "subgroup"
+          params[:subgroup_id] = @data.id
+          add_groups_subgroups
+        end
         format.json {
              render :json=>{:success => msg},
              :content_type=>"text",
@@ -158,6 +155,19 @@ class Api::V2::BaseController <  ActionController::Base
     end
   end
   
+  #set the groups join for subgroups
+  def add_groups_subgroups 
+    puts "adding groups subgroups for #{model_name}"
+    puts "with params:"
+    puts params
+      #set the groups join for subgroups
+    if model_name == "subgroup" && params[:subgroup] && params[:subgroup_id]
+      GroupsSubgroups.where([ "subgroup_id = ?", params[:subgroup_id] ]).delete_all
+      params[:subgroup][:group_ids].each do |gid|
+        GroupsSubgroups.find_or_create_by(group_id: gid, subgroup_id: params[:subgroup_id]) 
+      end
+    end
+  end
   
   def add_associate_name(record)
     attr = filter_attributes(record.attributes)

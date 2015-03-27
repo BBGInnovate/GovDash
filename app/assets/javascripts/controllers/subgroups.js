@@ -1,10 +1,10 @@
 function SubgroupsCtrl($scope, Subgroups, Groups, $routeParams, $rootScope, $location) {"use strict";
 	
   	//possible parent "groups"
-  	// Groups.getAllGroups()
-  	// 	.then(function(response) {
-  	// 	   $scope.groups = response.data;
-  	// });
+  	Groups.getAllGroups()
+  	 	.then(function(response) {
+  	 	   $scope.groups = response.data;
+  	 });
   
   	$scope.create = function() {
 
@@ -44,14 +44,16 @@ function SubgroupsCtrl($scope, Subgroups, Groups, $routeParams, $rootScope, $loc
                 Groups.getAllGroups()
                   .then(function(response) {
                     $scope.groups = response.data;
-                    //set the scope.groups objects that match related_groups to selectedGroups
-                    for (var i = 0; i < $scope.groups.length; i++) {
-                      for (var j = 0; j < $scope.subgroup.related_groups.length; j++) {
-                        if ($scope.groups[i].id == $scope.subgroup.related_groups[j].id){
-                          selectedGroups.push($scope.groups[i]);
+                    if($scope.subgroup.related_groups) {
+                      //set the scope.groups objects that match related_groups to selectedGroups
+                      for (var i = 0; i < $scope.groups.length; i++) {
+                        for (var j = 0; j < $scope.subgroup.related_groups.length; j++) {
+                          if ($scope.groups[i].id == $scope.subgroup.related_groups[j].id){
+                            selectedGroups.push($scope.groups[i]);
+                          }
                         }
                       }
-                    }
+                    } 
                     $scope.selectedGroups = selectedGroups;
                 });
         });

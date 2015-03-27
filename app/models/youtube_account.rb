@@ -78,7 +78,7 @@ class YoutubeAccount < Account
     # to prevent attack from the youtube.yml, such as
     # YoutubeConf[:since_date] = "Account.destroy_all"
     # 
- =begin
+=begin
     arr = YoutubeConf[:since_date].split('.')
     n = arr[0].to_i
     if n == 0
@@ -128,7 +128,7 @@ class YoutubeAccount < Account
       end
     end
 
-    summarize sincedate
+    summarize since_date
     
     ended = Time.now
     log_duration started, ended

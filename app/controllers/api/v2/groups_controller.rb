@@ -17,10 +17,9 @@ class Api::V2::GroupsController < Api::V2::BaseController
     hsh
   end
 
-  private
-  def group_params
-    #params.require(:group).permit(:name, :description, :organization_id, :is_active)
-    _params_
+  def _params_
+    cols = model_class.columns.map{|a| a.name.to_sym}
+    params.require(model_name.to_sym).permit(cols)
   end
   
 end

@@ -18,10 +18,7 @@ class Api::V2::SubgroupsController < Api::V2::BaseController
 
   def create
     begin
-      @data = model_class.new _params_
-      puts "data: "
-      puts @data.inspect
-       
+      @data = model_class.new _params_       
     rescue
       logger.error "ERR: #{self.class.name}#create #{$!}"
     end
@@ -33,7 +30,6 @@ class Api::V2::SubgroupsController < Api::V2::BaseController
     cols = model_class.columns.map{|a| a.name.to_sym}
     cols << :group_ids
     params.require(model_name.to_sym).permit(cols)
-
   end
 
 end

@@ -1,18 +1,5 @@
 class Api::V2::SubgroupsController < Api::V2::BaseController
 
-  #after_save :set_groups, :only => [:new, :edit]
-
-  #create/update the groups_subgroups join after saving a new subgroup
-  def set_groups
-    puts "inside set_groups"
-    puts params[:group_ids]
-    puts "group ids above"
-    # gs = @subgroup.groups_subgroups
-    # gs.each do |g|
-    #puts subgroup_params
-
-  end
-
   #attach related Groups output
   def add_related model_object
     hsh = nil
@@ -29,10 +16,24 @@ class Api::V2::SubgroupsController < Api::V2::BaseController
     hsh
   end
 
+  def create
+    begin
+      @data = model_class.new _params_
+      puts "data: "
+      puts @data.inspect
+       
+    rescue
+      logger.error "ERR: #{self.class.name}#create #{$!}"
+    end
+    responding
+  end
+
   private
-  def subgroup_params
-    #params.require(:subgroup).permit(:name, :description, :is_active)
-    _params_
+  def _params_
+    cols = model_class.columns.map{|a| a.name.to_sym}
+    cols << :group_ids
+    params.require(model_name.to_sym).permit(cols)
+
   end
 
 end

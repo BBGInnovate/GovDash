@@ -1,5 +1,5 @@
 class Subgroup < ActiveRecord::Base
-  validates :name, length: { in: 2..40 }  
+  validates :name, length: { in: 2..128 }  
   has_many :accounts
   has_many :groups_subgroups, class_name: GroupsSubgroups
   has_many :groups, :through => :groups_subgroups
@@ -9,10 +9,6 @@ class Subgroup < ActiveRecord::Base
     where("name='#{name}' AND group_id=#{nid}").first
   end
 
-  private
-  def subgroup_params
-    _params_
-  end
 
 end
 

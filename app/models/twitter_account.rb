@@ -3,6 +3,10 @@ class TwitterAccount < Account
   has_many :tw_timelines,  -> { order 'tweet_created_at desc' }, :foreign_key=>:account_id
   has_many :tw_tweets,  -> { order 'tweet_created_at desc' }, :foreign_key=>:account_id
   
+  def self.config
+    TwitterApp.config
+  end
+  
   # Run it in rails console for testing 
   def self.retrieve sincedate=nil
      started = Time.now

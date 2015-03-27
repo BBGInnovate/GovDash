@@ -1,7 +1,7 @@
 rails_env = new_resource.environment["RAILS_ENV"]
 
 Chef::Log.info("Start deplayed_job for RAILS_ENV=#{rails_env}...")
-Chef::Log.info("deploy/after_restart.rb Run delayed_job")
+Chef::Log.info("Not used: deploy/after_restart.rb Run delayed_job")
 
 application=node[:deploy].keys[0]
 deploy = node[:deploy][application]
@@ -27,7 +27,7 @@ run <<-END
   ln -s '#{shared_path}/config/sitecatalyst.yml' '#{current_path}/config/sitecatalyst.yml'
   ln -s '#{shared_path}/config/secret_token.rb' '#{current_path}/config/initializers/secret_token.rb' 
   touch tmp/restart.txt  
-  bin/delayed_job restart
+  bin/delayed_job stop
 END
 
 =begin

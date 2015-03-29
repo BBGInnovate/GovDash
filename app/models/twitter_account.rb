@@ -8,11 +8,12 @@ class TwitterAccount < Account
   end
   
   # Run it in rails console for testing 
-  def self.retrieve sincedate=nil
+  def self.retrieve sincedate=nil, from_id=0
      started = Time.now
      count = 0
      begin
-       records = where(:is_active=>true).all
+       records = super
+       # where(:is_active=>true).all
        range = "0..#{records.size-1}"
        if TwitterApp.config[:retrieve_range] &&
           TwitterApp.config[:retrieve_range].match(/(\d+\.\.\d+)/)

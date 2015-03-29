@@ -13,12 +13,21 @@ obj.delete
 class S3Model < Object
   attr_accessor :file_path_name
   def initialize
-    Aws.config[:region] = 'us-east-1'
+     # Aws.config[:region] = 'us-east-1'
     client
   end
   
-  def client
+  def _client
     Aws::S3::Client.new(
+      region:  'eu-west-1',
+      access_key_id: config[:s3_credentials][:access_key_id],
+      secret_access_key: config[:s3_credentials][:secret_access_key]
+    )
+  end
+  
+  def client
+     Aws::Lambda::Client.new(
+      region:  'eu-west-1',
       access_key_id: config[:s3_credentials][:access_key_id],
       secret_access_key: config[:s3_credentials][:secret_access_key]
     )

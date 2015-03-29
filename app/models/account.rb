@@ -18,6 +18,15 @@ class Account < ActiveRecord::Base
   has_and_belongs_to_many :sc_segments
   has_and_belongs_to_many :users
   
+  def self.retrieve sincedate=7.day.ago,  from_id=0
+     if from_id.to_i > 0
+        from_id=" id >= #{from_id}"
+     else
+       from_id=""
+     end
+      select('id, object_name,new_item').where(from_id).where("is_active=1").to_a
+  end
+  
   def self.send_message_queues
     records = self.where(:is_active=>true).all
     records.each do |a|
@@ -325,3 +334,41 @@ class Account < ActiveRecord::Base
    end
    
 end
+=begin
+  last account_id=233
+   def self.load_csv file
+      File.readlines(file).each do |line|
+         klass=nil
+        arr = line.split(',')
+        network=arr[0]
+        language=arr[1]
+        group=arr[2]
+        url=arr[3]
+        objectname = url.split('/').last
+        begin
+          uri=URI.parse url
+        rescue
+          next
+        end
+        if uri.host.match(/facebook/)
+           klass=FacebookAccount
+        elsif uri.host.match(/twitter/)
+           klass= TwitterAccount
+         elsif uri.host.match(/youtube/)
+           klass= YoutubeAccount
+         end
+         if klass
+            obj = klass.find_or_create_by object_name: objectname
+            obj.name="#{ network} #{language}"
+            obj.media_type_name=klass.name
+            name=klass.name.split('Account')[0]
+            obj.description="#{ network} #{language} #{name}  Account"
+            obj.organization_id=1
+            obj.save
+         end
+         
+      end
+   end
+   
+=end
+

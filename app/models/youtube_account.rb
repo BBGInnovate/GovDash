@@ -15,10 +15,11 @@ class YoutubeAccount < Account
     end
   end
   
-  def self.retrieve sincedate=nil
+  def self.retrieve sincedate=nil, from_id=0
     started = Time.now.utc
     count = 0
-    records = where("is_active=1").to_a
+    records = super
+    # where("is_active=1").to_a
     range = "0..#{records.size-1}"
     if YoutubeConf[:retrieve_range] &&
           YoutubeConf[:retrieve_range].match(/(\d+\.\.\d+)/)

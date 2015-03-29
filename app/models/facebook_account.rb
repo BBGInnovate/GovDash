@@ -96,12 +96,13 @@ class FacebookAccount < Account
     logger.info "   finished retrieve #{started} - #{ended}"
   end
   
-  def self.retrieve sincedate=nil
+  def self.retrieve sincedate=nil, from_id=0
      started = Time.now.utc
      count = 0
      no_count = 0
      begin
-       records = select('id, object_name,new_item').where("is_active=1").to_a
+       records = super
+       # select('id, object_name,new_item').where("is_active=1").to_a
        range = "0..#{records.size-1}"
        if Facebook.config[:retrieve_range] &&
           Facebook.config[:retrieve_range].match(/(\d+\.\.\d+)/)

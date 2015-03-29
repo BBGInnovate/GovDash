@@ -51,6 +51,10 @@ class Account < ActiveRecord::Base
     rabbit.connection.close
   end
 
+  def object_name
+    read_attribute(:object_name).split('/').last
+  end
+
   def info
     begin
      case self.class.name
@@ -336,7 +340,9 @@ class Account < ActiveRecord::Base
 end
 =begin
   last account_id=233
+   
    def self.load_csv file
+      file="/Users/lliu/Desktop/new_sm_accounts_rferl.csv"
       File.readlines(file).each do |line|
          klass=nil
         arr = line.split(',')
@@ -363,7 +369,7 @@ end
             obj.media_type_name=klass.name
             name=klass.name.split('Account')[0]
             obj.description="#{ network} #{language} #{name}  Account"
-            obj.organization_id=1
+            obj.organization_id=1 if !obj.organization_id
             obj.save
          end
          

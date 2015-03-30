@@ -64,6 +64,11 @@ div.xAxis div.tickLabel
     font-size: 11px;
 }
 
+.tab-content {
+    overflow: auto;
+    height: 200px;
+}
+
 .tab-pane {
     height: 180px;
 }

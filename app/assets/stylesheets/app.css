@@ -144,3 +144,7 @@ div.xAxis div.tickLabel
 #tooltip {
     z-index: 999999999;
 }
+
+.form-horizontal {
+    width: 100% !important;
+}

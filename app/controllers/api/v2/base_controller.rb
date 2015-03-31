@@ -221,6 +221,9 @@ class Api::V2::BaseController <  ActionController::Base
     elsif AccountsRegion === record
       attr['account_name']= record.account.name if !!record.respond_to?(:account) && record.account
       attr['region_name']= record.region.name if !!record.respond_to?(:region) && record.region
+   elsif AccountsGroup === record
+      attr['account_name']= record.account.name if !!record.respond_to?(:account) && record.account
+      attr['subgroup_name']= record.group.name if !!record.respond_to?(:group) && record.group
     elsif AccountsSubgroup === record
       attr['account_name']= record.account.name if !!record.respond_to?(:account) && record.account
       attr['subgroup_name']= record.subgroup.name if !!record.respond_to?(:subgroup) && record.subgroup

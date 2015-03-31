@@ -336,12 +336,114 @@ class Account < ActiveRecord::Base
    def record_new
      new_item = true
    end
+   #  last account_id=233
    
-end
+   def self.update_associations account,  _languages=nil, _groups, _sub_group, _regions
+      _groups.compact!
+       _regions.compact!
+       a = account
+       # a.groups.destroy_all
+       _groups.each do | grp |
+           group = Group.find_or_create_by name: grp, organization_id:  account.organization_id
+           if !group.description
+             group.update_attribute :description, "#{a.organization.name} "
+           end
+           
+           puts "   #{grp} - group #{group.inspect}"
+           AccountsGroup.find_or_create_by account_id: a.id, group_id: group.id
+           GroupsSubgroups.find_or_create_by group_id: group.id, subgroup_id: _sub_group.id
+       end
+       if _languages
+         # a.languages.destroy_all
+         _languages.each do |  lan  |
+           language = Language.find_by name:lan
+           AccountsLanguage.find_or_create_by account_id: a.id, language_id: language.id
+         end
+       end
+       if _regions
+         # a.regions.destroy_all
+         puts "  #{a.object_name} REGIONS #{_regions.inspect}"
+
+         _regions.each do | reg |
+             reg.strip!
+             next if reg.empty?
+             
+             puts "   Region #{reg}"
+             region = Region.find_or_create_by name: reg
+             AccountsRegion.find_or_create_by account_id: a.id,  region_id:  region.id
+          end
+        end
+   end
+   
+   def self.load_bbg line
+       arr = line
+       klass="#{arr[0].titleize}Account".constantize
+       objectname=arr[1]
+       puts "   AA #{arr[0].titleize} #{objectname}"
+       org=Organization.find_by name: arr[2]
+       groups=arr[3].split(',')
+       subgroup=arr[4]
+       subgroup = 'AlHurra TV' if subgroup == 'Al Hurra'
+
+       sub_group = Subgroup.find_or_create_by name: subgroup
+       sub_group.update_attribute :description, "#{org.name}  #{subgroup}"
+      
+       languages=arr[5].split(',')
+       service = arr[6].strip.titleize
+       regions = arr[7..-1]  rescue nil
+       a=klass.find_or_create_by object_name: objectname
+       unless service.empty?
+          service=AccountType.find_or_create_by name: service
+          a.account_type_id =  service.id
+       end
+       a.organization_id=org.id
+       a.save
+       update_associations a, languages, groups, sub_group, regions
+
+   end
+   
+   def self.load_dod line
+       arr = line
+       klass="#{arr[0].titleize}Account".constantize
+       objectname=arr[1]
+       puts "   AA #{arr[0].titleize} #{objectname}"
+       org=Organization.find_by name: arr[2]
+       groups=arr[3].split(',')
+       subgroup=arr[4]
+       subgroup = 'AlHurra TV' if subgroup == 'Al Hurra'
+       sub_group = Subgroup.find_or_create_by name: subgroup
+       sub_group.update_attribute :description, "#{org.name}  #{subgroup}"
+       languages= nil
+       service = arr[5].strip.titleize rescue ""
+       regions=arr[6..-1] rescue nil
+       a=klass.find_or_create_by object_name: objectname
+       unless service.empty?
+          service=AccountType.find_or_create_by name: service
+          a.account_type_id =  service.id
+       end
+       a.organization_id=org.id
+       a.save
+       update_associations a, languages, groups, sub_group, regions
+       
+   end
+   def self.load_map_csv
+      tables =  ['BBG-Table1.csv', 'DOS-Table1.csv', 'DOD-Table1.csv']
+      tables.each do |  t |
+         file="/Users/lliu/Desktop/GovDash-Accounts/#{t}"
+         CSV.foreach(file, quote_char: '"', col_sep: ',', row_sep: :auto, headers:  false) do | line |
+            if t.match(/BBG/)
+               load_bbg line
+            elsif t.match(/DOD/)
+               load_dod line
+            elsif t.match(/DOS/)
+               load_dod line
+            end
+         end
+       end
+   end
+end  
 =begin
-  last account_id=233
-   
-   def self.load_csv file
+   def self.load_account_csv file
       file="/Users/lliu/Desktop/new_sm_accounts_rferl.csv"
       File.readlines(file).each do |line|
          klass=nil

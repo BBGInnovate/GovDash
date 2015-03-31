@@ -175,6 +175,7 @@ class Api::V2::BaseController <  ActionController::Base
       # attr['group_name']= record.group.name if !!record.respond_to?(:group) && record.group
       unless record.groups.empty?
         attr['group_names'] =  record.groups.map(&:name)
+        attr['group_ids'] =  record.groups.map(&:id)
       end
       languages = record.languages
       names = languages.map{|lang| lang.name}
@@ -201,9 +202,9 @@ class Api::V2::BaseController <  ActionController::Base
       attr['region_ids']= ids
 
       subgroups = record.subgroups
-      names = subgroups.map{|s| s.name}
+      names = subgroups.map(&:name)
       attr['subgroup_names']= names
-      ids = subgroups.map{|s| s.id}
+      ids = subgroups.map(&:id)
       attr['subgroup_ids']= ids
 
       attr['profile'] = add_profile record

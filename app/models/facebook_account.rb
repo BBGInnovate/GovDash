@@ -194,9 +194,10 @@ class FacebookAccount < Account
     # @num_attempts = 0
     begin
       # @num_attempts += 1
-      posts = graph_api.get_connections(self.object_name, "posts", :fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta) || []
+      posts = graph_api.get_connections(self.object_name, "posts", :fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta)
       if posts.empty?
         logger.debug "  #{since.to_s(:db)}=#{hasta.to_s(:db)} do_retrieve posts empty   "
+        posts = graph_api.get_connections(self.object_name, "posts", :fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT) 
       end
       ret = true
     rescue Koala::Facebook::ClientError=>error
@@ -251,6 +252,8 @@ class FacebookAccount < Account
                   
         dbpost = FbPost.find_or_create_by(:post_id=>f['id'])
         dbpost.update_attributes insert
+      else
+        logger.debug "  process_posts #{last_created_time.to_s(:db)} > #{since_date.to_s(:db)}"
       end
     end
 =begin
@@ -369,6 +372,8 @@ class FacebookAccount < Account
       json = graph_api.get_object object_name, 
         :fields=>"picture,is_verified,description,name,likes,location,link,talking_about_count, website"
     
+      graph_api.get_object object_name, 
+        :fields=>"picture,is_verified,name,likes,location,link,talking_about_count, website"
       talking_about = json['talking_about_count'].to_i
       if json['website']
         websites = json['website'].split(' ')
@@ -473,7 +478,7 @@ class FacebookAccount < Account
   end
   def back_to_date
     if !@back_to_date
-      since_str = Facebook.config[:since_date]
+      since_str = Facebook.config[:since_date]  || "7.days.ago"
       since_str.match /(\d+\.\w+)\.ago/
       @back_to_date = (instance_eval $1).to_i
     end

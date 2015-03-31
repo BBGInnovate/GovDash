@@ -11,12 +11,14 @@ angular.module('apiService', []).factory('APIData', ['$http', '$q', function($ht
 				$http.get('/api/regions'),
 				$http.get('/api/languages'),
 				$http.get('/api/groups' ),
-				$http.get('/api/countries')
+				$http.get('/api/countries'),
+				$http.get('/api/organizations'),
+				$http.get('/api/subgroups')
 			]).then(function (results) {
 				// once all the promises are completed .then() will be executed
 				// and results will have the object that contains the data
 				var aggregatedData = [];
-				var listData = ['regions', 'languages', 'groups', 'countries'];
+				var listData = ['regions', 'languages', 'groups', 'countries', 'organizations', 'subgroups'];
 				var listCount = 0;
 
 				angular.forEach(results, function (result) {
@@ -29,6 +31,10 @@ angular.module('apiService', []).factory('APIData', ['$http', '$q', function($ht
 							aggregatedData.push({ 'groups' : result.data});
 						} else if (listCount == 3) {
 							aggregatedData.push({ 'countries' : result.data});
+						} else if (listCount == 4) {
+							aggregatedData.push({ 'organizations' : result.data});
+						} else if (listCount == 5) {
+							aggregatedData.push({ 'subgroups' : result.data});
 						}
 
 
@@ -44,10 +50,16 @@ angular.module('apiService', []).factory('APIData', ['$http', '$q', function($ht
 		getIds: function (array) {
 			var ids = [];
 			if (array) {
-				for (var i = 0; i < array.length; i++) {
-					ids.push(array[i].id);
+				// for singular JSON object not in array
+				if (array.length == undefined) {
+					return [array.id];
+				// when array of objects is passed in, just grab IDs
+				} else {
+					for (var i = 0; i < array.length; i++) {
+						ids.push(array[i].id);
+					}
+					return ids;
 				}
-				return ids;
 			} else {
 				return [];
 			}
@@ -63,26 +75,34 @@ angular.module('apiQueryService', [])
 		var data = {
 
 			getData: function(queryData) {
-
+				// pass arrays to getIds function to only return ID of each object in array
 				var countryIds = APIData.getIds(queryData.countries);
 				var regionIds = APIData.getIds(queryData.regions);
 				var languageIds = APIData.getIds(queryData.languages);
+				var organizationIds = APIData.getIds(queryData.organizations);
 				var groupIds = APIData.getIds(queryData.groups);
+				var subgroupIds = APIData.getIds(queryData.subgroups);
 
+				// structure dates for API
 				var startDate = moment(queryData.startDate, 'MM/DD/YYYY').format('YYYY/MM/DD');
 				var endDate = moment(queryData.endDate, 'MM/DD/YYYY').format('YYYY/MM/DD');
 
 				var period = queryData.period;
 
 				// If 'Last Week' or 'Last Month' is selected, set startDate to null
+				// and pass in just endDate with period value
 				if (period === '1.week' || period === '1.month') {
 					startDate = null;
 				}
 
-				return $http.post('/api/reports', {options: {source: "all", country_ids: countryIds, region_ids: regionIds, language_ids: languageIds, group_ids: groupIds, start_date: startDate, end_date: endDate, period: period } }).then(function(response) {
-					data = response.data;
+				// Query API service passing in all parameters
+				return $http.post('/api/reports', {options: {source: "all", country_ids: countryIds,
+					region_ids: regionIds, language_ids: languageIds, organization_ids: organizationIds,
+					group_ids: groupIds, subgroup_ids: subgroupIds, start_date: startDate, end_date: endDate,
+					period: period } }).then(function(response) {
 
-					console.log(data);
+
+					data = response.data;
 
 					var numAccounts = 0;
 

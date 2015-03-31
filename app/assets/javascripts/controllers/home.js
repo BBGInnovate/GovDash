@@ -6,16 +6,30 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 	$scope.endDate = moment().format('L');
 	$scope.startDate =  moment($scope.endDate,"MM/DD/YYYY").subtract(6,'day').format('MM/DD/YYYY');
 
-	// When content loads, display and initialize modal
-	//$scope.$on('$viewContentLoaded', loadModal);
-
 	// get all data on page load
 	APIData.getInitialData().then(function(response) {
 
-		$scope.countries = response[3].countries;
 		$scope.regions = response[0].regions;
 		$scope.languages = response[1].languages;
 		$scope.groups = response[2].groups;
+		$scope.countries = response[3].countries;
+		$scope.organizations = response[4].organizations;
+		$scope.subgroups = response[5].subgroups;
+
+		$scope.$watchCollection('selectedOrganizations', function(newVal, oldVal) {
+			if (newVal) {
+				$scope.selectedGroups = [];
+				$scope.selectedSubgroups = [];
+			}
+
+		});
+
+		$scope.$watchCollection('selectedGroups', function(newVal, oldVal) {
+			if (newVal) {
+				console.log(newVal);
+			}
+
+		});
 
 	});
 
@@ -33,8 +47,16 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 		$scope.selectedLanguages.splice(index, 1);
 	};
 
+	$scope.removeOrganization = function () {
+		$scope.selectedOrganizations = null;
+	};
+
 	$scope.removeGroup = function (index) {
 		$scope.selectedGroups.splice(index, 1);
+	};
+
+	$scope.removeSubgroup = function (index) {
+		$scope.selectedSubgroups.splice(index, 1);
 	};
 
 
@@ -55,14 +77,15 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 			regions: $scope.selectedRegions,
 			countries: $scope.selectedCountries,
 			languages: $scope.selectedLanguages,
+			organizations: $scope.selectedOrganizations,
 			groups: $scope.selectedGroups,
+			subgroups: $scope.selectedSubgroups,
 			startDate: $scope.startDate,
 			endDate: $scope.endDate,
 			period: period
 		};
 
 		APIQueryData.getData(queryData).then(function(response) {
-			console.log(response);
 
 			if (response.fbAccounts.length === 0 && response.twAccounts.length === 0 &&
 				response.youtubeAccounts.length === 0) {
@@ -116,8 +139,6 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 	};
 
 	$scope.findAccount = function (account, accountType) {
-		console.log(account);
-
 		var colors = $filter('socialMediaColors')(accountType);
 		var labels = $filter('socialMediaLabels')(accountType);
 
@@ -144,6 +165,8 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 
 
 	};
+
+
 
 
 

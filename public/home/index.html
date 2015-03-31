@@ -15,7 +15,7 @@
                                 <li class="active"><a ng-click="do($event)" href="#regions" data-toggle="tab"> Regions</a></li>
                                 <li class=""><a ng-click="do($event)" href="#countries" data-toggle="tab"> Countries</a></li>
                                 <li class=""><a ng-click="do($event)"  href="#languages" data-toggle="tab"> Languages</a></li>
-                                <li class=""><a ng-click="do($event)" href="#groups" data-toggle="tab"> Groups</a></li>
+                                <li class=""><a ng-click="do($event)" href="#organizations" data-toggle="tab"> Organizations</a></li>
                             </ul>
                         </div>
                         <div class="smart-widget-body">
@@ -52,22 +52,69 @@
 
 
                                 </div><!-- ./tab-pane -->
-                                <div class="tab-pane fade" id="groups">
-                                    <div class="block h4"><strong>Groups</strong></div>
+                                <div class="tab-pane fade" id="organizations">
 
-                                    <div class="col-lg-10">
-                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedGroups" ng-options="group.name for group in groups"></select>
+                                    <div class="col-md-4">
+                                        <div class="block h4"><strong>Organizations</strong></div>
+                                        <select class="form-control" size="10" ng-model="selectedOrganizations" ng-options="organization.name for organization in organizations">
+                                            <option style="display:none" value="">select a type</option>
+                                        </select>
                                     </div>
+
+                                    <div class="col-md-4">
+                                        <div class="block h4"><strong>Groups</strong></div>
+                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedGroups" ng-options="group.name for group in groups | filter:{organization_id: selectedOrganizations.id}"></select>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="block h4"><strong>Subgroups</strong></div>
+                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedSubgroups" ng-options="subgroup.name for subgroup in subgroups"></select>
+                                    </div>
+
+
+
                                 </div><!-- ./tab-pane -->
                             </div><!-- ./tab-content -->
                         </div>
                     </div>
                     <div class="m-left-md m-bottom-sm modal-filters">
                         <span>Selected Filters:</span>
-                        <span class="tag teal-tag" ng-repeat="region in selectedRegions"><span>{{ region.name }}&nbsp;&nbsp;</span><a href="" ng-click="removeRegion($index)" title="Removing tag" style="color: white">x</a></span>
-                        <span class="tag teal-tag" ng-repeat="country in selectedCountries"><span>{{ country.name }}&nbsp;&nbsp;</span><a href="" ng-click="removeCountry($index)" title="Removing tag" style="color: white">x</a></span>
-                        <span class="tag teal-tag" ng-repeat="language in selectedLanguages"><span>{{ language.name }}&nbsp;&nbsp;</span><a href="" ng-click="removeLanguage($index)" title="Removing tag" style="color: white">x</a></span>
-                        <span class="tag teal-tag" ng-repeat="group in selectedGroups"><span>{{ group.name }}&nbsp;&nbsp;</span><a href="" ng-click="removeGroup($index)" title="Removing tag" style="color: white">x</a></span>
+                        <span class="tag teal-tag" ng-repeat="region in selectedRegions">
+                            <span>{{ region.name }}&nbsp;&nbsp;</span>
+                            <a href="" ng-click="removeRegion($index)" title="Removing tag" style="color: white">
+                                <span class="ion-close"></span>
+                            </a>
+                        </span>
+                        <span class="tag teal-tag" ng-repeat="country in selectedCountries">
+                            <span>{{ country.name }}&nbsp;&nbsp;</span>
+                            <a href="" ng-click="removeCountry($index)" title="Removing tag" style="color: white">
+                                <span class="ion-close"></span>
+                            </a>
+                        </span>
+                        <span class="tag teal-tag" ng-repeat="language in selectedLanguages">
+                            <span>{{ language.name }}&nbsp;&nbsp;</span>
+                            <a href="" ng-click="removeLanguage($index)" title="Removing tag" style="color: white">
+                                <span class="ion-close"></span>
+                            </a>
+                        </span>
+                        <span class="tag teal-tag" ng-if="selectedOrganizations">
+                            <span>{{ selectedOrganizations.name }}&nbsp;&nbsp;</span>
+                            <a href="" ng-click="removeOrganization()" title="Removing tag" style="color: white">
+                                <span class="ion-close"></span>
+                            </a>
+                        </span>
+                        <span class="tag teal-tag" ng-repeat="group in selectedGroups">
+                            <span>{{ group.name }}&nbsp;&nbsp;</span>
+                            <a href="" ng-click="removeGroup($index)" title="Removing tag" style="color: white">
+                                <span class="ion-close"></span>
+                            </a>
+                        </span>
+                        <span class="tag teal-tag" ng-repeat="subgroup in selectedSubgroups">
+                            <span>{{ subgroup.name }}&nbsp;&nbsp;</span>
+                            <a href="" ng-click="removeSubgroup($index)" title="Removing tag" style="color: white">
+                                <span class="ion-close"></span>
+                            </a>
+                        </span>
 
 
                     </div>
@@ -100,8 +147,9 @@
                         <p class="account-header-text">{{ account.name }}</p>
                         <i style="margin-left: 20px" class="ion-social-{{ socialMediaType | smLongName }}"></i>
                         <span>{{ socialMediaType | smLongNameProper }}</span>
-                        <span data-dismiss="modal" class="ion-close modal-close-button"></span>
                     </a>
+                    <span data-dismiss="modal" class="ion-close modal-close-button"></span>
+
                 </div>
 
 
@@ -267,7 +315,9 @@
                     <span class="tag teal-tag" ng-repeat="region in selectedRegions">{{ region.name }}</span>
                     <span class="tag teal-tag" ng-repeat="country in selectedCountries">{{ country.name }}</span>
                     <span class="tag teal-tag" ng-repeat="language in selectedLanguages">{{ language.name }}</span>
+                    <span class="tag teal-tag" ng-if="selectedOrganizations">{{ selectedOrganizations.name }}</span>
                     <span class="tag teal-tag" ng-repeat="group in selectedGroups">{{ group.name }}</span>
+                    <span class="tag teal-tag" ng-repeat="subgroup in selectedSubgroups">{{ subgroup.name }}</span>
                 </div>
             </div>
             <div class="col-sm-6 text-right text-right-sm p-top-sm">

@@ -172,8 +172,10 @@ class Api::V2::BaseController <  ActionController::Base
   def add_associate_name(record)
     attr = filter_attributes(record.attributes)
     if Account === record
-      attr['group_name']= record.group.name if !!record.respond_to?(:group) && record.group
-      
+      # attr['group_name']= record.group.name if !!record.respond_to?(:group) && record.group
+      unless record.groups.empty?
+        attr['group_names'] =  record.groups.map(&:name)
+      end
       languages = record.languages
       names = languages.map{|lang| lang.name}
       attr['language_names']= names

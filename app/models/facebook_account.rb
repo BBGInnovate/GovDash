@@ -371,9 +371,7 @@ class FacebookAccount < Account
       
       json = graph_api.get_object object_name, 
         :fields=>"picture,is_verified,description,name,likes,location,link,talking_about_count, website"
-    
-      graph_api.get_object object_name, 
-        :fields=>"picture,is_verified,name,likes,location,link,talking_about_count, website"
+
       talking_about = json['talking_about_count'].to_i
       if json['website']
         websites = json['website'].split(' ')

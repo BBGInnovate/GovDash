@@ -342,6 +342,7 @@ class Account < ActiveRecord::Base
       _groups.compact!
        _regions.compact!
        a = account
+       AccountsSubgroup.find_or_create_by account_id: a.id,  subgroup_id: _sub_group.id
        # a.groups.destroy_all
        _groups.each do | grp |
            group = Group.find_or_create_by name: grp, organization_id:  account.organization_id

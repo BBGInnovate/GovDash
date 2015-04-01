@@ -549,11 +549,18 @@ class FacebookAccount < Account
     @graph_api = Koala::Facebook::API.new(access_token)
   end
   
-  def self.aggregate_data_daily start_date, end_date
+  def self.aggregate_data_daily start_date=nil, end_date=nil
+    if !start_date
+      start_date = 3.months.ago
+    end
+    if !end_date
+      end_date = Time.zone.now
+    end
     start_date = Time.zone.parse start_date if String ===  start_date
     end_date = Time.zone.parse end_date if String ===  end_date
      records = select('id, object_name,new_item').where("is_active=1").to_a
      records.each do |record|
+        puts " aggregate_data_daily for #{record.object_name}" 
         record.aggregate_data_daily start_date, end_date
      end
   end

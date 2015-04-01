@@ -266,7 +266,7 @@ class FacebookAccount < Account
       @bulk_insert = []
     end
 =end
-    
+    # fetch posts from next page
     unless posts.size < QUERY_LIMIT 
       if last_created_time > since_date
         @num_attempts = 0

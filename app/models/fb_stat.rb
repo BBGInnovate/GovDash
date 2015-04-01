@@ -239,6 +239,245 @@ class FbStat
   end
 
   protected
+
+  def get_lifetime_result rec1, rec2
+    results = []
+    [rec1, rec2].each_with_index do |rec, i|
+      result = init_struct
+      total = (rec.total_likes + rec.total_shares + rec.total_talking_about )
+      result.values = {:date=>rec.date,
+          :total_likes=>rec.total_likes,
+          :total_shares=>rec.total_shares,
+          :total_talking_about=>rec.total_talking_about,
+          :totals=>total
+          }
+      results << result.values
+    end
+    results
+  end
+  
+  
+  def get_detail_result rec1, rec2
+    pagelikes = calculate_pagelikes rec1, rec2
+    compute_changes rec1, rec2   
+    @page_likes_change = compute_change(pagelikes[1],pagelikes[0])
+    if !rec1
+      return missing_record rec2
+    end
+    
+    results = []
+    totals = []
+
+    [rec1, rec2].each_with_index do |rec, i|
+      next if !rec
+      result = init_struct
+      total = (pagelikes[i] + rec.likes + rec.shares + @comments[i])
+      totals << total
+      result.data = {:period=>rec.period,
+          :story_likes=>rec.likes,
+          :shares=>rec.shares,
+          :comments=>@comments[i],
+          :page_likes=>pagelikes[i],
+          :totals=>total
+          }
+      if i == 1
+        rate = ((totals[1]-totals[0])*100/totals[0].to_f).round rescue 0 # 'N/A'
+        rate = "#{rate} %" if rate!='N/A'
+        result.data[:changes] = {:page_likes=>@page_likes_change,
+          :story_likes=>@likes_change,:shares=>@shares_change,
+          :comments=>@comments_change,
+          :totals=>rate}
+        results << result.data
+      end 
+    end
+    results
+  end
+  
+  def get_period_result rec1, rec2
+    results = []
+    totals = []
+
+    pagelikes = calculate_pagelikes rec1, rec2
+    compute_changes rec1, rec2
+    @page_likes_change = compute_change(pagelikes[1],pagelikes[0])
+    
+    if !rec2
+      return nil
+    elsif !rec1
+      return missing_record rec2
+    end
+    [rec1, rec2].each_with_index do |rec, i|
+      result = init_struct
+      total = (pagelikes[i] + rec.likes + rec.shares + @comments[i])
+      totals << total
+      result.values = {:period=>rec.period,
+          :story_likes=>rec.likes,
+          :shares=>rec.shares,
+          :comments=>@comments[i],
+          :page_likes=>pagelikes[i],
+          :totals=>total
+          }
+          
+      if (i == 1)
+        rate = ((totals[1]-totals[0])*100/totals[0].to_f).round rescue 'N/A'
+        rate = "#{rate} %" if rate!='N/A'
+        result.values[:changes]={:page_likes=>@page_likes_change,
+           :story_likes=>@likes_change,:shares=>@shares_change,
+           :comments=>@comments_change,
+           :totals=>rate}
+        results << result.values 
+      end
+    end
+    results
+  end
+
+  def set_engagement_data rec
+    pagelikes = rec.fan_adds_day.to_i
+    comments=rec.comments + rec.replies_to_comment
+    {:story_likes=>rec.likes,
+     :shares=>rec.shares,
+     :comments=>comments,
+     :page_likes =>pagelikes,
+     :totals => (rec.likes+rec.shares+comments+pagelikes)
+   }
+  end
+  
+  def set_page_likes started, ended, myaccounts
+    account_ids = myaccounts.map{|a| a.id}
+    cond = ["post_created_time BETWEEN '#{started.beginning_of_day.to_s(:db)}' AND '#{ended.end_of_day.to_s(:db)}' "]
+    sql = " DATE_FORMAT(post_created_time,'%Y-%m-%d') AS date,"   
+    sql += select_account_name myaccounts
+    sql += " total_likes "   
+    records = FbPage.select(sql).where(cond).
+      where(["account_id in (?)",account_ids]).
+      group("date")
+      
+    records.each do |rec|  
+      page_likes[rec.name]["#{rec.date}"] = rec.total_likes
+    end
+  end
+
+  # For "period": "2014-07-22 - 2014-07-28"
+  # The page_likes should total_likes on "2014-07-28" minus
+  # total_likes on "2014-07-21"
+  # This method is to get total_likes on "2014-07-21"
+  def set_extra_page_likes date, myaccounts
+    pre = date - 1.day
+    set_page_likes pre,pre, myaccounts
+    # get_select_lifetime(pre,pre, myaccounts)
+  end
+  
+  def calculate_pagelikes rec1, rec2
+    likes1 = rec1.fan_adds_day rescue 0
+    likes2 = rec2.fan_adds_day rescue 0
+    @pagelikes = [likes1,likes2]
+  end
+  
+  def select_summary_sql
+      select_summary_sql_page
+     # select_summary_sql_post
+  end
+  
+  def select_summary_sql_page
+    sql = "max(post_created_time) as post_created_time," 
+    sql += "COALESCE(sum(replies_to_comment),0) as replies_to_comment,"
+    sql += "COALESCE(sum(fan_adds_day),0) as fan_adds_day,"
+    sql += "COALESCE(sum(likes),0) as likes,COALESCE(sum(shares),0) as shares, "
+    sql += "COALESCE(sum(comments),0) as comments, COALESCE(sum(posts),0) as posts"
+  end
+  
+  def select_summary_sql_post
+    sql = "max(post_created_time) as post_created_time," 
+    sql += "COALESCE(sum(replies_to_comment),0) as replies_to_comment,"
+    sql += "COALESCE(0) as fan_adds_day,"
+    sql += "COALESCE(sum(likes),0) as likes,COALESCE(sum(shares),0) as shares, "
+    sql += "COALESCE(sum(comments),0) as comments, COALESCE(count(*)) as posts"
+  end
+  
+  def compute_changes rec1, rec2
+    if !rec1
+      @comments_change=(rec2.replies_to_comment + rec2.comments)
+      @likes_change=rec2.likes
+      @shares_change=rec2.shares
+      @fan_adds_change=rec2.fan_adds_day
+      @comments = [0,(rec2.replies_to_comment + rec2.comments)]
+    elsif !rec2
+      @comments_change= -1*(rec1.replies_to_comment + rec1.comments)
+      @likes_change= -1*rec1.likes
+      @shares_change= -1*rec1.shares
+      @fan_adds_change= -1*rec1.fan_adds_day
+      @comments = [(rec1.replies_to_comment + rec1.comments),0]
+    else
+      @comments = [(rec1.replies_to_comment + rec1.comments),
+                (rec2.replies_to_comment + rec2.comments)]
+      @comments_change = compute_change(@comments[1],@comments[0]) 
+      @likes_change = compute_change(rec2.likes,rec1.likes)
+      @shares_change = compute_change(rec2.shares,rec1.shares)
+      @fan_adds_change = compute_change(rec2.fan_adds_day,rec1.fan_adds_day)
+    end
+  end
+  
+  def filter_zero record
+    if record.replies_to_comment == 0 &&
+       record.fan_adds_day == 0 &&
+       record.likes == 0 &&
+       record.shares == 0 &&
+       record.comments == 0
+       nil
+    else
+      record
+    end
+  end
+  
+  def filter_attributes rec_hash
+    [:story_likes,:shares,:replies_to_comment,:comments,:page_likes].each do |key|
+      rec_hash.delete(key)
+    end
+    rec_hash
+  end
+  
+  def fake_record date,trend_type
+    max = parse_date date
+    min = max - 6.days
+    rec = OpenStruct.new
+    rec.week_start_date = min
+    rec.id = nil
+    rec.trend_date = date
+    rec.trend_type = trend_type
+    rec.likes = 0
+    rec.shares = 0
+    rec.replies_to_comment = 0
+    rec.comments = 0
+    rec.page_likes = 0
+    rec
+  end
+  
+  def missing_record rec
+    results = []
+    result = init_struct
+    idx = 1
+    total = (@pagelikes[idx] + rec.likes + rec.shares + @comments[idx])
+    result.data = {:period=>rec.period,
+          :story_likes=>rec.likes,
+          :shares=>rec.shares,
+          :comments=>@comments[idx],
+          :page_likes=>@pagelikes[idx],
+          :totals=>total
+          }
+    ch = 'N/A'
+    result.data[:changes] = {:page_likes=>ch,
+          :story_likes=>ch,
+          :shares=>ch,
+          :comments=>ch,
+          :totals=>ch}
+    results << result.data
+    msg = "#{self.class.name} Data missing in #{rec.name} #{previous_period}"
+    ErrorLog.logger.error msg
+    ErrorLog.to_error msg,msg,3
+    results
+  end
+  
+=begin
   # daily insight stats 
   # consumptions_day, story_adds_day, fan_adds_day
   def self.get_insight_by_day start_date,end_date,account_ids
@@ -392,230 +631,5 @@ class FbStat
     arrays << ConsumptionTypeDay.sum(tmp_arrays,start_date,end_date)
     arrays.flatten
   end
-  
-  def get_lifetime_result rec1, rec2
-    results = []
-    [rec1, rec2].each_with_index do |rec, i|
-      result = init_struct
-      total = (rec.total_likes + rec.total_shares + rec.total_talking_about )
-      result.values = {:date=>rec.date,
-          :total_likes=>rec.total_likes,
-          :total_shares=>rec.total_shares,
-          :total_talking_about=>rec.total_talking_about,
-          :totals=>total
-          }
-      results << result.values
-    end
-    results
-  end
-  
-  
-  def get_detail_result rec1, rec2
-    pagelikes = calculate_pagelikes rec1, rec2
-    compute_changes rec1, rec2   
-    @page_likes_change = compute_change(pagelikes[1],pagelikes[0])
-    if !rec1
-      return missing_record rec2
-    end
-    
-    results = []
-    totals = []
-
-    [rec1, rec2].each_with_index do |rec, i|
-      next if !rec
-      result = init_struct
-      total = (pagelikes[i] + rec.likes + rec.shares + @comments[i])
-      totals << total
-      result.data = {:period=>rec.period,
-          :story_likes=>rec.likes,
-          :shares=>rec.shares,
-          :comments=>@comments[i],
-          :page_likes=>pagelikes[i],
-          :totals=>total
-          }
-      if i == 1
-        rate = ((totals[1]-totals[0])*100/totals[0].to_f).round rescue 0 # 'N/A'
-        rate = "#{rate} %" if rate!='N/A'
-        result.data[:changes] = {:page_likes=>@page_likes_change,
-          :story_likes=>@likes_change,:shares=>@shares_change,
-          :comments=>@comments_change,
-          :totals=>rate}
-        results << result.data
-      end 
-    end
-    results
-  end
-  
-  def get_period_result rec1, rec2
-    results = []
-    totals = []
-
-    pagelikes = calculate_pagelikes rec1, rec2
-    compute_changes rec1, rec2
-    @page_likes_change = compute_change(pagelikes[1],pagelikes[0])
-    
-    if !rec2
-      return nil
-    elsif !rec1
-      return missing_record rec2
-    end
-    [rec1, rec2].each_with_index do |rec, i|
-      result = init_struct
-      total = (pagelikes[i] + rec.likes + rec.shares + @comments[i])
-      totals << total
-      result.values = {:period=>rec.period,
-          :story_likes=>rec.likes,
-          :shares=>rec.shares,
-          :comments=>@comments[i],
-          :page_likes=>pagelikes[i],
-          :totals=>total
-          }
-          
-      if (i == 1)
-        rate = ((totals[1]-totals[0])*100/totals[0].to_f).round rescue 'N/A'
-        rate = "#{rate} %" if rate!='N/A'
-        result.values[:changes]={:page_likes=>@page_likes_change,
-           :story_likes=>@likes_change,:shares=>@shares_change,
-           :comments=>@comments_change,
-           :totals=>rate}
-        results << result.values 
-      end
-    end
-    results
-  end
-
-  def set_engagement_data rec
-    pagelikes = rec.fan_adds_day.to_i
-    comments=rec.comments + rec.replies_to_comment
-    {:story_likes=>rec.likes,
-     :shares=>rec.shares,
-     :comments=>comments,
-     :page_likes =>pagelikes,
-     :totals => (rec.likes+rec.shares+comments+pagelikes)
-   }
-  end
-  
-  def set_page_likes started, ended, myaccounts
-    account_ids = myaccounts.map{|a| a.id}
-    cond = ["post_created_time BETWEEN '#{started.beginning_of_day.to_s(:db)}' AND '#{ended.end_of_day.to_s(:db)}' "]
-    sql = " DATE_FORMAT(post_created_time,'%Y-%m-%d') AS date,"   
-    sql += select_account_name myaccounts
-    sql += " total_likes "   
-    records = FbPage.select(sql).where(cond).
-      where(["account_id in (?)",account_ids]).
-      group("date")
-      
-    records.each do |rec|  
-      page_likes[rec.name]["#{rec.date}"] = rec.total_likes
-    end
-  end
-
-  # For "period": "2014-07-22 - 2014-07-28"
-  # The page_likes should total_likes on "2014-07-28" minus
-  # total_likes on "2014-07-21"
-  # This method is to get total_likes on "2014-07-21"
-  def set_extra_page_likes date, myaccounts
-    pre = date - 1.day
-    set_page_likes pre,pre, myaccounts
-    # get_select_lifetime(pre,pre, myaccounts)
-  end
-  
-  def calculate_pagelikes rec1, rec2
-    likes1 = rec1.fan_adds_day rescue 0
-    likes2 = rec2.fan_adds_day rescue 0
-    @pagelikes = [likes1,likes2]
-  end
-  
-  def select_summary_sql
-    sql = "max(post_created_time) as post_created_time," 
-    sql += "COALESCE(sum(replies_to_comment),0) as replies_to_comment,"
-    sql += "COALESCE(sum(fan_adds_day),0) as fan_adds_day,"
-    sql += "COALESCE(sum(likes),0) as likes,COALESCE(sum(shares),0) as shares, "
-    sql += "COALESCE(sum(comments),0) as comments, COALESCE(sum(posts),0) as posts"
-  end
-  
-  def compute_changes rec1, rec2
-    if !rec1
-      @comments_change=(rec2.replies_to_comment + rec2.comments)
-      @likes_change=rec2.likes
-      @shares_change=rec2.shares
-      @fan_adds_change=rec2.fan_adds_day
-      @comments = [0,(rec2.replies_to_comment + rec2.comments)]
-    elsif !rec2
-      @comments_change= -1*(rec1.replies_to_comment + rec1.comments)
-      @likes_change= -1*rec1.likes
-      @shares_change= -1*rec1.shares
-      @fan_adds_change= -1*rec1.fan_adds_day
-      @comments = [(rec1.replies_to_comment + rec1.comments),0]
-    else
-      @comments = [(rec1.replies_to_comment + rec1.comments),
-                (rec2.replies_to_comment + rec2.comments)]
-      @comments_change = compute_change(@comments[1],@comments[0]) 
-      @likes_change = compute_change(rec2.likes,rec1.likes)
-      @shares_change = compute_change(rec2.shares,rec1.shares)
-      @fan_adds_change = compute_change(rec2.fan_adds_day,rec1.fan_adds_day)
-    end
-  end
-  
-  def filter_zero record
-    if record.replies_to_comment == 0 &&
-       record.fan_adds_day == 0 &&
-       record.likes == 0 &&
-       record.shares == 0 &&
-       record.comments == 0
-       nil
-    else
-      record
-    end
-  end
-  
-  def filter_attributes rec_hash
-    [:story_likes,:shares,:replies_to_comment,:comments,:page_likes].each do |key|
-      rec_hash.delete(key)
-    end
-    rec_hash
-  end
-  
-  def fake_record date,trend_type
-    max = parse_date date
-    min = max - 6.days
-    rec = OpenStruct.new
-    rec.week_start_date = min
-    rec.id = nil
-    rec.trend_date = date
-    rec.trend_type = trend_type
-    rec.likes = 0
-    rec.shares = 0
-    rec.replies_to_comment = 0
-    rec.comments = 0
-    rec.page_likes = 0
-    rec
-  end
-  
-  def missing_record rec
-    results = []
-    result = init_struct
-    idx = 1
-    total = (@pagelikes[idx] + rec.likes + rec.shares + @comments[idx])
-    result.data = {:period=>rec.period,
-          :story_likes=>rec.likes,
-          :shares=>rec.shares,
-          :comments=>@comments[idx],
-          :page_likes=>@pagelikes[idx],
-          :totals=>total
-          }
-    ch = 'N/A'
-    result.data[:changes] = {:page_likes=>ch,
-          :story_likes=>ch,
-          :shares=>ch,
-          :comments=>ch,
-          :totals=>ch}
-    results << result.data
-    msg = "#{self.class.name} Data missing in #{rec.name} #{previous_period}"
-    ErrorLog.logger.error msg
-    ErrorLog.to_error msg,msg,3
-    results
-  end
-  
-
+=end
 end

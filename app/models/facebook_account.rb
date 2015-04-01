@@ -153,11 +153,12 @@ class FacebookAccount < Account
     hasta = until_date
     started=Time.now
     success = nil
-    data = FbPost.select("post_created_time").
-       where(:account_id=>self.id,:post_created_time=>since.beginning_of_day..until_date.end_of_day).to_a
-    data = data.map{|d| d.post_created_time.beginning_of_day}
+    # data = FbPost.select("post_created_time").
+    #  where(:account_id=>self.id,:post_created_time=>since.beginning_of_day..until_date.end_of_day).to_a
+    # data = data.map{|d| d.post_created_time.beginning_of_day}
     while (hasta - since_date) >= back_to_date
       since = hasta - back_to_date
+=begin
       data1 = nil
       data2 = nil
       if (since + back_to_date) < until_date
@@ -180,6 +181,9 @@ class FacebookAccount < Account
         success = do_retrieve(since, hasta)
         sleep 1
       end
+=end
+      success = do_retrieve(since, hasta)
+      # yes just minus 1 second, becomes the end of previous day
       hasta = since - 1
     end
     self.update_attributes :new_item=>false,:status=>success,:updated_at=>DateTime.now.utc
@@ -195,10 +199,6 @@ class FacebookAccount < Account
     begin
       # @num_attempts += 1
       posts = graph_api.get_connections(self.object_name, "posts", :fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta)
-      if posts.empty?
-        logger.debug "  #{since.to_s(:db)}=#{hasta.to_s(:db)} do_retrieve posts empty   "
-        posts = graph_api.get_connections(self.object_name, "posts", :fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT) 
-      end
       ret = true
     rescue Koala::Facebook::ClientError=>error
       # if error.fb_error_type == 'OAuthException'
@@ -213,6 +213,7 @@ class FacebookAccount < Account
     if ret  
       begin     
         process_posts(posts)
+        aggregate_data_daily  since.beginning_of_day, hasta.end_of_day
         if !!rabbit
           send_mq_message(rabbit)
         else
@@ -547,6 +548,45 @@ class FacebookAccount < Account
     end
     @graph_api = Koala::Facebook::API.new(access_token)
   end
+  
+  def self.aggregate_data_daily start_date, end_date
+    start_date = Time.zone.parse start_date if String ===  start_date
+    end_date = Time.zone.parse end_date if String ===  end_date
+     records = select('id, object_name,new_item').where("is_active=1").to_a
+     records.each do |record|
+        record.aggregate_data_daily start_date, end_date
+     end
+  end
+  
+  def aggregate_data_daily start_date, end_date
+    start_date = Time.zone.parse start_date if String ===  start_date
+    end_date = Time.zone.parse end_date if String ===  end_date
+    increment = 1.day
+    end_date = end_date.end_of_day
+    current_date = start_date.beginning_of_day
+    my_arr = []
+    while current_date <= end_date do
+      # data = select_aggregated_data  current_date,  current_date.end_of_day
+      data = FbPost.select("count(*) AS post_count,sum(likes) as likes, sum(comments) as comments, sum(shares) as shares,sum(replies_to_comment) as replies_to_comment").
+                    where(account_id:   self.id).
+                    where(post_type: 'original').
+                    where(post_created_time:  current_date..current_date.end_of_day).to_a.first
+       if data
+          options = {:likes=>data.likes, 
+                 :comments=>data.comments,
+                 :shares=>data.shares,
+                 :posts => data.post_count,
+                 :replies_to_comment => data.replies_to_comment
+                }
+           options[:post_created_time] = current_date.end_of_day
+           find_or_create_page(options)
+           current_date = current_date + 1.day
+       else
+           logger.debug "aggregate_data_daily NOT RECORDS for #{start_date.to_s(:db)} .. #{end_date.to_s(:db)}"
+       end
+    end
+  end
+  
   
   protected
 

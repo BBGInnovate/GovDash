@@ -34,6 +34,13 @@ class Api::V2::BaseController <  ActionController::Base
             hsh = attributes
             arr = arr + [hsh]
           end
+        elsif Group == p
+          hsh = attributes
+          hsh[:organization_id] = s.organization_id
+          unless s.subgroups.empty?
+            hsh[:subgroup_ids] = s.subgroups.map(&:id)
+          end
+          arr = arr + [hsh]
         else
           hsh = attributes
           arr = arr + [hsh]
@@ -251,6 +258,9 @@ class Api::V2::BaseController <  ActionController::Base
     record = params[model_name.to_sym]
     if model_name == 'account'
       # comma separated id
+      @group_ids ||= (record.delete("group_ids") || [])
+      @subgroup_ids ||= (record.delete("subgroup_ids") || [])
+      @language_ids ||= (record.delete("language_ids") || [])
       @country_ids ||= (record.delete("country_ids") || [])
       @region_ids ||= (record.delete("region_ids") || [])
       @sc_segment_ids ||= (record.delete("sc_segment_ids") || [])

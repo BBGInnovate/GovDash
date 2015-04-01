@@ -244,7 +244,7 @@ class Api::V2::BaseController <  ActionController::Base
   end
   
   def _params_
-    get_contries_regions
+    ## get_contries_regions
     cols = model_class.columns.map{|a| a.name.to_sym}
     if params[:is_active]
       if (String === params[:is_active]) 
@@ -253,11 +253,27 @@ class Api::V2::BaseController <  ActionController::Base
     end
     params.require(model_name.to_sym).permit(cols)
   end
-  
+  # dynamically set variables like @group_ids etc.
   def get_contries_regions
     record = params[model_name.to_sym]
     if model_name == 'account'
-      # comma separated id
+      # make sure all variables are arrays
+      ["group_ids","subgroup_ids","language_ids", "country_ids",
+       "region_ids", "sc_segment_ids"].each do | ids |
+         myids = record.delete(ids) || []
+         myids = myids.to_s if Integer===myids
+         myids=myids.split(',') if String === myids
+         instance_variable_set("@#{ids}", myids)
+      end
+    elsif model_name == 'subgroup'
+      @group_ids ||= (record.delete("group_ids").to_s || [])
+      @group_ids = @group_ids.split(',') if String===@group_ids
+    end
+  end
+=begin
+  def get_contries_regions
+    record = params[model_name.to_sym]
+    if model_name == 'account'
       @group_ids ||= (record.delete("group_ids") || [])
       @subgroup_ids ||= (record.delete("subgroup_ids") || [])
       @language_ids ||= (record.delete("language_ids") || [])
@@ -265,9 +281,11 @@ class Api::V2::BaseController <  ActionController::Base
       @region_ids ||= (record.delete("region_ids") || [])
       @sc_segment_ids ||= (record.delete("sc_segment_ids") || [])
     elsif model_name == 'subgroup'
-      @group_ids ||= (record.delete("group_ids") || [])
+      @group_ids ||= (record.delete("group_ids").to_s || [])
     end
   end
+=end
+  
   
   def to_boolean(s)
     s and !!s.match(/^(true|t|yes|y|1)$/i)

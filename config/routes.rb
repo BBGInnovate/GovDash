@@ -129,7 +129,9 @@ Radd::Application.routes.draw do
       resources :accounts_sc_segments, :path => "accounts_segments"
       resources :accounts_regions
       resources :accounts_users
-      
+      resources :accounts_groups
+      resources :accounts_subgroups
+       
       resources :users do
         collection do
           get 'roles'

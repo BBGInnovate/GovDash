@@ -277,13 +277,12 @@ class FbStat
           :story_likes=>rec.likes,
           :shares=>rec.shares,
           :comments=>@comments[i],
-          :page_likes=>pagelikes[i],
           :totals=>total
           }
       if i == 1
         rate = ((totals[1]-totals[0])*100/totals[0].to_f).round rescue 0 # 'N/A'
         rate = "#{rate} %" if rate!='N/A'
-        result.data[:changes] = {:page_likes=>@page_likes_change,
+        result.data[:changes] = {
           :story_likes=>@likes_change,:shares=>@shares_change,
           :comments=>@comments_change,
           :totals=>rate}
@@ -314,14 +313,13 @@ class FbStat
           :story_likes=>rec.likes,
           :shares=>rec.shares,
           :comments=>@comments[i],
-          :page_likes=>pagelikes[i],
           :totals=>total
           }
           
       if (i == 1)
         rate = ((totals[1]-totals[0])*100/totals[0].to_f).round rescue 'N/A'
         rate = "#{rate} %" if rate!='N/A'
-        result.values[:changes]={:page_likes=>@page_likes_change,
+        result.values[:changes]={
            :story_likes=>@likes_change,:shares=>@shares_change,
            :comments=>@comments_change,
            :totals=>rate}
@@ -337,8 +335,7 @@ class FbStat
     {:story_likes=>rec.likes,
      :shares=>rec.shares,
      :comments=>comments,
-     :page_likes =>pagelikes,
-     :totals => (rec.likes+rec.shares+comments+pagelikes)
+     :totals => (rec.likes+rec.shares+comments)
    }
   end
   
@@ -461,11 +458,10 @@ class FbStat
           :story_likes=>rec.likes,
           :shares=>rec.shares,
           :comments=>@comments[idx],
-          :page_likes=>@pagelikes[idx],
           :totals=>total
           }
     ch = 'N/A'
-    result.data[:changes] = {:page_likes=>ch,
+    result.data[:changes] = {
           :story_likes=>ch,
           :shares=>ch,
           :comments=>ch,

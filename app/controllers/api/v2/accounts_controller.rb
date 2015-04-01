@@ -33,6 +33,30 @@ class Api::V2::AccountsController < Api::V2::BaseController
     if @data.valid?
       @data.save
       get_contries_regions
+
+      ids = {group: @group_ids, subgroup: @subgroup_ids, 
+                language: @language_ids, country: @country_ids,
+                region:  @region_ids, sc_segment: @sc_segment_ids}
+      if String === @country_ids
+        ids.each_pair do | k, val  |
+           next if val.empty?
+           klasse = "Accounts#{k.to_s.camelize}".constantize
+           klasse.delete_all("account_id=#{@data.id}")
+           the_id = "#{k.to_s}_id".to_sym
+           val.split(',').each do | _id |
+             ac = klasse.find_or_create_by(:account_id=>@data.id,  the_id => _id.to_i) 
+           end
+        end
+      else
+         raise "   update_countries_regions @country_ids not a String"
+      end
+    end
+  end
+  
+  def _update_countries_regions
+    if @data.valid?
+      @data.save
+      get_contries_regions
       if String === @country_ids
         @country_ids = @country_ids.split(',')
         @region_ids = @region_ids.split(',')

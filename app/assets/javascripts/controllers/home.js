@@ -16,17 +16,21 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 		$scope.organizations = response[4].organizations;
 		$scope.subgroups = response[5].subgroups;
 
+		$scope.allSubgroups = response[5].subgroups;
+
 		$scope.$watchCollection('selectedOrganizations', function(newVal, oldVal) {
 			if (newVal) {
 				$scope.selectedGroups = [];
 				$scope.selectedSubgroups = [];
+
+				$scope.subgroups = $scope.allSubgroups;
 			}
 
 		});
 
 		$scope.$watchCollection('selectedGroups', function(newVal, oldVal) {
-			if (newVal) {
-				console.log(newVal);
+			if (newVal && newVal.length > 0) {
+				$scope.subgroups = newVal[0].related_subgroups;
 			}
 
 		});
@@ -49,6 +53,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 
 	$scope.removeOrganization = function () {
 		$scope.selectedOrganizations = null;
+		$scope.subgroups = $scope.allSubgroups;
 	};
 
 	$scope.removeGroup = function (index) {

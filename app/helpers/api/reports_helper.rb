@@ -10,24 +10,44 @@ module Api::ReportsHelper
   # to replace fb_accounts, tw_accounts etc.
   #
   def accounts_for media_type='FacebookAccount'
-    accounts.map{|a| [a.id,a.object_name] if a.media_type_name == media_type}.compact
+    begin
+      accounts.map{|a| [a.id,a.object_name] if a.media_type_name == media_type}.compact
+    rescue 
+      []
+    end
   end
   def account_names_for media_type='FacebookAccount'
-    accounts.map{|a| a.object_name if a.media_type_name==media_type }.compact
+    begin
+      accounts.map{|a| a.object_name if a.media_type_name==media_type }.compact
+    rescue 
+      []
+    end
   end   
   def account_ids_for media_type='FacebookAccount'
-    accounts.map{|a| a.id if a.media_type_name==media_type }.compact
+    begin
+      accounts.map{|a| a.id if a.media_type_name==media_type }.compact
+    rescue 
+      []
+    end
   end
   def involved_countries_for media_type='FacebookAccount'
     @involved_countries_for ||=
+      begin
         involved_countries.map{|rc| [rc.country.id, rc.country.name] if rc.account.media_type_name==media_type}.compact.uniq
+      rescue 
+        []
+      end
   end
   def related_countries_for media_type='FacebookAccount'
     involved_countries_for media_type
   end
   def involved_regions_for media_type='FacebookAccount'
     @involved_regions_for ||=
+      begin
         involved_regions.map{|rc| [rc.region.id, rc.region.name] if rc.account.media_type_name==media_type}.compact.uniq
+      rescue 
+        []
+      end
   end
   def related_regions_for media_type='FacebookAccount'
     involved_regions_for media_type
@@ -35,26 +55,48 @@ module Api::ReportsHelper
 
   def accounts
     @accounts ||=
-         Account.where("is_active=1").select("id, name, object_name, media_type_name, contact").where(["id in (?)", @options[:account_ids]])
+    begin
+      Account.where("is_active=1").select("id, name, object_name, media_type_name, contact").where(["id in (?)", @options[:account_ids]])
+    rescue 
+      []
+    end
   end 
   # for countries
   def input_countries
-    @input_countries ||= Country.where(["id in (?)", @options[:country_ids]]).map{|c| [c.id,c.name]} 
+    @input_countries ||= 
+    begin
+      Country.where(["id in (?)", @options[:country_ids]]).map{|c| [c.id,c.name]} 
+    rescue 
+      []
+    end
   end
   def involved_countries 
-    @involved_countries  ||= 
-         AccountsCountry.includes([:account,:country]).
+    @involved_countries  ||=
+    begin
+       AccountsCountry.includes([:account,:country]).
             where(["account_id in (?)", @options[:account_ids] ])
+    rescue 
+      []
+    end
   end
   
   # for regions
   def input_regions
-    @input_regions ||= Region.where(["id in (?)", @options[:region_ids]]).map{|c| [c.id,c.name]} 
+    @input_regions ||= 
+    begin
+      Region.where(["id in (?)", @options[:region_ids]]).map{|c| [c.id,c.name]} 
+    rescue 
+      []
+    end
   end
   def involved_regions
-    @involved_regions  ||= 
+    @involved_regions  ||=
+    begin
          AccountsRegion.includes([:account,:region]).
             where(["account_id in (?)", @options[:account_ids] ])
+    rescue 
+      []
+    end
   end
 end
 =begin

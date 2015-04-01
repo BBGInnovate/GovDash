@@ -237,41 +237,45 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 		Accounts.getAllDataForAccounts()
 			.then(function(response) {
 			   $scope.allData = response.data;
+
+			   var organizations = $scope.allData[0];
+				organizations.shift();
+			   $scope.organizations = organizations;
 			  
-			   var groups = $scope.allData[0];
+			   var groups = $scope.allData[1];
 			   groups.shift();
 			   $scope.groups = groups;
 			   
-			   var subgroups = $scope.allData[1];
+			   var subgroups = $scope.allData[2];
 			   subgroups.shift();
 			   $scope.subgroups = subgroups;
 			   
-			   var regions = $scope.allData[2];
+			   var regions = $scope.allData[3];
 			   regions.shift();
 			   $scope.regions = regions;
 			   $scope.selectedRegion = $scope.regions[0];
 			   
-			   var accountTypes = $scope.allData[3];
+			   var accountTypes = $scope.allData[4];
 			   accountTypes.shift();
 			   $scope.accountTypes = accountTypes;
 //			   $scope.selectedAccountType = $scope.accountTypes[0];
 			   
-			   var mediaTypes = $scope.allData[4];
+			   var mediaTypes = $scope.allData[5];
 			   mediaTypes.shift();
 			   $scope.mediaTypes = mediaTypes;
 //			   $scope.selectedMediaType = $scope.mediaTypes[0];
 			   
-			   var countries = $scope.allData[5];
+			   var countries = $scope.allData[6];
 			   countries.shift();
 			   $scope.countries = countries;
 			   $scope.selectedCountry = $scope.countries[0];
 			   
-			   var languages = $scope.allData[6];
+			   var languages = $scope.allData[7];
 			   languages.shift();
 			   $scope.languages = languages;
 //			   $scope.selectedLanguage = $scope.languages[0];
 			   
-			   var segments = $scope.allData[7];
+			   var segments = $scope.allData[8];
 			   segments.shift();
 			   $scope.segments = segments;
 //			   $scope.selectedSegment = $scope.segments[0];

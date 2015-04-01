@@ -21,6 +21,19 @@
 				<input type="text" class="form-control" data-ng-model="description" id="description" placeholder="Description" required>
 			</div>
 		</div>
+    <!--
+        <div class="form-group">
+            <label for="account" class="col-md-2 control-label">Account</label>
+            <div class="col-md-10">
+                <div class="radio inline-block account-selection" ng-repeat="mediaType in mediaTypes">
+                    <div class="custom-radio m-right-xs">
+                        <input type="radio" ng-model="$parent.selectedMType" id="inlineRadio{{ mediaType.id }}" name="inlineRadio">
+                        <label for="inlineRadio{{ mediaType.id }}"></label>
+                    </div>
+                    <div class="inline-block vertical-top">{{ mediaType.name | truncate }}</div>
+                </div>
+            </div>
+        </div>
 		<div class="form-group">
 			<label for="account" class="col-md-2 control-label">Account</label>
 			<div class="col-md-10">
@@ -29,6 +42,15 @@
 				</select>
 			</div>
 		</div>
+   -->
+        <div class="form-group">
+            <label for="account" class="col-md-2 control-label">Account</label>
+            <div class="col-md-10">
+                <span class="account-selection" ng-repeat="mediaType in mediaTypes">
+                    <input class="mediatype-selection" type="radio" name="name" ng-value="mediaType" ng-model="$parent.selectedMediaType">{{ mediaType.name | truncate }}
+                </span>
+            </div>
+        </div>
 		<div class="form-group">
 			<label for="object_name" class="col-md-2 control-label">Username</label>
 			<div class="col-md-10">
@@ -46,7 +68,10 @@
 		<div class="form-group">
 			<label for="group" class="col-md-2 control-label">Group</label>
 			<div class="col-md-10">
-				<select class="form-control" ng-model="selectedGroup" ng-options="group.name for group in groups">
+                <!--
+				<select class="form-control" ng-model="selectedGroup" ng-options="group.name for group in groups | filter:{organization_id: selectedOrganization.id}">
+				-->
+                <select class="form-control" multiple ng-model="selectedGroup" ng-options="group.name for group in groups">
 					<option value="">-- Choose Group --</option>
 				</select>
 			</div>
@@ -61,7 +86,7 @@
 		<div class="form-group">
 			<label for="language" class="col-md-2 control-label">Language</label>
 			<div class="col-md-10">
-				<select class="form-control" ng-model="selectedLanguage" ng-options="language.name for language in languages">
+				<select class="form-control" multiple ng-model="selectedLanguage" ng-options="language.name for language in languages">
 					<option value="">-- Choose Language --</option>	
 				</select>
 			</div>

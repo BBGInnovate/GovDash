@@ -9,3 +9,6 @@ Gemfile.lock
 *.bowerrc
 bower.json
 /config
+
+tmp
+log

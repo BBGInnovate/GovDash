@@ -21,39 +21,36 @@ class Api::V2::AccountsController < Api::V2::BaseController
     responding
   end
   
-  def update 
+  def update
+    par = _params_
     @data = model_class.find(params[:id])
+    @data.update_attributes par
     update_countries_regions
     responding
   end
   
   private
-  
+
   def update_countries_regions
     if @data.valid?
       @data.save
       get_contries_regions
-
       ids = {group: @group_ids, subgroup: @subgroup_ids, 
-                language: @language_ids, country: @country_ids,
-                region:  @region_ids, sc_segment: @sc_segment_ids}
-      if String === @country_ids
-        ids.each_pair do | k, val  |
-           next if val.empty?
-           klasse = "Accounts#{k.to_s.camelize}".constantize
-           klasse.delete_all("account_id=#{@data.id}")
-           the_id = "#{k.to_s}_id".to_sym
-           val.split(',').each do | _id |
-             ac = klasse.find_or_create_by(:account_id=>@data.id,  the_id => _id.to_i) 
-           end
-        end
-      else
-         raise "   update_countries_regions @country_ids not a String"
+             language: @language_ids, country: @country_ids,
+             region:  @region_ids, sc_segment: @sc_segment_ids}
+      ids.each_pair do | k, val  |
+         next if val.empty?
+         klasse = "Accounts#{k.to_s.camelize}".constantize
+         klasse.delete_all("account_id=#{@data.id}")
+         the_id = "#{k.to_s}_id".to_sym
+         val.each do | _id |
+           ac = klasse.find_or_create_by(:account_id=>@data.id,  the_id => _id.to_i) 
+         end
       end
     end
   end
-  
-  def _update_countries_regions
+=begin 
+  def update_countries_regions
     if @data.valid?
       @data.save
       get_contries_regions
@@ -82,6 +79,7 @@ class Api::V2::AccountsController < Api::V2::BaseController
       end
     end
   end
+=end
   
   def condition1
     pam = {:is_active=>true}

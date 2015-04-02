@@ -1,7 +1,6 @@
 <!-- user comes from $scope.user -->
 <div>
     <p><a href="" back-button><i class="icon-angle-left"></i> Back</a></p>
-	<p><a href="" back-button><i class="icon-angle-left"></i> Back</a></p>
 	<div style="float:left" class="page-header">
 		<h1>Edit an Account</h1>
 	</div>
@@ -24,12 +23,14 @@
 				<input type="text" class="form-control" data-ng-model="account.description" id="description" placeholder="Description" required>
 			</div>
 		</div>
-		<div class="form-group">
-			<label for="account" class="col-md-2 control-label">Account</label>
-			<div class="col-md-10">
-				<select ng-model="selectedMediaType" ng-options="mediaType.name | truncate for mediaType in mediaTypes"></select>
-			</div>
-		</div>
+        <div class="form-group">
+            <label for="account" class="col-md-2 control-label">Account</label>
+            <div class="col-md-10">
+                    <span class="account-selection" ng-repeat="mediaType in mediaTypes">
+                        <input class="mediatype-selection" type="radio" name="name" ng-value="mediaType" ng-model="$parent.selectedMediaType">{{ mediaType.name | truncate }}
+                    </span>
+            </div>
+        </div>
 		<div class="form-group">
 			<label for="object_name" class="col-md-2 control-label">Username</label>
 			<div class="col-md-10">
@@ -39,7 +40,7 @@
 		<div class="form-group">
 			<label for="organization" class="col-md-2 control-label">Organization</label>
 			<div class="col-md-10">
-				<select ng-model="selectedOrganization" ng-options="organization.name for organization in organizations">
+				<select class="form-control" ng-model="selectedOrganization" ng-options="organization.name for organization in organizations">
 					<option value="">-- Choose Organization --</option>
 				</select>
 			</div>
@@ -47,7 +48,7 @@
 		<div class="form-group">
 			<label for="group" class="col-md-2 control-label">Group</label>
 			<div class="col-md-10">
-				<select ng-model="selectedGroup" ng-options="group.name for group in groups">
+				<select class="form-control" multiple ng-model="selectedGroups" ng-options="group.name for group in groups">
 					<option value="">-- Choose Group --</option>
 				</select>
 			</div>
@@ -55,38 +56,38 @@
 		<div class="form-group">
 			<label for="subgroup" class="col-md-2 control-label">Subgroup(s)</label>
 			<div class="col-md-10">
-				<select ng-model="selectedSubgroup" ng-options="subgroup.name for subgroup in subgroups" multiple ng-multiple="true">
+				<select class="form-control" ng-model="selectedSubgroup" ng-options="subgroup.name for subgroup in subgroups" multiple ng-multiple="true">
 				</select>
 			</div>
 		</div>
 		<div class="form-group">
 			<label for="language" class="col-md-2 control-label">Language</label>
 			<div class="col-md-10">
-				<select ng-model="selectedLanguage" ng-options="language.name for language in languages"></select>
+				<select class="form-control" multiple ng-model="selectedLanguages" ng-options="language.name for language in languages"></select>
 			</div>
 		</div>
 		<div class="form-group">
 			<label for="description" class="col-md-2 control-label">Region</label>
 			<div class="col-md-10">
-				<select multiple ng-model="selectedRegion" ng-options="region.name for region in regions"></select>
+				<select class="form-control" multiple ng-model="selectedRegion" ng-options="region.name for region in regions"></select>
 			</div>
 		</div>
 		<div class="form-group">
 			<label for="description" class="col-md-2 control-label">Country</label>
 			<div class="col-md-10">
-				<select multiple ng-model="selectedCountry" ng-options="country.name for country in countries"></select>
+				<select class="form-control" multiple ng-model="selectedCountry" ng-options="country.name for country in countries"></select>
 			</div>
 		</div>
 		<div class="form-group">
 			<label for="description" class="col-md-2 control-label">Account Type</label>
 			<div class="col-md-10">
-				<select ng-model="selectedAccountType" ng-options="accountType.name for accountType in accountTypes"></select>
+				<select class="form-control" ng-model="selectedAccountType" ng-options="accountType.name for accountType in accountTypes"></select>
 			</div>
 		</div>
 		<div class="form-group">
 			<label for="description" class="col-md-2 control-label">SiteCatalyst Segment</label>
 			<div class="col-md-10">
-				<select multiple ng-model="selectedSegment" ng-options="segment.name for segment in segments"></select>
+				<select class="form-control" multiple ng-model="selectedSegment" ng-options="segment.name for segment in segments"></select>
 			</div>
 		</div>
 		<div class="form-group">

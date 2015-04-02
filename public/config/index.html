@@ -8,35 +8,42 @@
 </div>
 <div style="clear:both;"></div>
 
-<div ng-if="userRole == 'Administrator'">
-<h3>Organizations</h3>
-<ul>
-	<li><a href="#/organizations/create">Create a Organization</a></li>
-	<li><a href="#/organizations">View all Organizations</a></li>
-</ul>
+
+
+<div class="col-md-3 segment-block" ng-if="userRole == 'Administrator'">
+    <h3>Organizations</h3>
+    <ul>
+        <li><a href="#/organizations/create">Create a Organization</a></li>
+        <li><a href="#/organizations">View all Organizations</a></li>
+    </ul>
 </div>
 
-<h3>Groups</h3>
-<ul>
-	<li><a href="#/groups/create">Create a Group</a></li>
-	<li><a href="#/groups">View all Groups</a></li>
-</ul>
+<div class="col-md-3 segment-block">
+    <h3>Groups</h3>
+    <ul>
+        <li><a href="#/groups/create">Create a Group</a></li>
+        <li><a href="#/groups">View all Groups</a></li>
+    </ul>
 </div>
 
-<h3>Subgroups</h3>
-<ul>
-	<li><a href="#/subgroups/create">Create a Subgroup</a></li>
-	<li><a href="#/subgroups">View all Subgroups</a></li>
-</ul>
+
+<div class="col-md-3 segment-block">
+    <h3>Subgroups</h3>
+    <ul>
+        <li><a href="#/subgroups/create">Create a Subgroup</a></li>
+        <li><a href="#/subgroups">View all Subgroups</a></li>
+    </ul>
 </div>
 
-<h3>Accounts</h3>
-<ul>
-	<li><a href="#/accounts/create">Create an Account</a></li>
-	<li><a href="#/accounts">View all Accounts</a></li>
-</ul>
+<div class="col-md-3 segment-block">
+    <h3>Accounts</h3>
+    <ul>
+        <li><a href="#/accounts/create">Create an Account</a></li>
+        <li><a href="#/accounts">View all Accounts</a></li>
+    </ul>
+</div>
 
-<div ng-if="userRole == 'Administrator'">
+<div class="col-md-3 segment-block" ng-if="userRole == 'Administrator'">
 	<h3>Regions</h3>
 	<ul>
 		<li><a href="#/regions/create">Create a Region</a></li>
@@ -44,7 +51,7 @@
 	</ul>
 </div>
 
-<div ng-if="userRole == 'Administrator'">
+<div class="col-md-3 segment-block" ng-if="userRole == 'Administrator'">
 	<h3>Countries</h3>
 	<ul>
 		<li><a href="#/countries/create">Create a Country</a></li>
@@ -52,14 +59,14 @@
 	</ul>
 </div>
 
-<div ng-if="userRole == 'Administrator'">
+<div class="col-md-3 segment-block" ng-if="userRole == 'Administrator'">
 	<h3>Users</h3>
 	<ul>
 		<li><a href="#/users">View all Users</a></li>
 	</ul>
 </div>
 
-<div ng-if="userRole == 'Administrator'">
+<div class="col-md-3 segment-block" ng-if="userRole == 'Administrator'">
 	<h3>Segments</h3>
 	<ul>
 		<li><a href="#/segments/create">Create a Segment</a></li>

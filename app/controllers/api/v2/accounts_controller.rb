@@ -119,7 +119,7 @@ class Api::V2::AccountsController < Api::V2::BaseController
   def add_profile record
     profile = record.account_profile
     if profile
-      info = {collect_started: record.send('collect_started')}
+      info = {data_collect_started: record.send('collect_started')}
       info.merge! profile.attributes
       info.delete 'id'
       info.delete 'account_id'

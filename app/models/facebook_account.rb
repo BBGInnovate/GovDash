@@ -213,11 +213,11 @@ class FacebookAccount < Account
     if ret  
       begin     
         process_posts(posts)
-        aggregate_data_daily  since.beginning_of_day, hasta.end_of_day
         if !!rabbit
           send_mq_message(rabbit)
         else
           save_post_details
+          aggregate_data_daily  since.beginning_of_day, hasta.end_of_day
         end
       rescue Exception=>error
         # log_fail "process_posts() #{error.message}"

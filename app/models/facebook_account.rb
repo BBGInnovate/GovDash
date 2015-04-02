@@ -236,12 +236,12 @@ class FacebookAccount < Account
   
   def process_posts(posts)
     return true if !posts || posts.empty?
-    logger.debug "Process posts #{posts.size}"
+    logger.info "Process posts size: #{posts.size}"
     # @bulk_insert = []
     last_created_time = DateTime.now.utc
     posts.each do |f|
       last_created_time= DateTime.parse(f['created_time'])
-      if last_created_time > since_date
+      if last_created_time > since_date.beginning_of_day
         replies_to_comment = get_replies_to_comment(f)          
         # no good way to tell a post is the original
         post_type = 'original'
@@ -254,7 +254,7 @@ class FacebookAccount < Account
         dbpost = FbPost.find_or_create_by(:post_id=>f['id'])
         dbpost.update_attributes insert
       else
-        logger.debug "  process_posts #{last_created_time.to_s(:db)} > #{since_date.to_s(:db)}"
+        logger.debug "  process_posts #{last_created_time.to_s(:db)} < #{since_date.to_s(:db)}"
       end
     end
 =begin
@@ -476,12 +476,11 @@ class FacebookAccount < Account
     @since_date
   end
   def back_to_date
-    if !@back_to_date
-      since_str = Facebook.config[:since_date]  || "7.days.ago"
-      since_str.match /(\d+\.\w+)\.ago/
-      @back_to_date = (instance_eval $1).to_i
-    end
-    @back_to_date
+    @back_to_date ||=
+      # since_str = Facebook.config[:since_date]  || "7.days.ago"
+      # since_str.match /(\d+\.\w+)\.ago/
+      # @back_to_date = (instance_eval $1).to_i
+      (Time.zone.now - since_date.end_of_day)
   end
   def recent_posts
     @recent_posts = fb_posts.where("post_created_time > '#{since_date.to_s(:db)}'")

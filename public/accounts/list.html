@@ -26,7 +26,7 @@
   </div>
 </div>
 
-<a ng-show="loggedInUser" class="btn btn-primary" href="#/accounts/create">+ New Social Media Source</a>
+<a ng-show="loggedInUser" class="btn btn-info" href="#/accounts/create"><span class="ion-plus-round"></span> New Social Media Source</a>
 <hr ng-show="loggedInUser">
 
 <div class="panel panel-default" ng-init="list()">
@@ -39,7 +39,7 @@
             <th style="width: 170px"><a href="" ng-click="reverse=!reverse;order('name', reverse)">Name <i class="icon-sort"></i></a></th>
     <!--    <th style="width: 100px">Account Type</th> -->
             <th style="width: 80px"><a href="" ng-click="reverse=!reverse;order('group_name', reverse)">Group <i class="icon-sort"></i></a></th>
-            <th><a href="" ng-click="reverse=!reverse;order('service_name', reverse)">Service <i class="icon-sort"></i></a></th>
+            <th><a href="" ng-click="reverse=!reverse;order('service_name', reverse)">Subgroup <i class="icon-sort"></i></a></th>
             <th style="width: 80px"><a href="" ng-click="reverse=!reverse;order('language_name', reverse)">Language <i class="icon-sort"></i></a></th>
             <th>Region</th>
             <th>Country</th>
@@ -50,20 +50,20 @@
         <tbody>
           <tr ng-repeat="account in accounts">
 				<td>
-					<i class="icon-{{account.media_type_name | displayIcon}}"></i> 
-					<a ng-show="loggedInUser" href="#/accounts/edit/{{account.id}}">{{account.object_name}}</a> 
+					<i class="ion-social-{{account.media_type_name | displayIcon}} account-icon"></i>
+					<a class="account-link" ng-show="loggedInUser" href="#/accounts/edit/{{account.id}}">{{account.object_name}}</a>
 					<span ng-show="!loggedInUser">{{account.object_name}}</span> 
 				</td>
 			<!--	<td><i class="icon-{{account.media_type_name | displayIcon}}"></i></td> -->
-				<td>{{account.group_name}}</td>
-				<td>{{account.service_name}}</td>
-				<td>{{account.language_name}}</td>
+				<td>{{account.group_names | toString}}</td>
+				<td>{{account.subgroup_names | toString}}</td>
+				<td>{{account.language_names | toString}}</td>
 				<td>{{account.region_names | toString}}</td>
 				<td>{{account.country_names | toString}}</td>
 	<!--		<td>{{account.segment_names | toString}}</td> -->
-				<td ng-show="loggedInUser">
+				<td ng-show="loggedInUser" style="text-align: center">
 					<a href="#/accounts/edit/{{account.id}}"><i class="icon-pencil"></i></a>
-					<a class="delete-icon" data-toggle="modal" data-target=".bs-example-modal-sm" ng-click="getAccountName($index)"><strong>X</strong></i></a>
+					<a class="delete-icon" data-toggle="modal" data-target=".bs-example-modal-sm" ng-click="getAccountName($index)"><strong><span class="ion-close-round"></span></strong></i></a>
 				</td>
             </tr>
         </tbody>

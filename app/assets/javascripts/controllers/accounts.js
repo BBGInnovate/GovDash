@@ -2,11 +2,21 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 
 	// create an account
   	$scope.create = function() {
+		console.log(this.selectedLanguage);
+		var languages = [];
+		for (var i = 0; i < this.selectedLanguage.length; i++) {
+			languages.push(this.selectedLanguage[i].id);
+		}
   	
   		var regions = [];
   		for (var i = 0; i < this.selectedRegion.length; i++) {
   			regions.push(this.selectedRegion[i].id);
   		}
+
+		var groups = [];
+		for (var i = 0; i < this.selectedGroup.length; i++) {
+			groups.push(this.selectedGroup[i].id);
+		}
 
   		var subgroups = [];
   		for (var i = 0; i < this.selectedSubgroup.length; i++) {
@@ -22,12 +32,11 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 		for (var i = 0; i < this.selectedSegment.length; i++) {
   			segments.push(this.selectedSegment[i].id);
   		}
-  		
+
   		
   		Accounts.create(this.name, this.description, this.object_name, 
-  		this.selectedMediaType.name, this.selectedOrganization.id, this.selectedGroup.id, subgroups, 
-  		this.selectedLanguage.id, regions, countries, this.selectedAccountType.id,
-  		segments)
+  		this.selectedMediaType.name, this.selectedOrganization.id, groups, subgroups,
+			languages, regions, countries, this.selectedAccountType.id, segments)
 			.then(function(response) {
 		   		$location.path('accounts');
 		});
@@ -62,13 +71,13 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
             .then(function(response) {
                $scope.account = response.data[0];
                var organizationId = $scope.account.organization_id;
-               var groupId = $scope.account.group_id;
+               var groupIds = $scope.account.group_ids;
                var subgroupIds = $scope.account.subgroup_ids;
                var regionIds = $scope.account.region_ids;
                var countryIds = $scope.account.country_ids;
                var accountTypeId = $scope.account.account_type_id;
                var mediaType = $scope.account.media_type_name;
-               var languageId = $scope.account.language_id;
+               var languageIds = $scope.account.language_ids;
                var segmentIds = $scope.account.segment_ids;
             
                var mediaTypeId;
@@ -103,11 +112,15 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 					   var groups = $scope.allData[1];
 					   groups.shift();
 					   $scope.groups = groups;
+					   var selectedGroups = [];
 					   for (var i = 0; i < $scope.groups.length; i++) {
-							if ($scope.groups[i].id == groupId) {
-								 $scope.selectedGroup = $scope.groups[i];
-							}
+						   for (var j = 0; j < groupIds.length; j++) {
+							   if ($scope.groups[i].id == groupIds[j]) {
+							 	   selectedGroups.push($scope.groups[i]);
+							   }
+						   }
 					   }
+					   $scope.selectedGroups = selectedGroups;
 			   			
 					   var subgroups = $scope.allData[2];
 					   subgroups.shift();
@@ -165,17 +178,21 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 					   		}
 					   }
 					   $scope.selectedCountry = selectedCountries;
-			  
-			  
-			   
+
+
+
 					   var languages = $scope.allData[7];
 					   languages.shift();
 					   $scope.languages = languages;
+					   var selectedLanguages = [];
 					   for (var i = 0; i < $scope.languages.length; i++) {
-							if ($scope.languages[i].id == languageId) {
-								 $scope.selectedLanguage = $scope.languages[i];
-							}
+						   for (var j = 0; j < languageIds.length; j++) {
+							   if ($scope.languages[i].id == languageIds[j]) {
+								   selectedLanguages.push($scope.languages[i]);
+							   }
+						   }
 					   }
+					   $scope.selectedLanguages = selectedLanguages;
 					   
 					   var segments = $scope.allData[8];
 					   segments.shift();
@@ -222,7 +239,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		}
   		
   		Accounts.update($routeParams.accountId, $scope.account.name, 
-  		$scope.account.description, $scope.account.object_name, $scope.media_type_name, 
+  		$scope.account.description, $scope.account.object_name, $scope.media_type_name,
   		$scope.selectedGroup.id, subgroups, $scope.selectedLanguage.id, 
   		regions, countries, $scope.selectedAccountType.id, segments)
             .then(function(response) {

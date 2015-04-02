@@ -16,6 +16,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 		$scope.organizations = response[4].organizations;
 		$scope.subgroups = response[5].subgroups;
 
+		// this is a placeholder for the subgroups that gets filtered down
 		$scope.allSubgroups = response[5].subgroups;
 
 		$scope.$watchCollection('selectedOrganizations', function(newVal, oldVal) {
@@ -58,6 +59,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 
 	$scope.removeGroup = function (index) {
 		$scope.selectedGroups.splice(index, 1);
+		$scope.subgroups = $scope.allSubgroups;
 	};
 
 	$scope.removeSubgroup = function (index) {

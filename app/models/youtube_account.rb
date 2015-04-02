@@ -353,7 +353,10 @@ class YoutubeAccount < Account
     end
     ch.save if changed
   end
-
+  
+  def collect_started
+    yt_channels.first.created_at.to_s(:db)
+  end
 end
 =begin
   def save_video vid

@@ -688,9 +688,13 @@ class TwitterAccount < Account
         raise
       end
     end
-  end
+    end
   end
 
+  def collect_started
+    tw_timelines.last.created_at.to_s(:db)
+  end
+  
   def self.populate
     # place holder
   end

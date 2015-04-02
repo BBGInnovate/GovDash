@@ -2,15 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b28bc690-b208-489b-8313-03500dca25a7" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/assets/javascripts/services/accountService.js" afterPath="$PROJECT_DIR$/app/assets/javascripts/services/accountService.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/assets/javascripts/controllers/accounts.js" afterPath="$PROJECT_DIR$/app/assets/javascripts/controllers/accounts.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/assets/stylesheets/app.css" afterPath="$PROJECT_DIR$/app/assets/stylesheets/app.css" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/accounts/create.html" afterPath="$PROJECT_DIR$/public/accounts/create.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/accounts/edit.html" afterPath="$PROJECT_DIR$/public/accounts/edit.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/assets/javascripts/controllers/home.js" afterPath="$PROJECT_DIR$/app/assets/javascripts/controllers/home.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/config/index.html" afterPath="$PROJECT_DIR$/public/config/index.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/accounts/list.html" afterPath="$PROJECT_DIR$/public/accounts/list.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="GovDash.iws" />
@@ -87,21 +80,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="edit.html" pinned="false" current-in-tab="true">
+      <file leaf-file-name="edit.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/public/accounts/edit.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.90712076" vertical-offset="682" max-vertical-offset="1560">
+            <state vertical-scroll-proportion="-5.745098" vertical-offset="682" max-vertical-offset="1560">
               <caret line="65" column="81" selection-start-line="65" selection-start-column="81" selection-end-line="65" selection-end-column="81" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="accounts.js" pinned="false" current-in-tab="false">
+      <file leaf-file-name="accounts.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/assets/javascripts/controllers/accounts.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-6.740741" vertical-offset="2608" max-vertical-offset="5070">
-              <caret line="186" column="50" selection-start-line="186" selection-start-column="50" selection-end-line="186" selection-end-column="50" />
+            <state vertical-scroll-proportion="0.39481267" vertical-offset="4408" max-vertical-offset="5790">
+              <caret line="303" column="32" selection-start-line="303" selection-start-column="32" selection-end-line="303" selection-end-column="32" />
               <folding />
             </state>
           </provider>
@@ -110,8 +103,8 @@
       <file leaf-file-name="create.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/public/accounts/create.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-3.27451" vertical-offset="928" max-vertical-offset="1995">
-              <caret line="73" column="54" selection-start-line="73" selection-start-column="54" selection-end-line="73" selection-end-column="54" />
+            <state vertical-scroll-proportion="-3.8235295" vertical-offset="1005" max-vertical-offset="2025">
+              <caret line="80" column="31" selection-start-line="80" selection-start-column="31" selection-end-line="80" selection-end-column="31" />
               <folding>
                 <element signature="n#style#0;n#div#1;n#!!top" expanded="true" />
               </folding>
@@ -162,9 +155,9 @@
         <option value="$PROJECT_DIR$/public/accounts/list.html" />
         <option value="$PROJECT_DIR$/app/assets/stylesheets/app.css" />
         <option value="$PROJECT_DIR$/app/assets/javascripts/services/accountService.js" />
+        <option value="$PROJECT_DIR$/public/accounts/edit.html" />
         <option value="$PROJECT_DIR$/public/accounts/create.html" />
         <option value="$PROJECT_DIR$/app/assets/javascripts/controllers/accounts.js" />
-        <option value="$PROJECT_DIR$/public/accounts/edit.html" />
       </list>
     </option>
   </component>
@@ -352,10 +345,10 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="54" y="22" width="1092" height="702" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3295082" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3409836" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3409836" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3295238" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3312102" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
@@ -452,6 +445,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.47860962" vertical-offset="16801" max-vertical-offset="17175">
           <caret line="1159" column="9" selection-start-line="1159" selection-start-column="9" selection-end-line="1159" selection-end-column="9" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -481,6 +475,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.3315508" vertical-offset="14846" max-vertical-offset="72015">
           <caret line="998" column="0" selection-start-line="998" selection-start-column="0" selection-end-line="998" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -770,8 +765,7 @@
         <state vertical-scroll-proportion="0.5356037" vertical-offset="607" max-vertical-offset="1185">
           <caret line="52" column="95" selection-start-line="52" selection-start-column="95" selection-end-line="52" selection-end-column="95" />
           <folding>
-            <element signature="n#style#0;n#th#0;n#tr#0;n#thead#0;n#table#0;n#div#3;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#td#6;n#tr#0;n#tbody#0;n#table#0;n#div#3;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#th#0;n#tr#0;n#thead#0;n#table#0;n#div#3;n#!!top" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -805,16 +799,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/public/accounts/create.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.27451" vertical-offset="928" max-vertical-offset="1995">
-          <caret line="73" column="54" selection-start-line="73" selection-start-column="54" selection-end-line="73" selection-end-column="54" />
-          <folding>
-            <element signature="n#style#0;n#div#1;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/assets/javascripts/services/accountService.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.20053476" vertical-offset="0" max-vertical-offset="810">
@@ -823,18 +807,28 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/assets/javascripts/controllers/accounts.js">
+    <entry file="file://$PROJECT_DIR$/public/accounts/edit.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-6.740741" vertical-offset="2608" max-vertical-offset="5070">
-          <caret line="186" column="50" selection-start-line="186" selection-start-column="50" selection-end-line="186" selection-end-column="50" />
+        <state vertical-scroll-proportion="-5.745098" vertical-offset="682" max-vertical-offset="1560">
+          <caret line="65" column="81" selection-start-line="65" selection-start-column="81" selection-end-line="65" selection-end-column="81" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/public/accounts/edit.html">
+    <entry file="file://$PROJECT_DIR$/public/accounts/create.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.90712076" vertical-offset="682" max-vertical-offset="1560">
-          <caret line="65" column="81" selection-start-line="65" selection-start-column="81" selection-end-line="65" selection-end-column="81" />
+        <state vertical-scroll-proportion="-3.8235295" vertical-offset="1005" max-vertical-offset="2025">
+          <caret line="80" column="31" selection-start-line="80" selection-start-column="31" selection-end-line="80" selection-end-column="31" />
+          <folding>
+            <element signature="n#style#0;n#div#1;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/assets/javascripts/controllers/accounts.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.39481267" vertical-offset="4408" max-vertical-offset="5790">
+          <caret line="303" column="32" selection-start-line="303" selection-start-column="32" selection-end-line="303" selection-end-column="32" />
           <folding />
         </state>
       </provider>

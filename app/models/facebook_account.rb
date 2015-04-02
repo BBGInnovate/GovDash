@@ -702,6 +702,9 @@ class FacebookAccount < Account
         first
   end
   
+  def collect_started
+    fb_pages.last.created_at.to_s(:db)
+  end
 end
 =begin
   def get_likes_count(post_id)

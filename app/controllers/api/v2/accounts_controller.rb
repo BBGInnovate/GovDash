@@ -118,8 +118,11 @@ class Api::V2::AccountsController < Api::V2::BaseController
   
   def add_profile record
     profile = record.account_profile
-    if profile 
-      info = profile.attributes
+    if profile
+      info = {collect_started: record.send('collect_started')}
+      info.merge! profile.attributes
+      info.delete 'id'
+      info.delete 'account_id'
 =begin
       if info['location'] 
         if info['location'].match('=>')

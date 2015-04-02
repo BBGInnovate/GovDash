@@ -692,7 +692,7 @@ class TwitterAccount < Account
   end
 
   def collect_started
-    tw_timelines.last.created_at.to_s(:db)
+    TwTimeline.select("min(created_at) as created_at").where(account_id: self.id).first.created_at.to_s(:db)
   end
   
   def self.populate

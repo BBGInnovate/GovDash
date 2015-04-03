@@ -562,11 +562,17 @@ class FacebookAccount < Account
      records = select('id, object_name,new_item').where("is_active=1").to_a
      records.each do |record|
         puts " aggregate_data_daily for #{record.object_name}" 
-        # record.aggregate_data_daily start_date, end_date
-        record.daily_aggregate_data
+        record.aggregate_data_daily start_date, end_date
      end
   end
   
+  def self.daily_aggregate_data start_date=1.year.ago, end_date=Time.now
+     records = select('id, object_name,new_item').where("is_active=1").to_a
+     records.each do |record|
+        puts " daily_aggregate_data for #{record.object_name}" 
+        record.daily_aggregate_data start_date, end_date
+     end
+  end
   # run it daily to update fb_page
   def daily_aggregate_data start_date=1.year.ago, end_date=Time.now
     end_date = end_date.end_of_day

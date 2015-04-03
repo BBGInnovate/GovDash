@@ -321,6 +321,11 @@ class Account < ActiveRecord::Base
     response
   end
 
+  def to_pacific_time utc_time
+    utc_offset = Time.now.in_time_zone("Pacific Time (US & Canada)").utc_offset
+    utc_time + utc_offset
+  end
+  
   protected
    def obj_name
      self.object_name.split('/')[0]
@@ -436,6 +441,138 @@ class Account < ActiveRecord::Base
    end
 end  
 =begin
+  require 'csv'
+  file="/Users/lliu/Downloads/voachina-posts.csv"
+  CSV.foreach(file, quote_char: '"', col_sep: ',', row_sep: :auto, headers:  false) do | line |
+    if t.match(/by action type - like/)
+      puts "   #{t}"
+    end
+  end
+ 
+  voalearningenglish-posts.csv:
+  str = '"Post ID",Permalink,"Post Message",Type,Countries,Languages,Posted,"Lifetime Post Total Reach","Lifetime Post organic reach","Lifetime Post Paid Reach","Lifetime Post Total Impressions","Lifetime Post Organic Impressions","Lifetime Post Paid Impressions","Lifetime Engaged Users","Lifetime Talking About This (Post) by action type - answer","Lifetime Talking About This (Post) by action type - comment","Lifetime Talking About This (Post) by action type - like","Lifetime Talking About This (Post) by action type - share","Lifetime Post Stories by action type - answer","Lifetime Post Stories by action type - comment","Lifetime Post Stories by action type - like","Lifetime Post Stories by action type - share"'  
+  
+  voachina-posts.csv.bk:
+  str = '"Post ID",Permalink,"Post Message",Type,Countries,Languages,Posted,"Lifetime Post Total Reach","Lifetime Post organic reach","Lifetime Post Paid Reach","Lifetime Post Total Impressions","Lifetime Post Organic Impressions","Lifetime Post Paid Impressions","Lifetime Engaged Users","Lifetime Talking About This (Post) by action type - comment","Lifetime Talking About This (Post) by action type - like","Lifetime Talking About This (Post) by action type - share","Lifetime Post Stories by action type - comment","Lifetime Post Stories by action type - like","Lifetime Post Stories by action type - share"'
+  
+  voapashto-posts.csv:
+  str = '"Post ID",Permalink,"Post Message",Type,Countries,Languages,Posted,"Lifetime Post Total Reach","Lifetime Post organic reach","Lifetime Post Paid Reach","Lifetime Post Total Impressions","Lifetime Post Organic Impressions","Lifetime Post Paid Impressions","Lifetime Engaged Users","Lifetime Talking About This (Post) by action type - comment","Lifetime Talking About This (Post) by action type - like","Lifetime Talking About This (Post) by action type - share","Lifetime Post Stories by action type - comment","Lifetime Post Stories by action type - like","Lifetime Post Stories by action type - share"'
+  head = str.split(',')  
+  head.each_with_index do |b,i| 
+    if b.match(/by action type - /)
+       puts "   #{i}   #{b}" 
+    end
+  end; nil
+  voalearningenglish-posts.csv:
+   14   "Lifetime Talking About This (Post) by action type - answer"
+   15   "Lifetime Talking About This (Post) by action type - comment"
+   16   "Lifetime Talking About This (Post) by action type - like"
+   17   "Lifetime Talking About This (Post) by action type - share"
+   18   "Lifetime Post Stories by action type - answer"
+   19   "Lifetime Post Stories by action type - comment"
+   20   "Lifetime Post Stories by action type - like"
+   21   "Lifetime Post Stories by action type - share"
+  voachina-posts.csv.bk:
+   14   "Lifetime Talking About This (Post) by action type - comment"
+   15   "Lifetime Talking About This (Post) by action type - like"
+   16   "Lifetime Talking About This (Post) by action type - share"
+   17   "Lifetime Post Stories by action type - comment"
+   18   "Lifetime Post Stories by action type - like"
+   19   "Lifetime Post Stories by action type - share"
+  voapashto-posts.csv:
+   14   "Lifetime Talking About This (Post) by action type - comment"
+   15   "Lifetime Talking About This (Post) by action type - like"
+   16   "Lifetime Talking About This (Post) by action type - share"
+   17   "Lifetime Post Stories by action type - comment"
+   18   "Lifetime Post Stories by action type - like"
+   19   "Lifetime Post Stories by action type - share"
+  file="/Users/lliu/Downloads/voapashto-posts.csv"
+  file="/Users/lliu/Downloads/voachina-posts.csv.bk"
+  # begin
+  
+  file="/Users/lliu/Downloads/voalearningenglish-posts.csv"
+  j = 15
+  file="/Users/lliu/Downloads/voapashto-posts.csv"
+  j = 14
+  file="/Users/lliu/Downloads/voachina-posts.csv.bk"
+  j = 14
+  hash = {:talking_comments=> 0,:talking_likes=>0,:talking_shares=>0,
+          :story_comments=>0,:story_likes=>0,:story_shares=>0}
+  File.readlines(file).each_with_index do |line, fi|
+    if fi > 0
+     arr = line.split(',')
+     hash.keys.each_with_index do | k, i |
+       # puts " #{k}  #{j+i} "
+       hash[k] += arr[j+i].to_i
+     end
+    end
+  end; nil
+  puts File.basename(file)
+  puts hash.inspect
+  
+  # end
+  talking_comments = 0
+  talking_likes = 0
+  talking_shares = 0
+  story_comments = 0
+  story_likes = 0
+  story_shares = 0
+  
+  hash = {:talking_comments=> 0,:talking_likes=>0,:talking_shares=>0,
+          :story_comments=>0,:story_likes=>0,:story_shares=>0}
+  j = 15
+  File.readlines(file).each_with_index do |line, i|
+    if i > 0
+     arr = line.split(',')
+     hash.keys.each_with_index do | k, i |
+       hash[k] += arr[j+i].to_i
+     end
+     talking_comments += arr[j].to_i
+     talking_likes += arr[j+1].to_i
+     talking_shares += arr[j+2].to_i
+     story_comments += arr[j+3].to_i
+     story_likes += arr[j+4].to_i
+     story_shares += arr[j+5].to_i
+    end
+  end; nil
+  puts File.basename(file)
+  puts hash.inspect
+  
+  puts "talking_comments: #{talking_comments}, talking_likes: #{talking_likes}, talking_shares: #{talking_shares}"; nil
+  puts "story_comments: #{story_comments}, story_likes: #{story_likes}, story_shares: #{story_shares}"; nil
+  
+   
+  file="/Users/lliu/Desktop/accounts.csv"
+  file="/Users/lliu/Desktop/tw.csv"
+  file="/Users/lliu/Downloads/voalearningenglish.csv"
+  # file="/Users/lliu/Downloads/voachina.csv"
+  file="/Users/lliu/Downloads/voapashto.csv"
+   
+  file="/Users/lliu/Downloads/voachina-posts.csv.bk"
+  file="/Users/lliu/Downloads/voalearningenglish-posts.csv"
+  talking_likes = 0
+  story_likes = 0
+  likes = 0
+  dislikes = 0
+  File.readlines(file).each_with_index do |line, i|
+    if i > 0
+     arr = line.split(',')
+     puts "  #{arr[15].to_i}  - #{arr[18].to_i}"
+     talking_likes += arr[15].to_i
+     story_likes += arr[18].to_i
+     # dislikes += arr[3].to_i
+    end
+  end; nil
+  puts talking_likes
+  puts story_likes
+  # puts likes - dislikes
+    
+  arr = []
+  File.readlines(file).each do |line|
+     arr << "'#{line.gsub("\n",'')}'"
+  end
+  puts arr.join(',')
+  
    def self.load_account_csv file
       file="/Users/lliu/Desktop/new_sm_accounts_rferl.csv"
       File.readlines(file).each do |line|

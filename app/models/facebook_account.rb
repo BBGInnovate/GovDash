@@ -541,14 +541,16 @@ class FacebookAccount < Account
   end
   
   def graph_api(access_token=nil)
-    # Koala.config.api_version = "v2.2"
+    Koala.config.api_version = "v2.3"
     if !access_token
       access_token = self.app_token.get_access_token
     end
     @graph_api = Koala::Facebook::API.new(access_token)
   end
   
-  def self.aggregate_data_daily start_date=nil, end_date=nil
+  
+  
+  def self.aggregate_data_daily start_date=1.year.ago, end_date=Time.now
     if !start_date
       start_date = 3.months.ago
     end
@@ -560,8 +562,35 @@ class FacebookAccount < Account
      records = select('id, object_name,new_item').where("is_active=1").to_a
      records.each do |record|
         puts " aggregate_data_daily for #{record.object_name}" 
-        record.aggregate_data_daily start_date, end_date
+        # record.aggregate_data_daily start_date, end_date
+        record.daily_aggregate_data
      end
+  end
+  
+  # run it daily to update fb_page
+  def daily_aggregate_data start_date=1.year.ago, end_date=Time.now
+    end_date = end_date.end_of_day
+    start_date = start_date.beginning_of_day
+    data = FbPost.select("count(*) AS post_count,sum(likes) as likes, sum(comments) as comments, sum(shares) as shares,sum(replies_to_comment) as replies_to_comment").
+                    where(account_id: self.id).to_a.first
+    if data
+       z = self.graph_api.get_object self.object_name
+       options = {:total_likes=>z['likes'],
+                  :total_talking_about=>z['talking_about_count'],
+                  :likes=>data.likes, 
+                 :comments=>data.comments,
+                 :shares=>data.shares,
+                 :posts => data.post_count,
+                 :replies_to_comment => data.replies_to_comment
+                }
+        curr_date = Time.zone.now.middle_of_day
+        options[:post_created_time] = curr_date
+        p = Fbpage.find_or_create_by account_id: self.id, post_created_time: curr_date
+        p.update_attributes options
+        logger.debug "  daily_aggregate_data for #{curr_date.to_s(:db)}"
+    else
+       logger.debug "  daily_aggregate_data NOT RECORDS for  "
+    end
   end
   
   def aggregate_data_daily start_date, end_date
@@ -587,6 +616,7 @@ class FacebookAccount < Account
            options[:post_created_time] = current_date.end_of_day
            find_or_create_page(options)
            current_date = current_date + 1.day
+           logger.debug " aggregate_data for #{current_date.to_s(:db)}"
        else
            logger.debug "aggregate_data_daily NOT RECORDS for #{start_date.to_s(:db)} .. #{end_date.to_s(:db)}"
        end
@@ -704,6 +734,19 @@ class FacebookAccount < Account
   def collect_started
     FbPage.select("min(created_at) as created_at").where(account_id: self.id).first.created_at.to_s(:db)
   end
+  
+  def post_details post_id
+    post_id="122256314471875_958019527562212"
+    data = graph_api.get_object(post_id, :fields => "shares,likes.summary(true),comments.summary(true)")
+    feed = graph_api.get_object('/' + post_id + '/likes?limit=1000')
+    like_id="1422452251401888"
+    likes = graph_api.get_object like_id
+    while feed.size > 0
+      count += feed.size
+      feed = feed.next_page rescue []
+    end
+  end
+  
 end
 =begin
   def get_likes_count(post_id)
@@ -947,7 +990,7 @@ end
       @num_attempts = 0
       begin
         @num_attempts += 1
-        @insights=graph_api.graph_call("v2.2/#{self.obj_name}/insights")
+        @insights=graph_api.graph_call("v2.3/#{self.obj_name}/insights")
       rescue Timeout::Error=>error
         logger.error "Error: get_insights #{error.message}"
         if @num_attempts < self.max_attempts

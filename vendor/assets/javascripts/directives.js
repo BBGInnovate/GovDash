@@ -227,7 +227,7 @@ angular.module('directives', []).
 
 						// This is for initial filter selection load
 						} else {
-							buildChart(element, data, labels, colors);
+							buildChart(element, data, labels, colors, attrs.socialmediatype);
 						}
 
 
@@ -237,15 +237,30 @@ angular.module('directives', []).
 
 				});
 
-				function buildChart(element, data, labels, colors) {
-					Morris.Donut({
-						element: element,
-						data:  [
+				function buildChart(element, data, labels, colors, socialMediaType) {
+					var dataArr = [];
+
+					// Facebook only has 3 pieces now
+					if (socialMediaType === 'fb') {
+						dataArr = [
+							{label: $filter('labelFormat')(labels[0]), value: data[labels[0]]},
+							{label: $filter('labelFormat')(labels[1]), value: data[labels[1]]},
+							{label: $filter('labelFormat')(labels[2]), value: data[labels[2]]}
+						];
+					} else {
+						dataArr =
+						[
 							{label: $filter('labelFormat')(labels[0]), value: data[labels[0]]},
 							{label: $filter('labelFormat')(labels[1]), value: data[labels[1]]},
 							{label: $filter('labelFormat')(labels[2]), value: data[labels[2]]},
 							{label: $filter('labelFormat')(labels[3]), value: data[labels[3]]}
-						],
+						];
+					}
+
+					// Build out Donut Chart
+					Morris.Donut({
+						element: element,
+						data: dataArr,
 						colors: [colors[0], colors[1], colors[2], colors[3]]
 					});
 				}

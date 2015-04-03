@@ -29,13 +29,61 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 
 		});
 
+		// This scope watch function handles the many to many group -> subgroup relationship
+		$scope.$watch('selectedGroups', function() {
+			$scope.subgroups = response[5].subgroups;
+			if ($scope.selectedGroups) {
+				var ids = [];
+				// Loop through the selected groups
+				for (var i = 0; i < $scope.selectedGroups.length; i++) {
+					// If the selected item has subgroup ids
+					if ($scope.selectedGroups[i].related_subgroups) {
+						for (var j = 0; j < $scope.selectedGroups[i].related_subgroups.length; j++) {
+							ids.push($scope.selectedGroups[i].related_subgroups[j].id);
+						}
+					}
+
+				}
+
+				// Place holder array for new ids
+				var newIds = [];
+
+				// if there were IDs found from the groups
+				if (ids.length > 0) {
+					// Loop through all the subgroups
+					for (var i = 0; i < $scope.subgroups.length; i++) {
+						// Now loop through all of the IDs that were accumulated from previous loop
+						for (var j = 0; j < ids.length; j++) {
+							// If there was an ID match
+							if ($scope.subgroups[i].id === ids[j]) {
+								// Push to newIds array to assign later to $scope.subgroups
+								newIds.push($scope.subgroups[i]);
+							}
+						}
+
+					}
+					// Assign $scope.subgroups to the accumulated Ids
+					$scope.subgroups = newIds;
+				} else {
+					// If there were no subgroup Ids for the selected group, set $scope.subgroups to empty
+					if (newIds.length === 0) {
+						$scope.subgroups = [];
+						// Otherwise, reset $scope.subgroups to the full list of subgroups
+					} else {
+						$scope.subgroups = response[5].subgroups;
+					}
+
+				}
+			}
+		});
+/*
 		$scope.$watchCollection('selectedGroups', function(newVal, oldVal) {
 			if (newVal && newVal.length > 0) {
 				$scope.subgroups = newVal[0].related_subgroups;
 			}
 
 		});
-
+*/
 	});
 
 
@@ -58,8 +106,32 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 	};
 
 	$scope.removeGroup = function (index) {
+
+		// remove the subgroups associated with the group that was removed
+		for (var i = 0; i < $scope.subgroups.length; i++) {
+			if ($scope.groups[index].related_subgroups) {
+				for (var j = 0; j < $scope.groups[index].related_subgroups.length; j++) {
+					if ($scope.subgroups[i].id === $scope.groups[index].related_subgroups[j].id) {
+						$scope.subgroups.splice(i, 1);
+					}
+				}
+			}
+		}
+
+		// if there are no subgroups, reset the list
+		if ($scope.subgroups.length === 0) {
+			$scope.subgroups = $scope.allSubgroups;
+		}
+
+
 		$scope.selectedGroups.splice(index, 1);
-		$scope.subgroups = $scope.allSubgroups;
+
+		// if no groups are selected, reset subgroups
+		if ($scope.selectedGroups.length === 0) {
+			$scope.subgroups = $scope.allSubgroups;
+			$scope.selectedSubgroups = [];
+		}
+
 	};
 
 	$scope.removeSubgroup = function (index) {
@@ -168,6 +240,15 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 		$scope.accountBlockTwoData = $scope.account.values[0][labels[1]];
 		$scope.accountBlockThreeData = $scope.account.values[0][labels[2]];
 		$scope.accountBlockFourData = $scope.account.values[0][labels[3]];
+
+		// Default columnNum is 3
+		$scope.columnNum = 3;
+
+		// if the fourth block data is null, change the columnNum to 4
+		// so account modal is dynamic (this is for Facebook accounts)
+		if ($scope.accountBlockFourData == null) {
+			$scope.columnNum = 4;
+		}
 
 
 

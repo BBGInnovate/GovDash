@@ -178,18 +178,18 @@ div.xAxis div.tickLabel
     padding-top: 25px;
 }
 
-.ion-social-facebook {
+.facebook-icon-list {
     background: #3278B3;
     color: white;
     padding-left: 4px;
     padding-right: 4px;
 }
 
-.ion-social-twitter {
+.twitter-icon-list {
     color: #23B7E5;
 }
 
-.ion-social-youtube {
+.youtube-icon-list {
     color: #E36159;
 }
 

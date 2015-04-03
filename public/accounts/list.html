@@ -50,7 +50,7 @@
         <tbody>
           <tr ng-repeat="account in accounts">
 				<td>
-					<i class="ion-social-{{account.media_type_name | displayIcon}} account-icon"></i>
+					<i class="ion-social-{{account.media_type_name | displayIcon}} {{account.media_type_name | displayIcon}}-icon-list account-icon"></i>
 					<a class="account-link" ng-show="loggedInUser" href="#/accounts/edit/{{account.id}}">{{account.object_name}}</a>
 					<span ng-show="!loggedInUser">{{account.object_name}}</span> 
 				</td>

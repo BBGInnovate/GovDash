@@ -68,10 +68,12 @@
 		<div class="form-group">
 			<label for="group" class="col-md-2 control-label">Group</label>
 			<div class="col-md-10">
+
+				<select class="form-control" multiple ng-model="selectedGroup" ng-options="group.name for group in groups | filter:{organization_id: selectedOrganization.id}">
+
                 <!--
-				<select class="form-control" ng-model="selectedGroup" ng-options="group.name for group in groups | filter:{organization_id: selectedOrganization.id}">
-				-->
                 <select class="form-control" multiple ng-model="selectedGroup" ng-options="group.name for group in groups">
+                -->
 					<option value="">-- Choose Group --</option>
 				</select>
 			</div>

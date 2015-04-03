@@ -2,7 +2,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 
 	// create an account
   	$scope.create = function() {
-		console.log(this.selectedLanguage);
+
 		var languages = [];
 		for (var i = 0; i < this.selectedLanguage.length; i++) {
 			languages.push(this.selectedLanguage[i].id);
@@ -251,51 +251,99 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   	// Populates data elements for Account creation
   	$scope.populateDataElements = function() {
 		// Load all data for Accounts
-		Accounts.getAllDataForAccounts()
-			.then(function(response) {
-			   $scope.allData = response.data;
+		Accounts.getAllDataForAccounts().then(function(response) {
+		   $scope.allData = response.data;
 
-			   var organizations = $scope.allData[0];
-				organizations.shift();
-			   $scope.organizations = organizations;
-			  
-			   var groups = $scope.allData[1];
-			   groups.shift();
-			   $scope.groups = groups;
-			   
-			   var subgroups = $scope.allData[2];
-			   subgroups.shift();
-			   $scope.subgroups = subgroups;
-			   
-			   var regions = $scope.allData[3];
-			   regions.shift();
-			   $scope.regions = regions;
-			   $scope.selectedRegion = $scope.regions[0];
-			   
-			   var accountTypes = $scope.allData[4];
-			   accountTypes.shift();
-			   $scope.accountTypes = accountTypes;
+		   var organizations = $scope.allData[0];
+			organizations.shift();
+		   $scope.organizations = organizations;
+
+		   var groups = $scope.allData[1];
+		   groups.shift();
+		   $scope.groups = groups;
+
+		   var subgroups = $scope.allData[2];
+		   subgroups.shift();
+		   $scope.subgroups = subgroups;
+
+		   var regions = $scope.allData[3];
+		   regions.shift();
+		   $scope.regions = regions;
+		   $scope.selectedRegion = $scope.regions[0];
+
+		   var accountTypes = $scope.allData[4];
+		   accountTypes.shift();
+		   $scope.accountTypes = accountTypes;
 //			   $scope.selectedAccountType = $scope.accountTypes[0];
-			   
-			   var mediaTypes = $scope.allData[5];
-			   mediaTypes.shift();
-			   $scope.mediaTypes = mediaTypes;
+
+		   var mediaTypes = $scope.allData[5];
+		   mediaTypes.shift();
+		   $scope.mediaTypes = mediaTypes;
 //			   $scope.selectedMediaType = $scope.mediaTypes[0];
-			   
-			   var countries = $scope.allData[6];
-			   countries.shift();
-			   $scope.countries = countries;
-			   $scope.selectedCountry = $scope.countries[0];
-			   
-			   var languages = $scope.allData[7];
-			   languages.shift();
-			   $scope.languages = languages;
+
+		   var countries = $scope.allData[6];
+		   countries.shift();
+		   $scope.countries = countries;
+		   $scope.selectedCountry = $scope.countries[0];
+
+		   var languages = $scope.allData[7];
+		   languages.shift();
+		   $scope.languages = languages;
 //			   $scope.selectedLanguage = $scope.languages[0];
-			   
-			   var segments = $scope.allData[8];
-			   segments.shift();
-			   $scope.segments = segments;
+
+		   var segments = $scope.allData[8];
+		   segments.shift();
+		   $scope.segments = segments;
 //			   $scope.selectedSegment = $scope.segments[0];
+
+
+			// This scope watch function handles the many to many group -> subgroup relationship
+		   $scope.$watch('selectedGroup', function() {
+			   $scope.subgroups = subgroups;
+			   if ($scope.selectedGroup) {
+				   var ids = [];
+				   // Loop through the selected groups
+				   for (var i = 0; i < $scope.selectedGroup.length; i++) {
+					   // If the selected item has subgroup ids
+					   if ($scope.selectedGroup[i].subgroup_ids) {
+						   for (var j = 0; j < $scope.selectedGroup[i].subgroup_ids.length; j++) {
+							   ids.push($scope.selectedGroup[i].subgroup_ids[j]);
+						   }
+					   }
+
+				   }
+
+				   // Place holder array for new ids
+				   var newIds = [];
+
+				   // if there were IDs found from the groups
+				   if (ids.length > 0) {
+					   // Loop through all the subgroups
+					   for (var i = 0; i < $scope.subgroups.length; i++) {
+						   // Now loop through all of the IDs that were accumulated from previous loop
+						   for (var j = 0; j < ids.length; j++) {
+							   // If there was an ID match
+							   if ($scope.subgroups[i].id === ids[j]) {
+								   // Push to newIds array to assign later to $scope.subgroups
+								   newIds.push($scope.subgroups[i]);
+							   }
+						   }
+
+					   }
+						// Assign $scope.subgroups to the accumulated Ids
+					   $scope.subgroups = newIds;
+				   } else {
+					   // If there were no subgroup Ids for the selected group, set $scope.subgroups to empty
+					   if (newIds.length === 0) {
+						   $scope.subgroups = [];
+					   // Otherwise, reset $scope.subgroups to the full list of subgroups
+					   } else {
+						   $scope.subgroups = subgroups;
+					   }
+
+				   }
+			   }
+		   });
 			
 		});
 		

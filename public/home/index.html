@@ -154,7 +154,7 @@
 
 
 
-                <div class="col-lg-3 col-sm-3">
+                <div class="col-lg-{{ columnNum }} col-sm-{{ columnNum }}">
                     <div class="statistic-box bg-gray m-bottom-md box-small">
                         <div class="statistic-title">
                             {{ accountBlockOne }}
@@ -167,7 +167,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-sm-3">
+                <div class="col-lg-{{ columnNum }} col-sm-{{ columnNum }}">
                     <div class="statistic-box bg-gray m-bottom-md box-small">
                         <div class="statistic-title">
                             {{ accountBlockTwo }}
@@ -180,7 +180,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-sm-3">
+                <div class="col-lg-{{ columnNum }} col-sm-{{ columnNum }}">
                     <div class="statistic-box bg-gray m-bottom-md box-small">
                         <div class="statistic-title">
                             {{ accountBlockThree }}
@@ -193,7 +193,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-sm-3">
+                <div class="col-lg-{{ columnNum }} col-sm-{{ columnNum }}" ng-show="accountBlockFourData">
                     <div class="statistic-box bg-gray m-bottom-md box-small">
                         <div class="statistic-title">
                             {{ accountBlockFour }}
@@ -565,7 +565,7 @@
                                 <tr>
                                     <th class="text-left">Name</th>
                                     <th class="text-left numeric">Actions</th>
-                                    <th class="text-left numeric">New Fans</th>
+                              <!--  <th class="text-left numeric">New Fans</th> -->
                                     <th class="text-left numeric">Story Likes</th>
                                     <th class="text-left numeric">Shares</th>
                                     <th class="text-left numeric">Comments</th>
@@ -575,7 +575,7 @@
                                 <tr ng-repeat="account in fbAccounts">
                                     <td data-title="Name" class="text-left"><a class="account-link" href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'fb')">{{ account.name }}</a></td>
                                     <td data-title="Actions" class="text-left">{{ account.values[0].totals | number: 0 }}</td>
-                                    <td data-title="New Fans" class="text-left">{{ account.values[0].page_likes | number: 0 }}</td>
+                                <!--    <td data-title="New Fans" class="text-left">{{ account.values[0].page_likes | number: 0 }}</td> -->
                                     <td data-title="Story Likes" class="text-left">{{ account.values[0].story_likes | number: 0 }}</td>
                                     <td data-title="Shares" class="text-left">{{ account.values[0].shares | number: 0 }}</td>
                                     <td data-title="Comments" class="text-left">{{ account.values[0].comments | number: 0 }}</td>

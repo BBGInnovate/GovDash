@@ -217,6 +217,7 @@ class FacebookAccount < Account
           send_mq_message(rabbit)
         else
           save_post_details
+          daily_aggregate_data
           aggregate_data_daily  since.beginning_of_day, hasta.end_of_day
         end
       rescue Exception=>error
@@ -569,8 +570,12 @@ class FacebookAccount < Account
   def self.daily_aggregate_data start_date=1.year.ago, end_date=Time.now
      records = select('id, object_name,new_item').where("is_active=1").to_a
      records.each do |record|
-        puts " daily_aggregate_data for #{record.object_name}" 
-        record.daily_aggregate_data start_date, end_date
+        puts " daily_aggregate_data for #{record.id} #{record.object_name}"
+        begin 
+          record.daily_aggregate_data start_date, end_date
+        rescue Exception=>ex
+          logger.error "daily_aggregate_data for #{record.id} #{ex.message}"
+        end
      end
   end
   # run it daily to update fb_page

@@ -502,12 +502,20 @@ class FacebookAccount < Account
     
   end
   
+  def today_fbpage
+    @today_fbpage ||= Fbpage.find_by account_id: self.id,
+       post_created_time: (DateTime.now.utc.beginning_of_day..DateTime.now.utc.end_of_day)
+  end
   def today_page
-    @today_page ||= FbPage.find_or_create_by account_id: self.id,
+    @today_page ||= FbPage.find_by account_id: self.id,
        post_created_time: (DateTime.now.utc.beginning_of_day..DateTime.now.utc.end_of_day),
        object_name: self.object_name
   end
-
+  def yesterday_page
+    @yesterday = DateTime.now.utc - 1.day
+    @yesterday_page ||= FbPage.find_by account_id: self.id,
+       post_created_time: (@yesterday.beginning_of_day..@yesterday.end_of_day)
+  end
   def find_account_country loc
     cn = nil
     if loc
@@ -596,7 +604,13 @@ class FacebookAccount < Account
                 }
         curr_date = Time.zone.now.middle_of_day
         options[:post_created_time] = curr_date
-        p = Fbpage.find_or_create_by account_id: self.id, post_created_time: curr_date
+        today_page.total_likes=z['likes']
+        today_page.total_talking_about=z['talking_about_count']
+        if yesterday_page && yesterday_page.total_likes
+          today_page.fan_adds_day =today_page.total_likes - yesterday_page.total_likes
+        end
+        today_page.save
+        p = today_fbpage
         p.update_attributes options
         logger.debug "  daily_aggregate_data for #{curr_date.to_s(:db)}"
     else

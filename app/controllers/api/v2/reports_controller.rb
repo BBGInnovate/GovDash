@@ -79,6 +79,7 @@ class Api::V2::ReportsController < Api::V2::BaseController
     case media_type
     when "FacebookAccount"
       FbStat.new(@options)
+      # FbStatNew.new(@options)
     when "TwitterAccount"
       TwStat.new(@options)
     when "YoutubeAccount"

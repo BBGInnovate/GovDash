@@ -71,7 +71,7 @@ class FbStat
     sql = "DATE_FORMAT(post_created_time,'%Y-%m-%d') AS trend_date, "
     sql += " 'dai' AS trend_type,"    
     sql += select_account_name myaccounts
-    sql += " 'placeholder' AS page_likes, "   
+    sql += " 0 AS page_likes, "   
     sql += select_summary_sql
     # select_trend_page_likes(start_date,end_date,myaccounts, 1.day) # just populate  page_likes hash
     
@@ -111,151 +111,13 @@ class FbStat
     cond = ["post_created_time BETWEEN '#{start_date.beginning_of_day.to_s(:db)}' AND '#{end_date.end_of_day.to_s(:db)}' "]
     sql = "'#{start_date.strftime('%Y-%m-%d')} - #{end_date.strftime('%Y-%m-%d')}' AS period, "
     sql += select_account_name myaccounts
+    sql += " 0 as page_likes,"
     sql += " 'placeholder' as changes,"
     sql += select_summary_sql
     record = FbPage.select(sql).where(cond).where(["account_id in (?)",account_ids]).first
     record = filter_zero record
   end
-  
-  # daily insight stats 
-  # consumptions_day, story_adds_day, fan_adds_day
-  def insight_by
-    account_ids = options[:account_ids]
-    records = []
-    records << get_insight_by_period(period1_from_date, period1_end_date,account_ids)
-    records << get_insight_by_period(period2_from_date, period2_end_date,account_ids)
-    records.flatten!
-    final_results << {:insights=>records}
-  end
-   
-  # insight stats 
-  # story_adds_by_story_type_day
-  def story_adds_by_story_type_day
-    logger.warn "DEPRECATED 'story_adds_by_story_type_day' use 'story_adds_by_story_type_period' instead"
-    story_adds_by_story_type_period
-  end
- 
-  def story_adds_by_story_type_period
-    account_ids = options[:account_ids]
-    records = []
-    records << get_story_adds_by_story_type_period_by(period1_from_date, period1_end_date,account_ids)
-    records << get_story_adds_by_story_type_period_by(period2_from_date, period2_end_date,account_ids)
-    records.flatten!
-    final_results << {:story_adds_by_story_type_period=>records}
-  end
-    
-  # weekly insight stats 
-  # page_stories_week
-  def stories_week_by
-    account_ids = options[:account_ids]
-    records = []
-    
-     [[period1_from_date,period1_end_date],
-      [period2_from_date,period2_end_date]].each do |period|   
-        rec = get_stories_week_by(period[0],period[1],account_ids).first      
-      if !rec
-        records << [{'date'=>to_date.strftime('%Y-%m-%d'),'stories_week'=>0}]
-      else
-        attributes = rec.attributes
-        # remove id from attr
-        attributes.delete('id')
-        records << attributes 
-      end
-    end
-    records.flatten!
-    final_results << {:stories_week=>records}
-  end
-  # insight stats 
-  # stories_by_story_type_week
-  def story_type_week_by
-    account_ids = options[:account_ids] 
-    records = []
-    [current_from_date, end_date].each do |period|   
-      records << get_story_type_week_by(period,period,account_ids)     
-    end
-    records.flatten!
-    final_results << {:story_type_week=>records}
-  end
-  
-  # insight stats 
-  # 
-  def consumption_type_day_by
-    account_ids = options[:account_ids] 
-    records = []  
-    records << get_consumption_type_period_by(period1_from_date,period1_end_date,account_ids)
-    records.flatten!    
-    records << get_consumption_type_period_by(period2_from_date,period2_end_date,account_ids)
-    records.flatten!
-    final_results << {:consumption_type_day=>records}
-  end
-  
-  # this likes is the same as in https://www.facebook.com/voiceofamerica
-  def get_likes
-    today = Time.zone.now
-    if post_created_time > today.beginning_of_day &&
-       post_created_time <= today.end_of_day
-       link = "https://graph.facebook.com/?id=#{self.account.object_name}"
-       response = fetch(link)
-       json = JSON.parse response.body
-       likes = json['likes']
-       likes
-    end
-  end
-  
-  def save_lifetime_data
-    today = Time.zone.now
-    if post_created_time > today.beginning_of_day &&
-       post_created_time <= today.end_of_day
-       # link = "https://graph.facebook.com/?id=http://www.voanews.com"
-       link = "https://graph.facebook.com/?id=#{self.object_name}"
-       response = fetch(link)
-       json = JSON.parse response.body
-       websites = json['website'].split(' ')
-       
-       shares = 0
-       begin
-         websites.each do |website|
-           if !website.match(/http:\/\/|https:\/\//)
-             website = "http://#{website}"
-           end
-           link = "https://graph.facebook.com/?id=#{website}"
-           response = fetch(link)
-           json = JSON.parse response.body
-           shares += json['shares'].to_i
-         end
-       rescue Exception=>error
-         puts "FbStat#save_lifetime_data #{error.message}"
-         error.backtrace[0..10].each do |m|
-           logger.error "#{m}"
-         end
-       end
-       @page = self.account.graph_api.get_object self.object_name
-       res = FbPage.where(:account_id=>self.account_id).select("sum(comments) AS comments").first
-       
-       self.update_attributes :total_shares=>shares, :total_likes=>@page['likes'], 
-         :total_comments => res.comments,
-         :total_talking_about=>@page['talking_about_count']
-    end
-  end
 
-  protected
-
-  def get_lifetime_result rec1, rec2
-    results = []
-    [rec1, rec2].each_with_index do |rec, i|
-      result = init_struct
-      total = (rec.total_likes + rec.total_shares + rec.total_talking_about )
-      result.values = {:date=>rec.date,
-          :total_likes=>rec.total_likes,
-          :total_shares=>rec.total_shares,
-          :total_talking_about=>rec.total_talking_about,
-          :totals=>total
-          }
-      results << result.values
-    end
-    results
-  end
-  
   
   def get_detail_result rec1, rec2
     pagelikes = calculate_pagelikes rec1, rec2
@@ -274,6 +136,7 @@ class FbStat
       total = (pagelikes[i] + rec.likes + rec.shares + @comments[i])
       totals << total
       result.data = {:period=>rec.period,
+          :page_likes=>rec.page_likes,
           :story_likes=>rec.likes,
           :shares=>rec.shares,
           :comments=>@comments[i],
@@ -282,7 +145,7 @@ class FbStat
       if i == 1
         rate = ((totals[1]-totals[0])*100/totals[0].to_f).round rescue 0 # 'N/A'
         rate = "#{rate} %" if rate!='N/A'
-        result.data[:changes] = {
+        result.data[:changes] = {:page_likes=>@page_likes_change,
           :story_likes=>@likes_change,:shares=>@shares_change,
           :comments=>@comments_change,
           :totals=>rate}
@@ -310,6 +173,7 @@ class FbStat
       total = (pagelikes[i] + rec.likes + rec.shares + @comments[i])
       totals << total
       result.values = {:period=>rec.period,
+          :page_likes=>rec.page_likes,
           :story_likes=>rec.likes,
           :shares=>rec.shares,
           :comments=>@comments[i],
@@ -319,7 +183,7 @@ class FbStat
       if (i == 1)
         rate = ((totals[1]-totals[0])*100/totals[0].to_f).round rescue 'N/A'
         rate = "#{rate} %" if rate!='N/A'
-        result.values[:changes]={
+        result.values[:changes]={:page_likes=>@page_likes_change,
            :story_likes=>@likes_change,:shares=>@shares_change,
            :comments=>@comments_change,
            :totals=>rate}
@@ -329,6 +193,7 @@ class FbStat
     results
   end
 
+  # used by ReadStatDetail
   def set_engagement_data rec
     pagelikes = rec.fan_adds_day.to_i
     comments=rec.comments + rec.replies_to_comment
@@ -339,6 +204,7 @@ class FbStat
    }
   end
   
+=begin 
   def set_page_likes started, ended, myaccounts
     account_ids = myaccounts.map{|a| a.id}
     cond = ["post_created_time BETWEEN '#{started.beginning_of_day.to_s(:db)}' AND '#{ended.end_of_day.to_s(:db)}' "]
@@ -361,36 +227,23 @@ class FbStat
   def set_extra_page_likes date, myaccounts
     pre = date - 1.day
     set_page_likes pre,pre, myaccounts
-    # get_select_lifetime(pre,pre, myaccounts)
   end
+=end
   
   def calculate_pagelikes rec1, rec2
     likes1 = rec1.fan_adds_day rescue 0
     likes2 = rec2.fan_adds_day rescue 0
     @pagelikes = [likes1,likes2]
   end
-  
+  #  fan_adds_day is calculated by FacebookAccount#daily_aggregate_data
   def select_summary_sql
-      select_summary_sql_page
-     # select_summary_sql_post
-  end
-  
-  def select_summary_sql_page
     sql = "max(post_created_time) as post_created_time," 
     sql += "COALESCE(sum(replies_to_comment),0) as replies_to_comment,"
     sql += "COALESCE(sum(fan_adds_day),0) as fan_adds_day,"
     sql += "COALESCE(sum(likes),0) as likes,COALESCE(sum(shares),0) as shares, "
     sql += "COALESCE(sum(comments),0) as comments, COALESCE(sum(posts),0) as posts"
   end
-  
-  def select_summary_sql_post
-    sql = "max(post_created_time) as post_created_time," 
-    sql += "COALESCE(sum(replies_to_comment),0) as replies_to_comment,"
-    sql += "COALESCE(0) as fan_adds_day,"
-    sql += "COALESCE(sum(likes),0) as likes,COALESCE(sum(shares),0) as shares, "
-    sql += "COALESCE(sum(comments),0) as comments, COALESCE(count(*)) as posts"
-  end
-  
+
   def compute_changes rec1, rec2
     if !rec1
       @comments_change=(rec2.replies_to_comment + rec2.comments)
@@ -456,12 +309,13 @@ class FbStat
     total = (@pagelikes[idx] + rec.likes + rec.shares + @comments[idx])
     result.data = {:period=>rec.period,
           :story_likes=>rec.likes,
+          :page_likes=>rec.page_likes,
           :shares=>rec.shares,
           :comments=>@comments[idx],
           :totals=>total
           }
     ch = 'N/A'
-    result.data[:changes] = {
+    result.data[:changes] = {:page_likes=>ch,
           :story_likes=>ch,
           :shares=>ch,
           :comments=>ch,
@@ -628,4 +482,145 @@ class FbStat
     arrays.flatten
   end
 =end
+=begin   
+  # daily insight stats 
+  # consumptions_day, story_adds_day, fan_adds_day
+  def insight_by
+    account_ids = options[:account_ids]
+    records = []
+    records << get_insight_by_period(period1_from_date, period1_end_date,account_ids)
+    records << get_insight_by_period(period2_from_date, period2_end_date,account_ids)
+    records.flatten!
+    final_results << {:insights=>records}
+  end
+   
+  # insight stats 
+  # story_adds_by_story_type_day
+  def story_adds_by_story_type_day
+    logger.warn "DEPRECATED 'story_adds_by_story_type_day' use 'story_adds_by_story_type_period' instead"
+    story_adds_by_story_type_period
+  end
+ 
+  def story_adds_by_story_type_period
+    account_ids = options[:account_ids]
+    records = []
+    records << get_story_adds_by_story_type_period_by(period1_from_date, period1_end_date,account_ids)
+    records << get_story_adds_by_story_type_period_by(period2_from_date, period2_end_date,account_ids)
+    records.flatten!
+    final_results << {:story_adds_by_story_type_period=>records}
+  end
+    
+  # weekly insight stats 
+  # page_stories_week
+  def stories_week_by
+    account_ids = options[:account_ids]
+    records = []
+    
+     [[period1_from_date,period1_end_date],
+      [period2_from_date,period2_end_date]].each do |period|   
+        rec = get_stories_week_by(period[0],period[1],account_ids).first      
+      if !rec
+        records << [{'date'=>to_date.strftime('%Y-%m-%d'),'stories_week'=>0}]
+      else
+        attributes = rec.attributes
+        # remove id from attr
+        attributes.delete('id')
+        records << attributes 
+      end
+    end
+    records.flatten!
+    final_results << {:stories_week=>records}
+  end
+  # insight stats 
+  # stories_by_story_type_week
+  def story_type_week_by
+    account_ids = options[:account_ids] 
+    records = []
+    [current_from_date, end_date].each do |period|   
+      records << get_story_type_week_by(period,period,account_ids)     
+    end
+    records.flatten!
+    final_results << {:story_type_week=>records}
+  end
+  
+  # insight stats 
+  # 
+  def consumption_type_day_by
+    account_ids = options[:account_ids] 
+    records = []  
+    records << get_consumption_type_period_by(period1_from_date,period1_end_date,account_ids)
+    records.flatten!    
+    records << get_consumption_type_period_by(period2_from_date,period2_end_date,account_ids)
+    records.flatten!
+    final_results << {:consumption_type_day=>records}
+  end
+ 
+  # this likes is the same as in https://www.facebook.com/voiceofamerica
+  def get_likes
+    today = Time.zone.now
+    if post_created_time > today.beginning_of_day &&
+       post_created_time <= today.end_of_day
+       link = "https://graph.facebook.com/?id=#{self.account.object_name}"
+       response = fetch(link)
+       json = JSON.parse response.body
+       likes = json['likes']
+       likes
+    end
+  end
+  
+  def save_lifetime_data
+    today = Time.zone.now
+    if post_created_time > today.beginning_of_day &&
+       post_created_time <= today.end_of_day
+       # link = "https://graph.facebook.com/?id=http://www.voanews.com"
+       link = "https://graph.facebook.com/?id=#{self.object_name}"
+       response = fetch(link)
+       json = JSON.parse response.body
+       websites = json['website'].split(' ')
+       
+       shares = 0
+       begin
+         websites.each do |website|
+           if !website.match(/http:\/\/|https:\/\//)
+             website = "http://#{website}"
+           end
+           link = "https://graph.facebook.com/?id=#{website}"
+           response = fetch(link)
+           json = JSON.parse response.body
+           shares += json['shares'].to_i
+         end
+       rescue Exception=>error
+         puts "FbStat#save_lifetime_data #{error.message}"
+         error.backtrace[0..10].each do |m|
+           logger.error "#{m}"
+         end
+       end
+       @page = self.account.graph_api.get_object self.object_name
+       res = FbPage.where(:account_id=>self.account_id).select("sum(comments) AS comments").first
+       
+       self.update_attributes :total_shares=>shares, :total_likes=>@page['likes'], 
+         :total_comments => res.comments,
+         :total_talking_about=>@page['talking_about_count']
+    end
+  end
+=end
+  protected
+=begin
+  def get_lifetime_result rec1, rec2
+    results = []
+    [rec1, rec2].each_with_index do |rec, i|
+      result = init_struct
+      total = (rec.total_likes + rec.total_shares + rec.total_talking_about )
+      result.values = {:date=>rec.date,
+          :total_likes=>rec.total_likes,
+          :total_shares=>rec.total_shares,
+          :total_talking_about=>rec.total_talking_about,
+          :totals=>total
+          }
+      results << result.values
+    end
+    results
+  end
+=end
+  
 end

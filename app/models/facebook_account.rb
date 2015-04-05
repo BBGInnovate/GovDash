@@ -507,7 +507,7 @@ class FacebookAccount < Account
        post_created_time: (DateTime.now.utc.beginning_of_day..DateTime.now.utc.end_of_day)
   
     if !@today_fbpage
-      @today_fbpage = Fbpage.create_by account_id: self.id,
+      @today_fbpage = Fbpage.create account_id: self.id,
          post_created_time: DateTime.now.utc.middle_of_day
       @today_fbpage.object_name = self.object_name
     end
@@ -518,7 +518,7 @@ class FacebookAccount < Account
     @today_page ||= FbPage.find_by account_id: self.id,
        post_created_time: (DateTime.now.utc.beginning_of_day..DateTime.now.utc.end_of_day)
     if !@today_page
-      @today_page = FbPage.create_by account_id: self.id,
+      @today_page = FbPage.create account_id: self.id,
          post_created_time: DateTime.now.utc.beginning_of_day
       @today_page.object_name = self.object_name
     end
@@ -1236,11 +1236,11 @@ end
   
   def delete_rows
     FacebookAccount.where("id > 1").each do | a |
-      date = Time.zone.now.middle_of_day - 1.month
+      date = 2.months.ago #Time.zone.now
       pages = FbPage.where(account_id: a.id).
                  where(post_created_time: (date.beginning_of_day..date.end_of_day)).to_a
      
-      while (date > 3.months.ago)
+      while (date > 6.months.ago)
        if pages.size > 1
          pages[1..-1].each do |p|
            puts " delete #{a.id}: Date #{date.to_s(:db)}"

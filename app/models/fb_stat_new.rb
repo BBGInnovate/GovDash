@@ -15,7 +15,7 @@ class FbStatNew
   # to get net new data for the day
   def process_records records, min, max
     # records=[1,3,3,4,5,6,7,8,10]
-    records2=records[1..-1]
+    records2=records[1..-1].clone
     results = []
     records2.each_with_index  do |record, i |
       # puts "  AAA #{i} #{record.nil?} record post_created_time = #{record.post_created_time}"

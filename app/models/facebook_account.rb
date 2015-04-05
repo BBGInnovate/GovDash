@@ -505,11 +505,23 @@ class FacebookAccount < Account
   def today_fbpage
     @today_fbpage ||= Fbpage.find_by account_id: self.id,
        post_created_time: (DateTime.now.utc.beginning_of_day..DateTime.now.utc.end_of_day)
+  
+    if !@today_fbpage
+      @today_fbpage = Fbpage.create_by account_id: self.id,
+         post_created_time: DateTime.now.utc.middle_of_day
+      @today_fbpage.object_name = self.object_name
+    end
+    @today_fbpage.object_name = self.object_name
+    @today_fbpage
   end
   def today_page
     @today_page ||= FbPage.find_by account_id: self.id,
-       post_created_time: (DateTime.now.utc.beginning_of_day..DateTime.now.utc.end_of_day),
-       object_name: self.object_name
+       post_created_time: (DateTime.now.utc.beginning_of_day..DateTime.now.utc.end_of_day)
+    if !@today_page
+      @today_page = FbPage.create_by account_id: self.id,
+         post_created_time: DateTime.now.utc.beginning_of_day
+      @today_page.object_name = self.object_name
+    end
   end
   def yesterday_page
     @yesterday = DateTime.now.utc - 1.day
@@ -1204,6 +1216,44 @@ end
     
     tw=new_tw.map(&:object_name)
     old_tw-tw=["chastime", "voadeewa", "radiosvoboda", "RadioFreeAsia"]
+  end
+  
+  def clean_day_page a, date, pages
+     while (date > 3.months.ago)
+       if pages.size > 1
+         pages[1..-1].each do |p|
+           puts " delete #{a.id}: Date #{date.to_s(:db)}"
+           p.destroy!
+         end
+       else
+         puts " skip #{a.id}: Date #{date.to_s(:db)}"
+       end
+       date = date - 1.day
+       pages = FbPage.where(account_id: a.id).
+                 where(post_created_time: date).to_a
+     end
+  end
+  
+  def delete_rows
+    FacebookAccount.where("id > 1").each do | a |
+      date = Time.zone.now.middle_of_day - 1.month
+      pages = FbPage.where(account_id: a.id).
+                 where(post_created_time: (date.beginning_of_day..date.end_of_day)).to_a
+     
+      while (date > 3.months.ago)
+       if pages.size > 1
+         pages[1..-1].each do |p|
+           puts " delete #{a.id}: Date #{date.to_s(:db)}"
+           p.destroy!
+         end
+       else
+         puts " skip #{a.id}: Date #{date.to_s(:db)}"
+       end
+       date = date - 1.day
+       pages = FbPage.where(account_id: a.id).
+                 where(post_created_time: (date.beginning_of_day..date.end_of_day)).to_a
+     end
+    end; nil
   end
   
 =end

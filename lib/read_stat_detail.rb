@@ -20,7 +20,8 @@ module ReadStatDetail
      #use ALL given accounts for Sitecatalyst reports
      self.sc_accounts = options[:accounts]
      self.account_hash = {'ScStat'=>sc_accounts,
-                          'FbStat'=>fb_accounts, 
+                          'FbStat'=>fb_accounts,
+                          'FbStatNew'=>fb_accounts,
                           'TwStat'=>tw_accounts,
                           'YtStat'=>yt_accounts}
      self.end_date = parse_date(options[:end_date])

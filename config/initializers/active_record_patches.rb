@@ -96,6 +96,7 @@ class ActiveRecord::Base
 
   # copied from Delayed_job::Worker
   def say(text, level=Rails.logger.level)
+    return
     text = "[Worker(#{name})] #{text}"
     puts text unless @quiet
     return unless logger

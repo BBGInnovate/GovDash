@@ -503,6 +503,7 @@ class FacebookAccount < Account
   end
   
   def today_fbpage
+    d = DateTime.now.utc
     @today_fbpage ||= Fbpage.where(account_id: self.id).
          where(post_created_time: (d.beginning_of_day..d.end_of_day)).
          order('updated_at desc').first

@@ -35,7 +35,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 
   		
   		Accounts.create(this.name, this.description, this.object_name, 
-  		this.selectedMediaType.name, this.selectedOrganization.id, groups, subgroups,
+  		this.selectedMediaType.name, groups, subgroups,
 			languages, regions, countries, this.selectedAccountType.id, segments)
 			.then(function(response) {
 		   		$location.path('accounts');
@@ -70,7 +70,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		Accounts.getAccountById($routeParams.accountId)
             .then(function(response) {
                $scope.account = response.data[0];
-               var organizationId = $scope.account.organization_id;
+          //     var organizationId = $scope.account.organization_id;
                var groupIds = $scope.account.group_ids;
                var subgroupIds = $scope.account.subgroup_ids;
                var regionIds = $scope.account.region_ids;
@@ -87,6 +87,8 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 					mediaTypeId = 1;
 			   } else if (mediaType.indexOf('Twitter') > -1) {
 					mediaTypeId = 2;
+			   } else if (mediaType.indexOf('Youtube') > -1) {
+				   mediaTypeId = 3;
 			   }
              
            
@@ -99,7 +101,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 				Accounts.getAllDataForAccounts()
 					.then(function(response) {
 					   $scope.allData = response.data;
-			  
+			  /*
 					   var organizations = $scope.allData[0];
 					   organizations.shift();
 					   $scope.organizations = organizations;
@@ -108,7 +110,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 								 $scope.selectedOrganization = $scope.organizations[i];
 							}
 					   }
-
+				*/
 					   var groups = $scope.allData[1];
 					   groups.shift();
 					   $scope.groups = groups;
@@ -206,7 +208,56 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 					   		}
 					   }
 					   $scope.selectedSegment = selectedSegments;
-			  
+
+
+
+						// This scope watch function handles the many to many group -> subgroup relationship
+						$scope.$watch('selectedGroups', function() {
+							$scope.subgroups = subgroups;
+							if ($scope.selectedGroups) {
+								var ids = [];
+								// Loop through the selected groups
+								for (var i = 0; i < $scope.selectedGroups.length; i++) {
+									// If the selected item has subgroup ids
+									if ($scope.selectedGroups[i].subgroup_ids) {
+										for (var j = 0; j < $scope.selectedGroups[i].subgroup_ids.length; j++) {
+											ids.push($scope.selectedGroups[i].subgroup_ids[j]);
+										}
+									}
+
+								}
+
+								// Place holder array for new ids
+								var newIds = [];
+
+								// if there were IDs found from the groups
+								if (ids.length > 0) {
+									// Loop through all the subgroups
+									for (var i = 0; i < $scope.subgroups.length; i++) {
+										// Now loop through all of the IDs that were accumulated from previous loop
+										for (var j = 0; j < ids.length; j++) {
+											// If there was an ID match
+											if ($scope.subgroups[i].id === ids[j]) {
+												// Push to newIds array to assign later to $scope.subgroups
+												newIds.push($scope.subgroups[i]);
+											}
+										}
+
+									}
+									// Assign $scope.subgroups to the accumulated Ids
+									$scope.subgroups = newIds;
+								} else {
+									// If there were no subgroup Ids for the selected group, set $scope.subgroups to empty
+									if (newIds.length === 0) {
+										$scope.subgroups = [];
+										// Otherwise, reset $scope.subgroups to the full list of subgroups
+									} else {
+										$scope.subgroups = subgroups;
+									}
+
+								}
+							}
+						});
 					   
 				
 				});
@@ -237,10 +288,20 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 		for (var i = 0; i < this.selectedSegment.length; i++) {
   			segments.push(this.selectedSegment[i].id);
   		}
+
+		var groups = [];
+		for (var i = 0; i < this.selectedGroups.length; i++) {
+			groups.push(this.selectedGroups[i].id);
+		}
+
+		var languages = [];
+		for (var i = 0; i < this.selectedLanguages.length; i++) {
+			languages.push(this.selectedLanguages[i].id);
+		}
   		
   		Accounts.update($routeParams.accountId, $scope.account.name, 
   		$scope.account.description, $scope.account.object_name, $scope.media_type_name,
-  		$scope.selectedGroup.id, subgroups, $scope.selectedLanguage.id, 
+  		groups, subgroups, languages,
   		regions, countries, $scope.selectedAccountType.id, segments)
             .then(function(response) {
                $location.path('accounts');
@@ -253,11 +314,11 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 		// Load all data for Accounts
 		Accounts.getAllDataForAccounts().then(function(response) {
 		   $scope.allData = response.data;
-
+/*
 		   var organizations = $scope.allData[0];
 			organizations.shift();
 		   $scope.organizations = organizations;
-
+*/
 		   var groups = $scope.allData[1];
 		   groups.shift();
 		   $scope.groups = groups;

@@ -1226,7 +1226,7 @@ end
      return if pages.empty?
      to_delete = []
      page_class = pages.first.class
-     while (date > 6.months.ago)
+     while (date > 21.days.ago)
        if pages.size > 1
          pages[1..-1].each do |p|
            puts " delete #{a.id}: Date #{date.to_s(:db)}"
@@ -1234,7 +1234,7 @@ end
            #p.destroy!
          end
        else
-         puts " skip #{a.id}: Date #{date.to_s(:db)}"
+         # puts " skip #{a.id}: Date #{date.to_s(:db)}"
        end
        date = date - 1.day
        pages = page_class.where(account_id: a.id).
@@ -1244,6 +1244,9 @@ end
      end
      if !to_delete.empty?
        page_class.delete_all("id in (#{to_delete.join(',')})")
+       puts "  #{pages[0].object_name} Deleted #{to_delete.size} from #{page_class.table_name}"
+     else
+       # puts "  Nothing to delete "
      end
   end
   
@@ -1262,9 +1265,8 @@ end
          order("created_at desc").to_a
      
       clean_day_page a, date, pages
-     end
-
     end; nil
+
   end
   
 =end

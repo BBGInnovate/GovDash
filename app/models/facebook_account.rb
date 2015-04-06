@@ -503,9 +503,9 @@ class FacebookAccount < Account
   end
   
   def today_fbpage
-    @today_fbpage ||= Fbpage.find_by account_id: self.id,
-       post_created_time: (DateTime.now.utc.beginning_of_day..DateTime.now.utc.end_of_day)
-  
+    @today_fbpage ||= Fbpage.where(account_id: self.id).
+         where(post_created_time: (d.beginning_of_day..d.end_of_day)).
+         order('updated_at desc').first
     if !@today_fbpage
       @today_fbpage = Fbpage.create account_id: self.id,
          post_created_time: DateTime.now.utc.middle_of_day
@@ -514,19 +514,22 @@ class FacebookAccount < Account
     @today_fbpage
   end
   def today_page
-    @today_page ||= FbPage.find_by account_id: self.id,
-       post_created_time: (DateTime.now.utc.beginning_of_day..DateTime.now.utc.end_of_day)
+    d = DateTime.now.utc
+    @today_page ||= FbPage.where(account_id: self.id).
+         where(post_created_time: (d.beginning_of_day..d.end_of_day)).
+         order('updated_at desc').first
     if !@today_page
       @today_page = FbPage.create account_id: self.id,
-         post_created_time: DateTime.now.utc.beginning_of_day
+         post_created_time: DateTime.now.utc.middle_of_day
       @today_page.object_name = self.object_name
     end
     @today_page
   end
   def yesterday_page
-    @yesterday = DateTime.now.utc - 1.day
-    @yesterday_page ||= FbPage.find_by account_id: self.id,
-       post_created_time: (@yesterday.beginning_of_day..@yesterday.end_of_day)
+    d = DateTime.now.utc - 1.day
+    @yesterday_page ||= FbPage.where(account_id: self.id).
+         where(post_created_time: (d.beginning_of_day..d.end_of_day)).
+         order('updated_at desc').first
   end
   def find_account_country loc
     cn = nil
@@ -1219,30 +1222,10 @@ end
   end
   
   def clean_day_page a, date, pages
-     while (date > 3.months.ago)
-       if pages.size > 1
-         pages[1..-1].each do |p|
-           puts " delete #{a.id}: Date #{date.to_s(:db)}"
-           p.destroy!
-         end
-       else
-         puts " skip #{a.id}: Date #{date.to_s(:db)}"
-       end
-       date = date - 1.day
-       pages = FbPage.where(account_id: a.id).
-                 where(post_created_time: date).to_a
-     end
-  end
-  
-  def delete_rows
-    FacebookAccount.where("id > 0").each do | a |
-      to_delete = []
-      date = Time.zone.now
-      pages = FbPage.where(account_id: a.id).
-                 where("likes is null and comments  is null and  shares  is null").
-                 where(post_created_time: (date.beginning_of_day..date.end_of_day)).to_a
-     
-      while (date > 6.months.ago)
+     return if pages.empty?
+     to_delete = []
+     page_class = pages.first.class
+     while (date > 6.months.ago)
        if pages.size > 1
          pages[1..-1].each do |p|
            puts " delete #{a.id}: Date #{date.to_s(:db)}"
@@ -1253,13 +1236,33 @@ end
          puts " skip #{a.id}: Date #{date.to_s(:db)}"
        end
        date = date - 1.day
-       pages = FbPage.where(account_id: a.id).
-                 where("likes is null and comments  is null and  shares  is null").
-                 where(post_created_time: (date.beginning_of_day..date.end_of_day)).to_a
+       pages = page_class.where(account_id: a.id).
+         # where("likes is null and comments  is null and  shares  is null").
+         where(post_created_time: (date.beginning_of_day..date.end_of_day)).
+         order("created_at desc").to_a
      end
      if !to_delete.empty?
-       FbPage.delete_all("id in (to_delete.join(','))")
+       page_class.delete_all("id in (#{to_delete.join(',')})")
      end
+  end
+  
+  def delete_rows
+    FacebookAccount.where("id > 0").each do | a |
+      date = Time.zone.now
+      pages = FbPage.where(account_id: a.id).
+         # where("likes is null and comments  is null and  shares  is null").
+         where(post_created_time: (date.beginning_of_day..date.end_of_day)).
+         order("created_at desc").to_a
+     
+      clean_day_page a, date, pages
+      date = Time.zone.now
+      pages = Fbpage.where(account_id: a.id).
+         where(post_created_time: (date.beginning_of_day..date.end_of_day)).
+         order("created_at desc").to_a
+     
+      clean_day_page a, date, pages
+     end
+
     end; nil
   end
   

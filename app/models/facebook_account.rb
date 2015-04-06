@@ -676,7 +676,7 @@ class FacebookAccount < Account
           where(post_created_time: (begin_date..end_date)).first
     if !rec
        rec = FbPage.create :account_id => self.id, 
-             :post_created_time=>created_time,
+             :post_created_time=>created_time.middle_of_day,
              :object_name => self.object_name
     end
     rec.update_attributes options

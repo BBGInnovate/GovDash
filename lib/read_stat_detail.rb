@@ -85,7 +85,10 @@ module ReadStatDetail
     records = []
     hash = {}
     dates = calculated_dates
+    # summary with dates[0], dates[1]
+    # so this is one record
     rec1 = get_select_by(dates[0], dates[1], accounts)
+    # summary with dates[2], dates[3]
     rec2 = get_select_by(dates[2], dates[3], accounts)
     
     records << rec1 # if rec1
@@ -254,15 +257,6 @@ module ReadStatDetail
       return []
     end
     avail_dates = records.map{|rec| rec.trend_date}
-=begin
-    if records.first
-      trend_type = records.first.trend_type 
-    elsif ScStat === self
-      trend_type = 'day'
-    else
-      trend_type = 'week'
-    end
-=end
     if self.trend_period == 'month'
       increment = 1.month
       current_date = start_date.end_of_month

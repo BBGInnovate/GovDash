@@ -8,27 +8,81 @@ class FbStatNew
   include ReadStatDetail
   
   SelectedColumns = ['replies_to_comment','total_likes','likes','shares', 'comments','posts']
-  FbPageClass = FbPage
-  # FbPageClass = Fbpage
+  # FbPageClass = FbPage
+  FbPageClass = Fbpage
+  
+  # get net increase between two date endpoints
+  def get_net_increase records, min, max
+    if records.empty?
+      rec = OpenStruct.new
+      rec.week_start_date = min
+      rec.id = nil
+      rec.period = "#{min.strftime('%Y-%m-%d')} - #{max.strftime('%Y-%m-%d')}"
+      rec.trend_date = min.to_s
+      rec.trend_type = "trend_type"
+      rec.likes = 0
+      rec.shares = 0
+      rec.replies_to_comment = 0
+      rec.comments = 0
+      rec.total_likes = 0
+      rec.page_likes = 0
+      return rec
+    end
+    # records is in post_created_time order
+    records.each.with_index do |rec, i|
+       # puts rec.inspect
+       if OpenStruct === rec
+         if i < (records.size-1)
+           SelectedColumns.each do | col |
+             records[i].send "#{col}=", records[i+1].send(col).to_i
+           end
+         end
+       end
+    end
+    rec1 = records.first
+    rec2 = records.last
+    SelectedColumns.each do | col |
+      rec2.send "#{col}=", (rec2.send(col).to_i - rec1.send(col).to_i)
+    end
+    # from now on, rec2 is the net increase of 
+    # records.last and records.first 
+    rec2
+  end
   
   # all columns are life time data. So minus previous day's data
   # to get net new data for the day
   def process_records records, min, max
-    # records=[1,3,3,4,5,6,7,8,10]
-    records2=records[1..-1].clone
-    results = []
-    records2.each_with_index  do |record, i |
-      # puts "  AAA #{i} #{record.nil?} record post_created_time = #{record.post_created_time}"
-      SelectedColumns.each do | col |
-        record.send "#{col}=", (record.send(col).to_i - records[i].send(col).to_i)
-      end
-      record.page_likes = record.total_likes
-      results << record
+    # records is in post_created_time order
+    records.each.with_index do |rec, i|
+       # puts rec.inspect
+       if OpenStruct === rec
+         if i < (records.size-1)
+           SelectedColumns.each do | col |
+             records[i].send "#{col}=", records[i+1].send(col).to_i
+           end
+         end
+       end
     end
+    results = []
+    records.each do | rec |
+      results << Marshal.load( Marshal.dump(rec) )
+    end
+    
+    records.each_with_index do |record, i|
+      break if i == (records.size-1)
+      SelectedColumns.each do | col |
+        results[i+1].send "#{col}=", (records[i+1].send(col).to_i - record.send(col).to_i)
+      end
+      #puts "   BBBB #{results[i+1].trend_date} #{results[i+1].likes}"
+      puts
+      results[i+1].page_likes = results[i+1].total_likes
+      results[i+1].fan_adds_day = results[i+1].total_likes
+    end
+    results.shift    
     results
   end
   def as_periods min, max
-    sql = " CONCAT_WS(' - ',#{min.strftime('%Y-%m-%d')},#{max.strftime('%Y-%m-%d')}) AS period,"   
+    sql = " CONCAT_WS(' - ','#{min.strftime('%Y-%m-%d')}','#{max.strftime('%Y-%m-%d')}') AS period,"   
   end
   def get_select_trend_by_month start_date,myend_date, myaccounts
     if myend_date.day != myend_date.end_of_month.day
@@ -66,8 +120,10 @@ class FbStatNew
     process_records records, min, max
   end
   def get_select_trend_by_day start_date,end_date, myaccounts
-    min = start_date.beginning_of_month.beginning_of_day - 1.day
-    max = end_date.end_of_month.end_of_day
+    puts "  Calling  get_select_trend_by_day #{start_date},#{end_date}"
+    puts
+    min = start_date.beginning_of_day - 1.day
+    max = end_date.end_of_day
     account_ids = myaccounts.map{|a| a.id}
     sql = "DATE_FORMAT(post_created_time,'%Y-%m-%d') AS trend_date, "
     sql += " 'dai' AS trend_type,"    
@@ -76,7 +132,7 @@ class FbStatNew
       where(post_created_time: (min..max)).
       where(["account_id in (?)",account_ids]).
       group("trend_date").to_a
-    records = fill_missing_rows records, start_date,end_date
+    records = fill_missing_rows records, min,max
     process_records records, min, max
   end
 
@@ -84,16 +140,21 @@ class FbStatNew
   # myaccounts : array of Account object
   # return one active_record
   def get_select_by start_date, end_date, myaccounts
-    min = start_date.beginning_of_month.beginning_of_day - 1.day
-    max = end_date.end_of_month.end_of_day
+    puts "  Calling get_select_by"
+    puts
+    min = start_date.beginning_of_day
+    max = end_date.end_of_day
     account_ids = myaccounts.map{|a| a.id}
     cond = ["post_created_time BETWEEN '#{start_date.beginning_of_day.to_s(:db)}' AND '#{end_date.end_of_day.to_s(:db)}' "]
-    sql = "'#{start_date.strftime('%Y-%m-%d')} - #{end_date.strftime('%Y-%m-%d')}' AS period, "
+    sql = as_periods(min, max)
+    sql += " post_created_time AS trend_date," 
     sql += select_summary_sql myaccounts
-    record = FbPageClass.select(sql).
+    records = FbPageClass.select(sql).
       where(post_created_time: (min..max)).
-      where(["account_id in (?)",account_ids]).first
-    record = filter_zero record
+      where(["account_id in (?)",account_ids]).to_a
+    # record = filter_zero record
+    records = fill_missing_rows records, min,max
+    get_net_increase records, min, max
   end
 
   protected
@@ -116,7 +177,10 @@ class FbStatNew
   
   
   def get_detail_result rec1, rec2
+    puts "    get_detail_result #{rec1.inspect}"
+    puts "    get_detail_result #{rec2.inspect}"
     pagelikes = calculate_pagelikes rec1, rec2
+    
     compute_changes rec1, rec2   
     @page_likes_change = compute_change(pagelikes[1],pagelikes[0])
     if !rec1
@@ -133,7 +197,7 @@ class FbStatNew
       totals << total
       result.data = {:period=>rec.period,
           :story_likes=>rec.likes,
-          :page_likes=>rec.page_likes,
+          :page_likes=>rec.total_likes,
           :shares=>rec.shares,
           :comments=>@comments[i],
           :totals=>total
@@ -170,7 +234,7 @@ class FbStatNew
       totals << total
       result.values = {:period=>rec.period,
           :story_likes=>rec.likes,
-          :page_likes=>rec.page_likes,
+          :page_likes=>rec.total_likes,
           :shares=>rec.shares,
           :comments=>@comments[i],
           :totals=>total
@@ -202,8 +266,8 @@ class FbStatNew
   # total_likes into net new page likes after
   # process_records
   def calculate_pagelikes rec1, rec2
-    likes1 = rec1.page_likes rescue 0
-    likes2 = rec2.page_likes rescue 0
+    likes1 = rec1.total_likes rescue 0
+    likes2 = rec2.total_likes rescue 0
     @pagelikes = [likes1,likes2]
   end
   
@@ -222,13 +286,13 @@ class FbStatNew
       @comments_change=(rec2.replies_to_comment + rec2.comments)
       @likes_change=rec2.likes
       @shares_change=rec2.shares
-      @page_likes_change=rec2.page_likes
+      @page_likes_change=rec2.total_likes
       @comments = [0,(rec2.replies_to_comment + rec2.comments)]
     elsif !rec2
       @comments_change= -1*(rec1.replies_to_comment + rec1.comments)
       @likes_change= -1*rec1.likes
       @shares_change= -1*rec1.shares
-      @page_likes_change= -1*rec1.page_likes
+      @page_likes_change= -1*rec1.total_likes
       @comments = [(rec1.replies_to_comment + rec1.comments),0]
     else
       @comments = [(rec1.replies_to_comment + rec1.comments),
@@ -237,7 +301,7 @@ class FbStatNew
       @likes_change = compute_change(rec2.likes,rec1.likes)
       @shares_change = compute_change(rec2.shares,rec1.shares)
       # @fan_adds_change 
-      @page_likes_change = compute_change(rec2.page_likes,rec1.page_likes)
+      @page_likes_change = compute_change(rec2.total_likes,rec1.total_likes)
     end
   end
   

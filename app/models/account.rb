@@ -363,13 +363,28 @@ class Account < ActiveRecord::Base
    end
    #  last account_id=233
 
-   def self.update_associations account, _languages=nil, _groups=nil, _subgroups=nil, _regions=nil, _countries=nil
+   def self.update_associations account, options
+       _languages = options[:languages]
+       _groups = options[:groups]
+       _subgroups = options[:subgroups]
+       _regions = options[:regions]
+       _countries = options[:countries]
+       _organization = options[:organization]
+       if _organization
+         _organization.strip!
+         org = Organization.find_by name: _organization
+       else
+         org = nil
+       end
+              
        if _subgroups
          _subgroups.split(',').each do |sg|
             sg.strip!
             sg = 'AlHurra TV' if sg == 'Al Hurra'
             subgroup = Subgroup.find_or_create_by name: sg
-            subgroup.update_attribute :description, "#{account.organization.name}  #{sg}"
+            if org
+              subgroup.update_attribute :description, "#{org.name}  #{sg}"
+            end
             AccountsSubgroup.find_or_create_by account_id: account.id,  subgroup_id: subgroup.id
          end
        end
@@ -378,9 +393,16 @@ class Account < ActiveRecord::Base
          # a.groups.destroy_all
          _groups.split(',').each do | grp |
            grp.strip!
-           group = Group.find_or_create_by name: grp, organization_id:  account.organization_id
-           if !group.description
-             group.update_attribute :description, "#{account.organization.name} "
+           group = Group.find_or_create_by name: grp
+           if account.object_name=='RadioFreeAsia'
+             puts " #{grp} RadioFreeAsia group #{group.inspect}"
+           end
+           
+           if org
+             group.update_attribute :organization_id, org.id         
+             if !group.description && org
+               group.update_attribute :description, "#{org.name} "
+             end
            end
            puts "   #{grp} - group #{group.inspect}"
            AccountsGroup.find_or_create_by account_id: account.id, group_id: group.id
@@ -423,8 +445,8 @@ class Account < ActiveRecord::Base
          # a.countries.destroy_all
          _countries.split(',').each do | co  |
            co.strip!
-           country = Country.find_by name: co
-           AccountsCountry.find_or_create_by account_id: account.id, country_id: co.id
+           country = Country.find_or_create_by name: co
+           AccountsCountry.find_or_create_by account_id: account.id, country_id: country.id
          end
        end
 
@@ -435,7 +457,8 @@ class Account < ActiveRecord::Base
        return if !arr['Platform']
        klass="#{arr['Platform'].titleize}Account".constantize
        objectname=arr['Account Name'] || arr['Name']
-       org=Organization.find_by name: arr['Org']
+       objectname.strip!
+       organization = arr['Org']
        groups=arr['Group']
        subgroups=arr['Sub-Group'] || arr['Subgroup']
        languages=arr['Language']
@@ -448,10 +471,10 @@ class Account < ActiveRecord::Base
           service=AccountType.find_or_create_by name: service
           a.account_type_id =  service.id
        end
-       a.organization_id=org.id
-       a.save
-       update_associations a, languages, groups, subgroups, regions, countries
-
+       options = {:languages=>languages, :groups=>groups, 
+         :subgroups=>subgroups, :regions=>regions, 
+         :countries=>countries, :organization=>organization}
+       update_associations a, options
    end
    
    def self.load_dod line
@@ -460,12 +483,11 @@ class Account < ActiveRecord::Base
        
        klass="#{arr['Platform'].titleize}Account".constantize
        objectname=arr['Account Name'] || arr['Name']
-       a = klass.find_or_create_by object_name: objectname
-       if arr['Org']
-         org = Organization.find_by name: arr['Org']
-         a.update_attribute(:organization_id, org.id) if org
-       end
        
+       puts "  NNN   A_#{objectname}_A"
+       objectname.strip!
+       a = klass.find_or_create_by object_name: objectname
+       organization = arr['Org']
        groups=arr['Group']
        subgroups=arr['Sub-Group'] || arr['Subgroup']
        languages= !!arr['Language'] ? arr['Language'] : nil
@@ -477,15 +499,17 @@ class Account < ActiveRecord::Base
           service=AccountType.find_or_create_by name: service
           a.account_type_id =  service.id
        end
-       
-       update_associations a, languages, groups, subgroups, regions, countries
+       options = {:languages=>languages, :groups=>groups, 
+         :subgroups=>subgroups, :regions=>regions, 
+         :countries=>countries, :organization=>organization}
+       update_associations a, options
        
    end
    
    def Account.load_map_csv
       require 'csv'
       tables =  ['BBG-Table 1.csv', 'DOS-Table 1.csv', 'DOD-Table 1.csv']
-      tables = ['GovDash-Accts-All']
+      tables = ['GovDash-Accts-All.csv']
       tables.each do |  t |
          file="/Users/lliu/Desktop/GovDash-Accounts/#{t}"
          file="/Users/lliu/Desktop/#{t}"
@@ -495,6 +519,8 @@ class Account < ActiveRecord::Base
             elsif t.match(/DOD/)
                load_dod line
             elsif t.match(/DOS/)
+               load_dod line
+            else
                load_dod line
             end
          end

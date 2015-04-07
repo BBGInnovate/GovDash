@@ -212,6 +212,23 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 			$scope.twAccounts = response.twAccounts;
 			$scope.youtubeAccounts = response.youtubeAccounts;
 
+			var orderBy = $filter('orderBy');
+
+			$scope.orderFbAccounts = function(predicate, reverse) {
+				$scope.fbAccounts = orderBy($scope.fbAccounts, predicate, reverse);
+			};
+
+			$scope.orderTwAccounts = function(predicate, reverse) {
+				$scope.twAccounts = orderBy($scope.twAccounts, predicate, reverse);
+			};
+
+			$scope.orderYoutubeAccounts = function(predicate, reverse) {
+				$scope.youtubeAccounts = orderBy($scope.youtubeAccounts, predicate, reverse);
+			};
+
+
+
+
 		});
 
 

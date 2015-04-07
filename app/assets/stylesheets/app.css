@@ -196,3 +196,8 @@ div.xAxis div.tickLabel
 .account-icon {
     margin-right: 8px;
 }
+
+.fa-sort {
+    left: 5px;
+    position: relative;
+}

@@ -86,7 +86,8 @@ angular.module('directives', []).
 
 						// Process Spark Chart Data
 						for (var i = 0; i < d1.length; i++) {
-							data.push([d1[i].date.substring(5, 10).replace('-', '/'), d1[i].totals]);
+							var dateFormatted = d1[i].date.substring(5, 10).replace('-', '/');
+							data.push([dateFormatted, d1[i].totals]);
 						}
 
 						var colors = $filter('socialMediaColors')(attrs.socialmediatype);

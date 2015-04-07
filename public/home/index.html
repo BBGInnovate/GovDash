@@ -563,12 +563,12 @@
                             <table class="table table-striped no-margin" ng-if="fbAccounts.length > 0">
                                 <thead>
                                 <tr>
-                                    <th class="text-left">Name</th>
-                                    <th class="text-left numeric">Actions</th>
+                                    <th class="text-left"><a href="" ng-click="reverse=!reverse;orderFbAccounts('name', reverse)">Name <i class="fa fa-sort"></i></a></th>
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderFbAccounts('values[0].totals', reverse)">Actions <i class="fa fa-sort"></i></a></th>
                               <!--  <th class="text-left numeric">New Fans</th> -->
-                                    <th class="text-left numeric">Story Likes</th>
-                                    <th class="text-left numeric">Shares</th>
-                                    <th class="text-left numeric">Comments</th>
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderFbAccounts('values[0].story_likes', reverse)">Story Likes <i class="fa fa-sort"></i></a></th>
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderFbAccounts('values[0].shares', reverse)">Shares <i class="fa fa-sort"></i></a></th>
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderFbAccounts('values[0].comments', reverse)">Comments <i class="fa fa-sort"></i></a></th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -607,12 +607,12 @@
                             <table class="table table-striped no-margin" ng-if="twAccounts.length > 0">
                                 <thead>
                                 <tr>
-                                    <th class="text-left">Name</th>
-                                    <th class="text-left numeric">Actions</th>
-                                    <th class="text-left numeric">New Followers</th>
-                                    <th class="text-left numeric">Favorites</th>
-                                    <th class="text-left numeric">Retweets</th>
-                                    <th class="text-left numeric">Mentions</th>
+                                    <th class="text-left"><a href="" ng-click="reverse=!reverse;orderTwAccounts('name', reverse)">Name <i class="fa fa-sort"></i></a></th>
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderTwAccounts('values[0].totals', reverse)">Actions <i class="fa fa-sort"></i></a></th>
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderTwAccounts('values[0].followers', reverse)">New Followers <i class="fa fa-sort"></i></a></th>
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderTwAccounts('values[0].favorites', reverse)">Favorites <i class="fa fa-sort"></i></a></th>
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderTwAccounts('values[0].retweets', reverse)">Retweets <i class="fa fa-sort"></i></a></th>
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderTwAccounts('values[0].mentions', reverse)">Mentions <i class="fa fa-sort"></i></a></th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -650,12 +650,12 @@
                             <table class="table table-striped no-margin" ng-if="youtubeAccounts.length > 0">
                                 <thead>
                                 <tr>
-                                    <th class="text-left">Name</th>
-                                    <th class="text-left numeric">Actions</th>
-                                    <th class="text-left numeric">Views</th>
-                                    <th class="text-left numeric">Video Likes</th>
-                                    <th class="text-left numeric">Subscribers</th>
-                                    <th class="text-left numeric">Comments</th>
+                                    <th class="text-left"><a href="" ng-click="reverse=!reverse;orderYoutubeAccounts('values[0].comments', reverse)">Name <i class="fa fa-sort"></i></a></th>
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderYoutubeAccounts('values[0].totals', reverse)">Actions <i class="fa fa-sort"></i></a></th>
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderYoutubeAccounts('values[0].views', reverse)">Views <i class="fa fa-sort"></i></a></th>
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderYoutubeAccounts('values[0].likes', reverse)">Video Likes <i class="fa fa-sort"></i></a></th>
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderYoutubeAccounts('values[0].subscribers', reverse)">Subscribers <i class="fa fa-sort"></i></a></th>
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderYoutubeAccounts('values[0].comments', reverse)">Comments <i class="fa fa-sort"></i></a></th>
                                 </tr>
                                 </thead>
                                 <tbody>

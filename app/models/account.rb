@@ -26,7 +26,33 @@ class Account < ActiveRecord::Base
      end
       select('id, object_name,new_item').where(from_id).where("is_active=1").to_a
   end
-  
+ 
+  # run it evefy 1 hours
+  def self.check_status
+    self.select("distinct media_type_name").all.to_a.each do |a|
+      klass = a.media_type_name
+      if klass == 'FacebookAccount'
+        date = FbPage.select("max(updated_at) AS updated_at")
+        send_alarm date.updated_at,'Facebook'
+      elsif klass == 'TwitterAccount'
+        date = TwTimeline.select("max(updated_at) AS updated_at")
+        send_alarm date.updated_at,'Twitter'
+      elsif klass == 'YoutubeAccount'
+        date = YtChannel.select("max(updated_at) AS updated_at")
+        send_alarm date.updated_at, 'Youtube'
+      end
+    end
+  end
+
+  def self.send_alarm date, klass
+    if date < 6.hours.ago
+      ago = ((Time.now - date)/3600).to_i
+      to = ['liwliu@bbg.gov','aramachandran@bbg.gov','amartin@bbg.gov','hnoor@bbg.gov']
+      msg = "#{klass} data not updated in #{ago} hours"
+      UserMailer.alarm_email(to, msg).deliver_now!
+    end
+  end
+
   def self.send_message_queues
     records = self.where(:is_active=>true).all
     records.each do |a|

@@ -37,20 +37,15 @@ module Radd
 
     I18n.config.enforce_available_locales = false
     
-    config.action_mailer.raise_delivery_errors = true
-    config.action_mailer.perform_deliveries = false
+    config.action_mailer.raise_delivery_errors = false
+    config.action_mailer.perform_deliveries = true
     config.action_mailer.delivery_method = :smtp
-    config.action_mailer.default_url_options = {:host => 'localhost' }
-=begin 
-    config.action_mailer.smtp_settings = {:address => "email-smtp.us-east-1.amazonaws.com",
-    :port=>587,
-    :domain=>'amazonaws.com',
-    :authentication => :login,
-    :user_name=> '',
-    :password=> '',
-    :enable_starttls_auto=>true}
-=end
-   
+    # config.action_mailer.default_url_options = {:host => 'localhost' }
+    EMAIL_SETTINGS = YAML::load(
+      File.open("#{Rails.root.to_s}/config/email.yml")
+    )[Rails.env]
+    config.action_mailer.smtp_settings = EMAIL_SETTINGS
+    
     config.active_record.observers = :error_log_observer,:account_observer
 =begin  
   IAM User Name : oddidev.bbg

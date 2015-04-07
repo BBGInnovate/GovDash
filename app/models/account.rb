@@ -51,7 +51,7 @@ class Account < ActiveRecord::Base
       msg = "#{klass} data not updated in #{ago} hours"
       UserMailer.alarm_email(to, msg).deliver_now!
     else
-      puts "  #{klass} updated at #{date.to_s(:db)}"
+      puts "  #{klass} updated at #{date.to_s(:db)} Current time: #{Time.now.to_s(:db)}"
     end
   end
 

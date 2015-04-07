@@ -16,12 +16,13 @@ Radd::Application.configure do
 
   # Prevent email being sent in development
   # The messages are stored in tmp/letter_opener
-  config.action_mailer.delivery_method = :letter_opener
+  # config.action_mailer.delivery_method = :letter_opener
+  config.action_mailer.delivery_method = :smtp
   
   # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
-  config.action_mailer.default_url_options = { host: "localhost:3000",
-       server: "54.227.248.152" }
+  config.action_mailer.raise_delivery_errors = true
+  # config.action_mailer.default_url_options = { host: "localhost:3000",
+  #     server: "54.227.248.152" }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

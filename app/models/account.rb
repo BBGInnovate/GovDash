@@ -32,13 +32,13 @@ class Account < ActiveRecord::Base
     self.select("distinct media_type_name").all.to_a.each do |a|
       klass = a.media_type_name
       if klass == 'FacebookAccount'
-        date = FbPage.select("max(updated_at) AS updated_at")
+        date = FbPage.select("max(updated_at) AS updated_at").first
         send_alarm date.updated_at,'Facebook'
       elsif klass == 'TwitterAccount'
-        date = TwTimeline.select("max(updated_at) AS updated_at")
+        date = TwTimeline.select("max(updated_at) AS updated_at").first
         send_alarm date.updated_at,'Twitter'
       elsif klass == 'YoutubeAccount'
-        date = YtChannel.select("max(updated_at) AS updated_at")
+        date = YtChannel.select("max(updated_at) AS updated_at").first
         send_alarm date.updated_at, 'Youtube'
       end
     end

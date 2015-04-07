@@ -50,6 +50,8 @@ class Account < ActiveRecord::Base
       to = ['liwliu@bbg.gov','aramachandran@bbg.gov','amartin@bbg.gov','hnoor@bbg.gov']
       msg = "#{klass} data not updated in #{ago} hours"
       UserMailer.alarm_email(to, msg).deliver_now!
+    else
+      puts "  #{klass} updated at #{date.to_s(:db)}"
     end
   end
 
@@ -360,61 +362,87 @@ class Account < ActiveRecord::Base
      new_item = true
    end
    #  last account_id=233
-   
-   def self.update_associations account,  _languages=nil, _groups, _sub_group, _regions
-      _groups.compact!
-       _regions.compact!
-       a = account
-       AccountsSubgroup.find_or_create_by account_id: a.id,  subgroup_id: _sub_group.id
-       # a.groups.destroy_all
-       _groups.each do | grp |
+
+   def self.update_associations account, _languages=nil, _groups=nil, _subgroups=nil, _regions=nil, _countries=nil
+       if _subgroups
+         _subgroups.split(',').each do |sg|
+            sg.strip!
+            sg = 'AlHurra TV' if sg == 'Al Hurra'
+            subgroup = Subgroup.find_or_create_by name: sg
+            subgroup.update_attribute :description, "#{account.organization.name}  #{sg}"
+            AccountsSubgroup.find_or_create_by account_id: account.id,  subgroup_id: subgroup.id
+         end
+       end
+
+       if _groups
+         # a.groups.destroy_all
+         _groups.split(',').each do | grp |
+           grp.strip!
            group = Group.find_or_create_by name: grp, organization_id:  account.organization_id
            if !group.description
-             group.update_attribute :description, "#{a.organization.name} "
+             group.update_attribute :description, "#{account.organization.name} "
            end
-           
            puts "   #{grp} - group #{group.inspect}"
-           AccountsGroup.find_or_create_by account_id: a.id, group_id: group.id
-           GroupsSubgroups.find_or_create_by group_id: group.id, subgroup_id: _sub_group.id
+           AccountsGroup.find_or_create_by account_id: account.id, group_id: group.id
+           account.subgroups.reload.to_a.each do |sg |
+             GroupsSubgroups.find_or_create_by group_id: group.id, subgroup_id: sg.id
+           end
+         end
        end
+
        if _languages
          # a.languages.destroy_all
-         _languages.each do |  lan  |
-           language = Language.find_by name:lan
-           AccountsLanguage.find_or_create_by account_id: a.id, language_id: language.id
+         _languages.split(',').each do | lan |
+           lan.strip!
+           language = Language.find_by name: lan
+           AccountsLanguage.find_or_create_by account_id: account.id, language_id: language.id
          end
        end
        if _regions
          # a.regions.destroy_all
-         puts "  #{a.object_name} REGIONS #{_regions.inspect}"
-
-         _regions.each do | reg |
-             reg.strip!
-             next if reg.empty?
-             
-             puts "   Region #{reg}"
-             region = Region.find_or_create_by name: reg
-             AccountsRegion.find_or_create_by account_id: a.id,  region_id:  region.id
+         puts "  #{account.object_name} REGIONS #{_regions.inspect}"
+         _regions.split(',').each do | reg |
+            reg.strip!
+            next if reg.empty?
+            
+            if reg == "Near East (Middle East and North Africa)"
+              regs = "Middle East,North Africa"
+              regs.split(',').each do |rg|
+                region = Region.find_or_create_by name: rg
+                AccountsRegion.find_or_create_by account_id: account.id,  region_id:  region.id
+              end
+            else
+              puts "   Region #{reg}"
+              region = Region.find_or_create_by name: reg
+              AccountsRegion.find_or_create_by account_id: account.id,  region_id:  region.id
+            end
           end
-        end
+       end
+       
+       if _countries
+         # a.countries.destroy_all
+         _countries.split(',').each do | co  |
+           co.strip!
+           country = Country.find_by name: co
+           AccountsCountry.find_or_create_by account_id: account.id, country_id: co.id
+         end
+       end
+
    end
-   
+
    def self.load_bbg line
        arr = line
-       klass="#{arr[0].titleize}Account".constantize
-       objectname=arr[1]
-       puts "   AA #{arr[0].titleize} #{objectname}"
-       org=Organization.find_by name: arr[2]
-       groups=arr[3].split(',')
-       subgroup=arr[4]
-       subgroup = 'AlHurra TV' if subgroup == 'Al Hurra'
-
-       sub_group = Subgroup.find_or_create_by name: subgroup
-       sub_group.update_attribute :description, "#{org.name}  #{subgroup}"
-      
-       languages=arr[5].split(',')
-       service = arr[6].strip.titleize
-       regions = arr[7..-1]  rescue nil
+       return if !arr['Platform']
+       klass="#{arr['Platform'].titleize}Account".constantize
+       objectname=arr['Account Name'] || arr['Name']
+       org=Organization.find_by name: arr['Org']
+       groups=arr['Group']
+       subgroups=arr['Sub-Group'] || arr['Subgroup']
+       languages=arr['Language']
+       service = arr['Type'].strip.titleize
+       regions = arr['Region']  rescue nil
+       countries = arr['Country']
+ 
        a=klass.find_or_create_by object_name: objectname
        unless service.empty?
           service=AccountType.find_or_create_by name: service
@@ -422,39 +450,46 @@ class Account < ActiveRecord::Base
        end
        a.organization_id=org.id
        a.save
-       update_associations a, languages, groups, sub_group, regions
+       update_associations a, languages, groups, subgroups, regions, countries
 
    end
    
    def self.load_dod line
        arr = line
-       klass="#{arr[0].titleize}Account".constantize
-       objectname=arr[1]
-       puts "   AA #{arr[0].titleize} #{objectname}"
-       org=Organization.find_by name: arr[2]
-       groups=arr[3].split(',')
-       subgroup=arr[4]
-       subgroup = 'AlHurra TV' if subgroup == 'Al Hurra'
-       sub_group = Subgroup.find_or_create_by name: subgroup
-       sub_group.update_attribute :description, "#{org.name}  #{subgroup}"
-       languages= nil
-       service = arr[5].strip.titleize rescue ""
-       regions=arr[6..-1] rescue nil
-       a=klass.find_or_create_by object_name: objectname
-       unless service.empty?
+       return if !arr['Platform']
+       
+       klass="#{arr['Platform'].titleize}Account".constantize
+       objectname=arr['Account Name'] || arr['Name']
+       a = klass.find_or_create_by object_name: objectname
+       if arr['Org']
+         org = Organization.find_by name: arr['Org']
+         a.update_attribute(:organization_id, org.id) if org
+       end
+       
+       groups=arr['Group']
+       subgroups=arr['Sub-Group'] || arr['Subgroup']
+       languages= !!arr['Language'] ? arr['Language'] : nil
+       service = !!arr['Type'] ? arr['Type'].strip.titleize : nil
+       regions = !!arr['Region'] ? arr['Region'] : nil
+       countries = !!arr['Country'] ? arr['Country'] : nil
+       
+       unless service
           service=AccountType.find_or_create_by name: service
           a.account_type_id =  service.id
        end
-       a.organization_id=org.id
-       a.save
-       update_associations a, languages, groups, sub_group, regions
+       
+       update_associations a, languages, groups, subgroups, regions, countries
        
    end
-   def self.load_map_csv
-      tables =  ['BBG-Table1.csv', 'DOS-Table1.csv', 'DOD-Table1.csv']
+   
+   def Account.load_map_csv
+      require 'csv'
+      tables =  ['BBG-Table 1.csv', 'DOS-Table 1.csv', 'DOD-Table 1.csv']
+      tables = ['GovDash-Accts-All']
       tables.each do |  t |
          file="/Users/lliu/Desktop/GovDash-Accounts/#{t}"
-         CSV.foreach(file, quote_char: '"', col_sep: ',', row_sep: :auto, headers:  false) do | line |
+         file="/Users/lliu/Desktop/#{t}"
+         CSV.foreach(file, quote_char: '"', col_sep: ',', row_sep: :auto, headers:  true) do | line |
             if t.match(/BBG/)
                load_bbg line
             elsif t.match(/DOD/)
@@ -465,6 +500,7 @@ class Account < ActiveRecord::Base
          end
        end
    end
+
 end  
 =begin
   require 'csv'

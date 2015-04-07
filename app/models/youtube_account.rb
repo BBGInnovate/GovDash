@@ -53,7 +53,7 @@ class YoutubeAccount < Account
         # v.update_attributes hs
         @bulk_insert << hs
         if @bulk_insert.size > BATCH_COUNT
-          say "  initial_load: upload data for #{@bulk_insert.size} videos"
+          puts "  initial_load: upload data for #{@bulk_insert.size} videos"
           YtVideo.import! @bulk_insert
           @bulk_insert = []
         end
@@ -61,10 +61,10 @@ class YoutubeAccount < Account
         logger.error "  #{self.class.name}#initial_load #{ex.message}"
       end 
       if ( (i % 100) == 0 )
-        say "  #{i} videos remain", Logger::Severity::DEBUG
+        puts "  #{i} videos remain"
       end
     end
-    say "  initial_load: upload data for #{@bulk_insert.size} videos"
+    puts "  initial_load: upload data for #{@bulk_insert.size} videos"
     YtVideo.import! @bulk_insert
     
     summarize
@@ -93,7 +93,7 @@ class YoutubeAccount < Account
 =end
    
     @bulk_insert = []
-    say "Started #{self.class.name}#retrieve #{self.id}"
+    puts "Started #{self.class.name}#retrieve #{self.id}"
     
     process_channel
    
@@ -114,7 +114,7 @@ class YoutubeAccount < Account
 =begin
           @bulk_insert << hs
           if @bulk_insert.size > BATCH_COUNT
-            say "Process #{v.published_at.to_s(:db)}"
+            puts "Process #{v.published_at.to_s(:db)}"
             bulk_import
             @bulk_insert = []
           end
@@ -300,8 +300,8 @@ class YoutubeAccount < Account
     minutes = (total_seconds / 60) % 60
     hours = total_seconds / (60 * 60)
     duration = format("%02d:%02d:%02d", hours, minutes, seconds)
-    say " #{ended.to_s(:db)} Ended #{self.class.name}"
-    say " Duration: #{duration}"
+    puts " #{ended.to_s(:db)} Ended #{self.class.name}"
+    puts " Duration: #{duration}"
   end
   
   def my_yt_channels

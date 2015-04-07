@@ -8,8 +8,9 @@ class FbStatNew
   include ReadStatDetail
   
   SelectedColumns = ['replies_to_comment','total_likes','likes','shares', 'comments','posts']
-  # FbPageClass = FbPage
-  FbPageClass = Fbpage
+  # FbPageClass = FbPage  # this table stores posts net new data per account per day
+  # except total_* columns which for life time data
+  FbPageClass = Fbpage  # this table stores life time data per account per day
   
   # get net increase between two date endpoints
   def get_net_increase records, min, max
@@ -46,6 +47,8 @@ class FbStatNew
     end
     # from now on, rec2 is the net increase of 
     # records.last and records.first 
+    rec2.page_likes = rec2.total_likes
+    rec2.fan_adds_day = rec2.total_likes
     rec2
   end
   
@@ -70,6 +73,8 @@ class FbStatNew
     
     records.each_with_index do |record, i|
       break if i == (records.size-1)
+      Rails.logger.debug "  #{results[i+1].post_created_time} #{results[i+1].likes}"
+      
       SelectedColumns.each do | col |
         results[i+1].send "#{col}=", (records[i+1].send(col).to_i - record.send(col).to_i)
       end
@@ -78,7 +83,7 @@ class FbStatNew
       results[i+1].page_likes = results[i+1].total_likes
       results[i+1].fan_adds_day = results[i+1].total_likes
     end
-    results.shift    
+    results.shift
     results
   end
   def as_periods min, max
@@ -98,8 +103,8 @@ class FbStatNew
     sql += select_summary_sql myaccounts
     records = FbPageClass.select(sql).
       where(["account_id in (?)",account_ids]).
-      where(post_created_time: (min..max)).
-      order("post_created_time")
+      where(post_created_time: (min..max)).to_a
+
     process_records records, min, max
   end
   def get_select_trend_by_week start_date,myend_date, myaccounts
@@ -115,13 +120,13 @@ class FbStatNew
     records = FbPageClass.select(sql).
       where(post_created_time: (min..max)).
       where(["account_id in (?)",account_ids]).
-      group("week_number-1")
+      group("week_number-1").to_a
 
     process_records records, min, max
   end
   def get_select_trend_by_day start_date,end_date, myaccounts
-    puts "  Calling  get_select_trend_by_day #{start_date},#{end_date}"
-    puts
+    # Rails.logger.debug "  Calling  get_select_trend_by_day #{start_date},#{end_date}"
+    # Rails.logger.debug ""
     min = start_date.beginning_of_day - 1.day
     max = end_date.end_of_day
     account_ids = myaccounts.map{|a| a.id}
@@ -140,8 +145,8 @@ class FbStatNew
   # myaccounts : array of Account object
   # return one active_record
   def get_select_by start_date, end_date, myaccounts
-    puts "  Calling get_select_by"
-    puts
+    Rails.logger.debug "  Calling get_select_by"
+    Rails.logger.debug ""
     min = start_date.beginning_of_day
     max = end_date.end_of_day
     account_ids = myaccounts.map{|a| a.id}

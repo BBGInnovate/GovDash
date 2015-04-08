@@ -152,7 +152,7 @@
 
                 </div>
 
-
+                <p class="date-collected-since" ng-show="dateCollectedSince">Date Collected Since: {{ dateCollectedSince }} at {{ timeCollectedSince }}</p>
 
                 <div class="col-lg-{{ columnNum }} col-sm-{{ columnNum }}">
                     <div class="statistic-box bg-gray m-bottom-md box-small">
@@ -573,7 +573,12 @@
                                 </thead>
                                 <tbody>
                                 <tr ng-repeat="account in fbAccounts">
-                                    <td data-title="Name" class="text-left"><a class="account-link" href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'fb')">{{ account.name }}</a></td>
+                                    <td data-title="Name" class="text-left">
+                                        <a class="account-link" href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'fb')">
+                                            <p>{{ account.name }}</p>
+                                        </a>
+                                        <span class="data-since">Data Since: {{ account.profile.data_collect_started | dateFormatMMDDYYYY }}</span>
+                                    </td>
                                     <td data-title="Actions" class="text-left">{{ account.values[0].totals | number: 0 }}</td>
                                 <!--    <td data-title="New Fans" class="text-left">{{ account.values[0].page_likes | number: 0 }}</td> -->
                                     <td data-title="Story Likes" class="text-left">{{ account.values[0].story_likes | number: 0 }}</td>
@@ -617,7 +622,12 @@
                                 </thead>
                                 <tbody>
                                 <tr ng-repeat="account in twAccounts">
-                                    <td data-title="Name" class="text-left"><a class="account-link" href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'tw')">{{ account.name }}</a></td>
+                                    <td data-title="Name" class="text-left">
+                                        <a class="account-link" href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'tw')">
+                                            <p>{{ account.name }}</p>
+                                        </a>
+                                        <span class="data-since">Data Since: {{ account.profile.data_collect_started | dateFormatMMDDYYYY }}</span>
+                                    </td>
                                     <td data-title="Actions" class="text-left">{{ account.values[0].totals | number: 0 }}</td>
                                     <td data-title="Followers" class="text-left">{{ account.values[0].followers | number: 0 }}</td>
                                     <td data-title="Favorites" class="text-left">{{ account.values[0].favorites | number: 0 }}</td>
@@ -660,7 +670,12 @@
                                 </thead>
                                 <tbody>
                                 <tr ng-repeat="account in youtubeAccounts">
-                                    <td data-title="Name" class="text-left"><a class="account-link" href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'yt')">{{ account.name }}</a></td>
+                                    <td data-title="Name" class="text-left">
+                                        <a class="account-link" href="" data-toggle="modal" data-target="#accountModal" ng-click="findAccount(account, 'yt')">
+                                            <p>{{ account.name }}</p>
+                                        </a>
+                                        <span class="data-since">Data Since: {{ account.profile.data_collect_started | dateFormatMMDDYYYY }}</span>
+                                    </td>
                                     <td data-title="Actions" class="text-left">{{ account.values[0].totals | number: 0 }}</td>
                                     <td data-title="Views" class="text-left">{{ account.values[0].views | number: 0 }}</td>
                                     <td data-title="Video Likes" class="text-left">{{ account.values[0].likes | number: 0 }}</td>

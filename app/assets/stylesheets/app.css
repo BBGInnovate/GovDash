@@ -201,3 +201,14 @@ div.xAxis div.tickLabel
     left: 5px;
     position: relative;
 }
+
+.date-collected-since {
+    left: 10px;
+    position: relative;
+    top: -20px;
+    font-size: 12px;
+}
+
+.data-since {
+    font-size: 11px;
+}

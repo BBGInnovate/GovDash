@@ -177,6 +177,9 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 					timeout: '5000'
 				});
 
+			} else {
+				$scope.startDate = response.startDate;
+				$scope.endDate = response.endDate;
 			}
 
 			// Top 4 boxes Interactions
@@ -257,6 +260,9 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 		$scope.accountBlockTwoData = $scope.account.values[0][labels[1]];
 		$scope.accountBlockThreeData = $scope.account.values[0][labels[2]];
 		$scope.accountBlockFourData = $scope.account.values[0][labels[3]];
+
+		$scope.dateCollectedSince = moment($scope.account.profile.data_collect_started.substring(0,10), 'YYYY-MM-DD').format('MM/DD/YYYY');
+		$scope.timeCollectedSince = $scope.account.profile.data_collect_started.split(' ')[1];
 
 		// Default columnNum is 3
 		$scope.columnNum = 3;

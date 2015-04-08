@@ -78,7 +78,7 @@ angular.module('directives', []).
 			link: function(scope, element, attrs) {
 
 				scope.$watch(attrs.data, function (newval, oldval) {
-					//Flot Chart (Total Sales)
+					//Flot Chart SparkLine
 					var d1 = $parse(attrs.data)(scope);
 
 					if (d1 && d1.length > 0) {
@@ -143,14 +143,25 @@ angular.module('directives', []).
 							if (item) {
 								var x = item.datapoint[0],
 									y = item.datapoint[1];
-
-								$("#tooltip").html("Interactions : " + y)
+								var date = item.series.data[x][0];
+								$("#tooltip").html("Interactions on " + date + ": " + y)
 									.css({top: item.pageY + 5, left: item.pageX + 5})
 									.fadeIn(350);
 							} else {
 								$("#tooltip").hide();
 							}
 						});
+
+						// If there are too many data points, hide the x-axis
+						// the tooltip will suffice
+						setTimeout(function () {
+							if (data.length > 12) {
+								$('.flot-x-axis').hide();
+							} else {
+								$('.flot-x-axis').show();
+							}
+						}, 100);
+
 
 						plotWithOptions();
 					} else {
@@ -223,7 +234,7 @@ angular.module('directives', []).
 						if (attrs.modal) {
 							// Set Timeout for bootstrap modal
 							setTimeout(function () {
-								buildChart(element, data, labels, colors);
+								buildChart(element, data, labels, colors, attrs.socialmediatype);
 							}, 400);
 
 						// This is for initial filter selection load
@@ -243,11 +254,13 @@ angular.module('directives', []).
 
 					// Facebook only has 3 pieces now
 					if (socialMediaType === 'fb') {
+
 						dataArr = [
 							{label: $filter('labelFormat')(labels[0]), value: data[labels[0]]},
 							{label: $filter('labelFormat')(labels[1]), value: data[labels[1]]},
 							{label: $filter('labelFormat')(labels[2]), value: data[labels[2]]}
 						];
+
 					} else {
 						dataArr =
 						[

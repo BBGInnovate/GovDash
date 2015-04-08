@@ -127,6 +127,9 @@ angular.module('apiQueryService', [])
 					var twAccounts = [];
 					var youtubeAccounts = [];
 
+					var startDate = '';
+					var endDate = '';
+
 					// If Facebook data exists
 					if (response.data.facebook) {
 						fbTotalInteractions = response.data.facebook.values.period[0].totals;
@@ -138,6 +141,9 @@ angular.module('apiQueryService', [])
 						fbAccounts = response.data.facebook.values.accounts;
 
 						fbPercentChange = response.data.facebook.values.period[0].changes.totals;
+
+						startDate =  moment(response.data.facebook.values.period[0].period.substring(0,10), 'YYYY-MM-DD').format('MM/DD/YYYY');
+						endDate =  moment(response.data.facebook.values.period[0].period.substring(13,24), 'YYYY-MM-DD').format('MM/DD/YYYY');
 
 						numAccounts++;
 
@@ -155,6 +161,9 @@ angular.module('apiQueryService', [])
 
 						twPercentChange = response.data.twitter.values.period[0].changes.totals;
 
+						startDate =  moment(response.data.twitter.values.period[0].period.substring(0,10), 'YYYY-MM-DD').format('MM/DD/YYYY');
+						endDate =  moment(response.data.twitter.values.period[0].period.substring(13,24), 'YYYY-MM-DD').format('MM/DD/YYYY');
+
 						numAccounts++;
 
 					}
@@ -170,6 +179,9 @@ angular.module('apiQueryService', [])
 						youtubeAccounts = response.data.youtube.values.accounts;
 
 						youtubePercentChange = response.data.youtube.values.period[0].changes.totals;
+
+						startDate =  moment(response.data.youtube.values.period[0].period.substring(0,10), 'YYYY-MM-DD').format('MM/DD/YYYY');
+						endDate =  moment(response.data.youtube.values.period[0].period.substring(13,24), 'YYYY-MM-DD').format('MM/DD/YYYY');
 
 						numAccounts++;
 
@@ -207,7 +219,9 @@ angular.module('apiQueryService', [])
 						youtubeBreakdownChart: youtubePieChart,
 						fbAccounts: fbAccounts,
 						twAccounts: twAccounts,
-						youtubeAccounts: youtubeAccounts
+						youtubeAccounts: youtubeAccounts,
+						startDate: startDate,
+						endDate: endDate
 					};
 
 

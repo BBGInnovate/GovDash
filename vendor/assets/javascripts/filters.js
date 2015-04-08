@@ -265,6 +265,16 @@ angular.module('filters', []).
 			}
 		};
 	})
+	// formats date the proper way
+	.filter('dateFormatMMDDYYYY', function () {
+		return function (date) {
+			if (date) {
+				date = date.substring(0, 10);
+				var dateArr = date.split('-');
+				return dateArr[1] + '/' + dateArr[2] + '/' + dateArr[0];
+			}
+		};
+	})
 	// formats percent change on the tiles
 	.filter('smLongName', function () {
 		return function (label) {

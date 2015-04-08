@@ -390,7 +390,8 @@ class Account < ActiveRecord::Base
        end
 
        if _groups
-         # a.groups.destroy_all
+         # Group.delete_all("organization_id is null")
+         AccountsGroup.delete_all("account_id=#{account.id}")
          _groups.split(',').each do | grp |
            grp.strip!
            group = Group.find_or_create_by name: grp
@@ -452,6 +453,36 @@ class Account < ActiveRecord::Base
 
    end
 
+   def clean_accounts
+     Account.all.each do |a|
+       if a.object_name != a.object_name.strip
+         puts " DELETE #{a.object_name}"
+         a.destroy!
+       end
+     end
+   end
+   
+   def Account.load_map_csv
+      require 'csv'
+      tables =  ['BBG-Table 1.csv', 'DOS-Table 1.csv', 'DOD-Table 1.csv']
+      tables = ['GovDash-Accts-All.csv']
+      tables.each do |  t |
+         file="/Users/lliu/Desktop/GovDash-Accounts/#{t}"
+         file="/Users/lliu/Desktop/#{t}"
+         CSV.foreach(file, quote_char: '"', col_sep: ',', row_sep: :auto, headers:  true) do | line |
+            if t.match(/BBG/)
+               load_bbg line
+            elsif t.match(/DOD/)
+               load_dod line
+            elsif t.match(/DOS/)
+               load_dod line
+            else
+               load_dod line
+            end
+         end
+       end
+   end
+   
    def self.load_bbg line
        arr = line
        return if !arr['Platform']
@@ -504,27 +535,6 @@ class Account < ActiveRecord::Base
          :countries=>countries, :organization=>organization}
        update_associations a, options
        
-   end
-   
-   def Account.load_map_csv
-      require 'csv'
-      tables =  ['BBG-Table 1.csv', 'DOS-Table 1.csv', 'DOD-Table 1.csv']
-      tables = ['GovDash-Accts-All.csv']
-      tables.each do |  t |
-         file="/Users/lliu/Desktop/GovDash-Accounts/#{t}"
-         file="/Users/lliu/Desktop/#{t}"
-         CSV.foreach(file, quote_char: '"', col_sep: ',', row_sep: :auto, headers:  true) do | line |
-            if t.match(/BBG/)
-               load_bbg line
-            elsif t.match(/DOD/)
-               load_dod line
-            elsif t.match(/DOS/)
-               load_dod line
-            else
-               load_dod line
-            end
-         end
-       end
    end
 
 end  

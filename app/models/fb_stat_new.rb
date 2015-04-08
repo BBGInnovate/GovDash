@@ -13,7 +13,9 @@ class FbStatNew
   FbPageClass = Fbpage  # this table stores life time data per account per day
   
   # get net increase between two date endpoints
+  # records is in post_created_time asc order
   def get_net_increase records, min, max
+    # puts "  #{Time.now.to_s(:db)}  get_net_increase"
     if records.empty?
       rec = OpenStruct.new
       rec.week_start_date = min
@@ -30,17 +32,14 @@ class FbStatNew
       return rec
     end
     # records is in post_created_time order
-    records.each.with_index do |rec, i|
-       # puts rec.inspect
-       if OpenStruct === rec
-         if i < (records.size-1)
-           SelectedColumns.each do | col |
-             records[i].send "#{col}=", records[i+1].send(col).to_i
-           end
-         end
+    rec1 = nil
+    records.each do |rec|
+       if rec.class != OpenStruct
+         # get the first available date record
+         rec1 = rec
+         break
        end
     end
-    rec1 = records.first
     rec2 = records.last
     SelectedColumns.each do | col |
       rec2.send "#{col}=", (rec2.send(col).to_i - rec1.send(col).to_i)
@@ -55,17 +54,7 @@ class FbStatNew
   # all columns are life time data. So minus previous day's data
   # to get net new data for the day
   def process_records records, min, max
-    # records is in post_created_time order
-    records.each.with_index do |rec, i|
-       # puts rec.inspect
-       if OpenStruct === rec
-         if i < (records.size-1)
-           SelectedColumns.each do | col |
-             records[i].send "#{col}=", records[i+1].send(col).to_i
-           end
-         end
-       end
-    end
+    # records include missing date
     results = []
     records.each do | rec |
       results << Marshal.load( Marshal.dump(rec) )
@@ -73,13 +62,11 @@ class FbStatNew
     
     records.each_with_index do |record, i|
       break if i == (records.size-1)
-      Rails.logger.debug "  #{results[i+1].post_created_time} #{results[i+1].likes}"
-      
+      # Rails.logger.debug "  #{results[i+1].post_created_time} #{results[i+1].likes}"
       SelectedColumns.each do | col |
         results[i+1].send "#{col}=", (records[i+1].send(col).to_i - record.send(col).to_i)
       end
       #puts "   BBBB #{results[i+1].trend_date} #{results[i+1].likes}"
-      puts
       results[i+1].page_likes = results[i+1].total_likes
       results[i+1].fan_adds_day = results[i+1].total_likes
     end
@@ -125,7 +112,7 @@ class FbStatNew
     process_records records, min, max
   end
   def get_select_trend_by_day start_date,end_date, myaccounts
-    # Rails.logger.debug "  Calling  get_select_trend_by_day #{start_date},#{end_date}"
+    # Rails.logger.debug "    get_select_trend_by_day #{start_date},#{end_date}"
     # Rails.logger.debug ""
     min = start_date.beginning_of_day - 1.day
     max = end_date.end_of_day
@@ -145,8 +132,8 @@ class FbStatNew
   # myaccounts : array of Account object
   # return one active_record
   def get_select_by start_date, end_date, myaccounts
-    Rails.logger.debug "  Calling get_select_by"
-    Rails.logger.debug ""
+    # Rails.logger.debug "  Calling get_select_by"
+    # Rails.logger.debug ""
     min = start_date.beginning_of_day
     max = end_date.end_of_day
     account_ids = myaccounts.map{|a| a.id}
@@ -182,8 +169,6 @@ class FbStatNew
   
   
   def get_detail_result rec1, rec2
-    puts "    get_detail_result #{rec1.inspect}"
-    puts "    get_detail_result #{rec2.inspect}"
     pagelikes = calculate_pagelikes rec1, rec2
     
     compute_changes rec1, rec2   
@@ -364,7 +349,7 @@ class FbStatNew
           :comments=>ch,
           :totals=>ch}
     results << result.data
-    msg = "#{self.class.name} Data missing in #{rec.name} #{previous_period}"
+    msg = " #{application_name} #{self.class.name} Data missing in #{rec.name} #{previous_period}"
     ErrorLog.logger.error msg
     ErrorLog.to_error msg,msg,3
     results

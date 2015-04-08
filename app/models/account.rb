@@ -415,10 +415,36 @@ class Account < ActiveRecord::Base
 
        if _languages
          # a.languages.destroy_all
+         # Zimbabwe is not a lang name
          _languages.split(',').each do | lan |
            lan.strip!
-           language = Language.find_by name: lan
-           AccountsLanguage.find_or_create_by account_id: account.id, language_id: language.id
+           case lan
+           when 'Laos'
+             lan = 'Lao'
+           when 'Azerbaijani'
+             lan = 'Azeri/Azerbaijani'
+           when 'Belarussian'
+             lan = 'Belarusian'
+           when 'Afaan Oromoo'
+             lan = 'Afaan Oromo'
+           when 'Swahili'
+             lan = 'Kiswahili'
+           when 'Zimbabwe'
+             lan = 'Shona,Ndebele'
+             language = Language.find_or_create_by name: 'Shona'
+             language = Language.find_or_create_by name: 'Ndebele'
+           when 'Chechen','Crimean', 'Kazak','Tajikistan','Tatar','Shona','Ndebele'
+             language = Language.find_or_create_by name: lan
+           end
+           lan.split(',').each do |la|
+             language = Language.find_by name: la
+             if language
+               AccountsLanguage.find_or_create_by account_id: account.id, language_id: language.id
+             else
+               puts "  Cannot find #{la}"
+               raise
+             end
+           end
          end
        end
        if _regions
@@ -465,7 +491,7 @@ class Account < ActiveRecord::Base
    def Account.load_map_csv
       require 'csv'
       tables =  ['BBG-Table 1.csv', 'DOS-Table 1.csv', 'DOD-Table 1.csv']
-      tables = ['GovDash-Accts-All.csv']
+      tables = ['GovDash-Accts-All-final.csv']
       tables.each do |  t |
          file="/Users/lliu/Desktop/GovDash-Accounts/#{t}"
          file="/Users/lliu/Desktop/#{t}"
@@ -477,12 +503,40 @@ class Account < ActiveRecord::Base
             elsif t.match(/DOS/)
                load_dod line
             else
-               load_dod line
+               load_line line
             end
          end
        end
    end
-   
+   def self.load_line line
+       arr = line
+       return if !arr['Platform']
+       
+       klass="#{arr['Platform'].strip.titleize}Account".constantize
+       objectname=arr['Account Name'] || arr['Name']
+       objectname.strip!
+       a = klass.find_or_create_by object_name: objectname
+       
+       organization = arr['Org'] || arr['Organization']
+       organization.strip if organization
+       groups=arr['Group']
+       subgroups=arr['Sub-Group'] || arr['Subgroup']
+       languages= arr['Language']
+       service = !!arr['Type'] ? arr['Type'].strip.titleize : nil
+       regions = arr['Region']
+       countries = arr['Country']
+       
+       unless service
+          service=AccountType.find_or_create_by name: service
+          a.account_type_id =  service.id
+       end
+       options = {:languages=>languages, :groups=>groups, 
+         :subgroups=>subgroups, :regions=>regions, 
+         :countries=>countries, :organization=>organization}
+       update_associations a, options
+       
+   end
+
    def self.load_bbg line
        arr = line
        return if !arr['Platform']

@@ -260,7 +260,7 @@ class Api::V2::BaseController <  ActionController::Base
       # make sure all variables are arrays
       ["group_ids","subgroup_ids","language_ids", "country_ids",
        "region_ids", "sc_segment_ids"].each do | ids |
-         myids = record.delete(ids) || []
+         myids = record.delete(ids) || record.delete(ids.singularize) || []
          myids = myids.to_s if Integer===myids
          myids=myids.split(',') if String === myids
          instance_variable_set("@#{ids}", myids)

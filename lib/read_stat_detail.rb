@@ -70,7 +70,7 @@ module ReadStatDetail
       # dynamic method name
       method = self.method(trend_select_method)
       trend_records = method.call(trend_from_date, end_date,[account])
-      trend_records = fill_missing_rows(trend_records,trend_from_date, end_date)      
+      # liu trend_records = fill_missing_rows(trend_records,trend_from_date, end_date)      
       
       # trend_records = select_trend_by([account])
       # account level trend parallel to values
@@ -94,7 +94,12 @@ module ReadStatDetail
     rec1 = get_select_by(dates[0], dates[1], accounts)
     # summary with dates[2], dates[3]
     rec2 = get_select_by(dates[2], dates[3], accounts)
-    
+=begin
+    puts "  1 #{dates[0]}, #{dates[1]}"
+    puts "  2 #{dates[2]}, #{dates[3]}"
+    puts "   select_by  #{rec1.period rescue 'rec1 null'} "
+    puts "   select_by  #{rec2.period rescue 'rec2 null'} "
+=end
     records << rec1 # if rec1
     records << rec2 # if rec2
     
@@ -102,8 +107,7 @@ module ReadStatDetail
       return nil
     end
     records.flatten!
-    ## set_page_likes end_date-3.days, end_date, accounts
-    
+
     value = get_period_result records[0], records[1]
     hash[:period] = value
     # TO replace abour line
@@ -181,8 +185,13 @@ module ReadStatDetail
     date = parse_date rec.trend_date
     case rec.trend_type
       when 'week'
-        ended = (rec.week_start_date+6.days).strftime('%Y-%m-%d')
-        value = "#{rec.week_start_date} - #{ended}"
+        if String === rec.week_start_date
+          week_start_date = Time.zone.parse rec.week_start_date
+        else
+          week_start_date = rec.week_start_date
+        end
+        ended = (week_start_date+6.days).strftime('%Y-%m-%d')
+        value = "#{week_start_date.strftime('%Y-%m-%d')} - #{ended}"
       when 'month'
         started = date.beginning_of_month.strftime('%Y-%m-%d')
         ended = date.end_of_month.strftime('%Y-%m-%d')        

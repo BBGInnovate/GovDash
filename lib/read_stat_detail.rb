@@ -11,6 +11,10 @@ module ReadStatDetail
     base.extend(ClassMethods)
   end
   
+  def applicatio_name
+    'GovDash'
+  end
+  
   def initialize options
      self.options = options
      self.fb_accounts = options[:accounts].select{|a| a.media_type_name=='FacebookAccount'}

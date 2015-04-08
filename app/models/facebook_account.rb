@@ -773,7 +773,7 @@ class FacebookAccount < Account
   end
   
   def collect_started
-    FbPage.select("min(created_at) as created_at").where(account_id: self.id).first.created_at.to_s(:db)
+    Fbpage.select("min(created_at) as created_at").where(account_id: self.id).first.created_at.to_s(:db)
   end
   
   def post_details post_id

@@ -8,6 +8,8 @@ class FacebookAccount < Account
   has_many :fb_posts, -> { order 'post_created_time desc' }, 
       foreign_key: :account_id
 
+  has_many :fbpages, foreign_key: :account_id
+  
   after_initialize :do_this_after_initialize
   
    def do_this_after_initialize
@@ -773,9 +775,12 @@ class FacebookAccount < Account
   end
   
   def collect_started
-    Fbpage.select("min(created_at) as created_at").where(account_id: self.id).first.created_at.to_s(:db)
+    begin
+      Fbpage.select("min(created_at) as created_at").where(account_id: self.id).first.created_at.to_s(:db)
+    rescue Exception=>ex
+      'N/A'
+    end
   end
-  
   def post_details post_id
     post_id="122256314471875_958019527562212"
     data = graph_api.get_object(post_id, :fields => "shares,likes.summary(true),comments.summary(true)")

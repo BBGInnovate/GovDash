@@ -220,7 +220,8 @@ class FacebookAccount < Account
           send_mq_message(rabbit)
         else
           save_post_details
-          daily_aggregate_data
+          # moved into process_posts
+          # daily_aggregate_data
           aggregate_data_daily  since.beginning_of_day, hasta.end_of_day
         end
       rescue Exception=>error
@@ -270,6 +271,8 @@ class FacebookAccount < Account
       @bulk_insert = []
     end
 =end
+    # fetch lifetime page likes
+    daily_aggregate_data
     # fetch posts from next page
     unless posts.size < QUERY_LIMIT 
       if last_created_time > since_date

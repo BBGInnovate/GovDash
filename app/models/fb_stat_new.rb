@@ -32,27 +32,19 @@ class FbStatNew
       rec.page_likes = 0
       return rec
     end
-    # records is in post_created_time order
-    rec1 = nil
-    total_likes = 0
-    records.each do |rec|
-       if rec.class != OpenStruct
-         if rec.total_likes != 0
-           if total_likes == 0
-             total_likes = rec.total_likes
-           end
-         end
-         if rec.likes != 0
-           # get the first real likes record
-           rec1 = rec
-           break
-         end
-       end
+    # this should be the end of previous period data
+    rec1 = records.first
+    if rec1.total_likes != 0
+      total_likes = rec1.total_likes
     end
-    # if no real likes data in this period
-    if !rec1
-      rec1 = records.first
-      puts "   GET_net_increase: no good data in #{min.strftime('%Y-%m-%d')} - #{max.strftime('%Y-%m-%d')}"
+    # if rec1 has no good total story likes date
+    #
+    if rec1.likes==0 && rec1.shares==0 && rec1.comments==0
+      records.each do |rec|
+        if rec.likes != 0
+        #  rec1 = rec
+        end
+      end
     end
     rec2 = records.last
     total_likes = rec2.total_likes - total_likes
@@ -202,11 +194,11 @@ class FbStatNew
   def get_select_by start_date, end_date, myaccounts
     Rails.logger.debug "  AAA  Calling get_select_by"
     # Rails.logger.debug ""
+    # min is the end of previous period date
     min = start_date.beginning_of_day - 1.day
     max = end_date.end_of_day
     account_ids = myaccounts.map{|a| a.id}
-    cond = ["post_created_time BETWEEN '#{start_date.beginning_of_day.to_s(:db)}' AND '#{end_date.end_of_day.to_s(:db)}' "]
-    sql = as_periods(min, max)
+    sql = as_periods(min+1.day, max)
     sql += " post_created_time AS trend_date," 
     sql += select_summary_sql myaccounts
     records = FbPageClass.select(sql).

@@ -24,7 +24,7 @@ class FbStat
     sql += " 'month' AS trend_type,"      
     sql += "MONTH(post_created_time) AS month_number, "
     sql += select_account_name myaccounts
-    sql += " 0 AS page_likes, "   
+    sql += " sum(fan_adds_day) AS page_likes, "   
     sql += select_summary_sql
     
     records = FbPage.select(sql).where(cond).
@@ -54,7 +54,7 @@ class FbStat
     sql += "'#{min}' + INTERVAL (DATEDIFF(post_created_time, '#{min}') DIV 7) WEEK AS week_start_date,"
     # sql += "WEEK(post_created_time,1) AS week_number, "
     sql += select_account_name myaccounts
-    sql += " 0 AS page_likes, "   
+    sql += " sum(fan_adds_day) AS page_likes, "   
     sql += select_summary_sql
     records = FbPage.select(sql).where(cond).
       where(["account_id in (?)",account_ids]).
@@ -71,7 +71,7 @@ class FbStat
     sql = "DATE_FORMAT(post_created_time,'%Y-%m-%d') AS trend_date, "
     sql += " 'dai' AS trend_type,"    
     sql += select_account_name myaccounts
-    sql += " 0 AS page_likes, "   
+    sql += " fan_adds_day AS page_likes, "   
     sql += select_summary_sql
     # select_trend_page_likes(start_date,end_date,myaccounts, 1.day) # just populate  page_likes hash
     
@@ -81,7 +81,7 @@ class FbStat
     records = fill_missing_rows records, start_date,end_date
     records
   end
-  
+=begin  
   # works for period == 1.day
   def select_trend_page_likes start_date,end_date,myaccounts,period=1.day
     from_date = start_date - period
@@ -93,7 +93,7 @@ class FbStat
     end
  
   end
-  
+=end
   # start_date,end_date : Time object
   # myaccounts : array of Account object
   # return one active_record
@@ -105,13 +105,15 @@ class FbStat
 
   # start_date,end_date : Time object
   # myaccounts : array of Account object
-  # return one active_record
+  # return one active_record summarize all rows over
+  # start_date and end_date
   def get_select_by start_date, end_date, myaccounts
+    # puts "   BBB get_select_by #{start_date.to_s(:db)}, #{end_date.to_s(:db)}"
     account_ids = myaccounts.map{|a| a.id}
     cond = ["post_created_time BETWEEN '#{start_date.beginning_of_day.to_s(:db)}' AND '#{end_date.end_of_day.to_s(:db)}' "]
     sql = "'#{start_date.strftime('%Y-%m-%d')} - #{end_date.strftime('%Y-%m-%d')}' AS period, "
     sql += select_account_name myaccounts
-    sql += " 0 as page_likes,"
+    sql += " sum(fan_adds_day) as page_likes,"
     sql += " 'placeholder' as changes,"
     sql += select_summary_sql
     record = FbPage.select(sql).where(cond).where(["account_id in (?)",account_ids]).first

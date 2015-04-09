@@ -8,7 +8,8 @@ class FacebookAccount < Account
   has_many :fb_posts, -> { order 'post_created_time desc' }, 
       foreign_key: :account_id
 
-  has_many :fbpages, foreign_key: :account_id
+  has_many :fbpages, -> { order 'post_created_time' }, 
+      foreign_key: :account_id
   
   after_initialize :do_this_after_initialize
   

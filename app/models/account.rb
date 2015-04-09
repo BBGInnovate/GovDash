@@ -390,9 +390,9 @@ class Account < ActiveRecord::Base
        end
 
        if _groups
-         # Group.delete_all("organization_id is null")
+         Group.delete_all("name in ('Washington','D.C.')")
          AccountsGroup.delete_all("account_id=#{account.id}")
-         _groups.split(',').each do | grp |
+         _groups.split(';').each do | grp |
            grp.strip!
            group = Group.find_or_create_by name: grp
            if account.object_name=='RadioFreeAsia'
@@ -429,6 +429,8 @@ class Account < ActiveRecord::Base
              lan = 'Afaan Oromo'
            when 'Swahili'
              lan = 'Kiswahili'
+           when 'Tajikistan'
+             lan = 'Tajik'
            when 'Zimbabwe'
              lan = 'Shona,Ndebele'
              language = Language.find_or_create_by name: 'Shona'

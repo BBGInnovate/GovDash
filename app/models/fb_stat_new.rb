@@ -16,7 +16,7 @@ class FbStatNew
   # records is in post_created_time asc order
   # return one record
   def get_net_increase records, min, max
-    # puts "  #{Time.now.to_s(:db)}  get_net_increase"
+    puts "  #{Time.now.to_s(:db)}  get_net_increase"
     if records.empty?
       rec = OpenStruct.new
       rec.week_start_date = min
@@ -34,22 +34,37 @@ class FbStatNew
     end
     # records is in post_created_time order
     rec1 = nil
+    total_likes = 0
     records.each do |rec|
        if rec.class != OpenStruct
-         # get the first available date record
-         rec1 = rec
-         break
+         if rec.total_likes != 0
+           if total_likes == 0
+             total_likes = rec.total_likes
+           end
+         end
+         if rec.likes != 0
+           # get the first real likes record
+           rec1 = rec
+           break
+         end
        end
     end
+    # if no real likes data in this period
+    if !rec1
+      rec1 = records.first
+      puts "   GET_net_increase: no good data in #{min.strftime('%Y-%m-%d')} - #{max.strftime('%Y-%m-%d')}"
+    end
     rec2 = records.last
+    total_likes = rec2.total_likes - total_likes
     # get net increase between two date endpoints
     SelectedColumns.each do | col |
       rec2.send "#{col}=", (rec2.send(col).to_i - rec1.send(col).to_i)
     end
     # from now on, rec2 is the net increase of 
     # records.last and records.first 
-    rec2.page_likes = rec2.total_likes
-    rec2.fan_adds_day = rec2.total_likes
+    rec2.total_likes = total_likes
+    rec2.page_likes = total_likes
+    rec2.fan_adds_day = total_likes
     rec2
   end
   
@@ -187,7 +202,7 @@ class FbStatNew
   def get_select_by start_date, end_date, myaccounts
     Rails.logger.debug "  AAA  Calling get_select_by"
     # Rails.logger.debug ""
-    min = start_date.beginning_of_day
+    min = start_date.beginning_of_day - 1.day
     max = end_date.end_of_day
     account_ids = myaccounts.map{|a| a.id}
     cond = ["post_created_time BETWEEN '#{start_date.beginning_of_day.to_s(:db)}' AND '#{end_date.end_of_day.to_s(:db)}' "]
@@ -196,14 +211,22 @@ class FbStatNew
     sql += select_summary_sql myaccounts
     records = FbPageClass.select(sql).
       where(post_created_time: (min..max)).
-      where(["account_id in (?)",account_ids]).to_a
+      where(["account_id in (?)",account_ids]).
+      order("post_created_time").to_a
     if FbPageClass == FbPage
       record = records.first
-      record.total_likes = record.fan_adds_day
-      record.page_likes = record.fan_adds_day
+      t_likes = FbPageClass.select("total_likes").Fbpage.copy_from_fb_pages
+         where('total_likes is not null').
+         where(post_created_time: (min..max)).
+         where(["account_id in (?)",account_ids]).
+         order('post_created_time').to_a
+      # record.total_likes = record.fan_adds_day
+      record.total_likes = t_likes.last.total_likes - t_likes.first.total_likes
+      record.page_likes = record.total_likes
       filter_zero record
     else
-      records = fill_missing_rows records, min,max
+      # don't fil missing date
+      # records = fill_missing_rows records, min,max
       get_net_increase records, min, max
     end
   end
@@ -398,6 +421,7 @@ class FbStatNew
     rec.comments = 0
     rec.page_likes = 0
     rec.total_likes = 0
+    rec.post_created_time = max
     rec
   end
   

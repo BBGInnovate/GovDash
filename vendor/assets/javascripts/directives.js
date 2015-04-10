@@ -182,27 +182,69 @@ angular.module('directives', []).
 
 					var data = $parse(attrs.data)(scope);
 
-					if (data) {
+					if (data && data.totalInteractions !== 0) {
 						element.empty();
 
 						$(window).resize(function() {
 							window.m.redraw();
 						});
 
+						var dataArr = [];
+						var yKeys = [];
+						var labels = [];
+						var barColors = [];
+
+						// If it's an array being passed through (SiteCatalyst Trend Data)
+						if (data.length !== undefined) {
+							for (var i = 0; i < data.length; i++) {
+								dataArr.push({ y: moment(data[i].date, 'YYYY-MM-DD').format('MM/DD/YYYY').slice(0,-5), a: data[i].facebook_count, b: data[i].twitter_count });
+							}
+							yKeys = ['a', 'b'];
+							labels = ['Facebook', 'Twitter'];
+							barColors = ['#3278B3', '#23B7E5'];
+
+						// Otherwise normal bar chart
+						} else {
+							// Chart with YouTube
+							if (data.youtubeInteractions) {
+								dataArr = [{
+									y: 'Total Interactions',
+									a: data.fbInteractions,
+									b: data.twInteractions,
+									c: data.youtubeInteractions
+								}];
+
+								yKeys = ['a', 'b', 'c'];
+								labels = ['Facebook', 'Twitter', 'YouTube'];
+								barColors = ['#3278B3', '#23B7E5', '#E36159'];
+
+							// chart without youtube
+							} else {
+								dataArr = [{
+									y: 'Total Interactions',
+									a: data.fbInteractions,
+									b: data.twInteractions
+								}];
+
+								yKeys = ['a', 'b'];
+								labels = ['Facebook', 'Twitter'];
+								barColors = ['#3278B3', '#23B7E5'];
+							}
+						}
+
+
+
+
 						window.m = Morris.Bar({
 							// ID of the element in which to draw the chart.
 							element: element,
 							// Chart data records -- each entry in this array corresponds to a point on
 							// the chart.
-							data: [{ y: 'Total Interactions',
-								a: data.totalInteractions,
-								b: data.fbInteractions,
-								c: data.twInteractions,
-								d: data.youtubeInteractions }],
+							data: dataArr,
 							xkey: 'y',
-							ykeys: ['a', 'b', 'c', 'd'],
-							labels: ['All', 'Facebook', 'Twitter', 'YouTube'],
-							barColors: ['#2BAAB1', '#3278B3', '#23B7E5', '#E36159'],
+							ykeys: yKeys,
+							labels: labels,
+							barColors: barColors,
 							resize: true,
 							redraw: true
 						});

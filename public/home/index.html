@@ -701,6 +701,59 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="smart-widget widget-purple">
+                        <div class="smart-widget-header">
+                            SiteCatalyst Interactions
+                        </div>
+                        <div class="smart-widget-inner">
+
+                            <div class="smart-widget-body no-padding">
+                                <div class="padding-md">
+                                    <div ng-if="scBarChartData" id="scBarChartData" class="morris-chart" style="height:250px;" bar-chart data="scBarChartData"></div>
+                                </div>
+                                <div class="bg-grey" ng-show="scTotalInteractions">
+                                    <div class="row">
+                                        <div class="col-md-12 text-center">
+                                            <h3 class="m-top-sm">{{ scTotalInteractions | number: 0 }}</h3>
+                                            <small class="m-bottom-sm block">Total Interactions</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- ./smart-widget-inner -->
+                    </div><!-- ./smart-widget -->
+                </div><!-- ./col -->
+                <div class="col-md-6">
+                    <div class="smart-widget widget-purple">
+                        <div class="smart-widget-header">
+                            SiteCatalyst Trend
+                        </div>
+                        <div class="smart-widget-inner">
+
+                            <div class="smart-widget-body no-padding">
+                                <div class="padding-md">
+                                    <div ng-if="scTrend" class="morris-chart" style="height:250px;" bar-chart data="scTrend"></div>
+                                    <div class="morris-chart" style="height:250px;" ng-if="scTrend.length === 0">
+                                        <p class="no-data-found">No data found</p>
+                                    </div>
+                                </div>
+                                <div class="bg-grey" ng-show="scTotalTrendActions">
+                                    <div class="row">
+                                        <div class="col-md-12 text-center">
+                                            <h3 class="m-top-sm">{{ scTotalTrendActions | number: 0 }}</h3>
+                                            <small class="m-bottom-sm block">Total Interactions</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div><!-- ./smart-widget-inner -->
+                    </div><!-- ./smart-widget -->
+                </div><!-- ./col -->
+            </div>
+
 
         </div><!-- ./padding-md -->
     </div><!-- /main-container -->

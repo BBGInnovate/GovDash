@@ -130,6 +130,12 @@ angular.module('apiQueryService', [])
 					var startDate = '';
 					var endDate = '';
 
+					var scTotalActions = 0;
+					var scFbActions = 0;
+					var scTwActions = 0;
+					var scTrend = [];
+					var scTotalTrendActions = 0;
+
 					// If Facebook data exists
 					if (response.data.facebook) {
 						fbTotalInteractions = response.data.facebook.values.period[0].totals;
@@ -187,6 +193,22 @@ angular.module('apiQueryService', [])
 
 					}
 
+					// If SiteCatalyst data exists
+					if (response.data.sitecatalyst) {
+						scTotalActions = response.data.sitecatalyst.values.period[0].totals;
+
+						scFbActions = response.data.sitecatalyst.values.period[0].facebook_count;
+
+						scTwActions = response.data.sitecatalyst.values.period[0].twitter_count;
+
+						scTrend = response.data.sitecatalyst.values.trend;
+
+						for (var i = 0; i < scTrend.length; i++) {
+							scTotalTrendActions += scTrend[i].totals;
+						}
+
+					}
+
 					var totalInteractions = fbTotalInteractions + twTotalInteractions + youtubeTotalInteractions;
 					var barChartData = {
 						totalInteractions: totalInteractions,
@@ -200,6 +222,12 @@ angular.module('apiQueryService', [])
 						parseInt(youtubePercentChange.replace(' ', '').replace('%', '') || 0)) / numAccounts)).toString() + ' %';
 
 
+					var scBarChartData = {
+						totalInteractions: scTotalActions,
+						fbInteractions: scFbActions,
+						twInteractions: scTwActions
+
+					};
 
 					// Build object to return to controller
 					var formattedData = {
@@ -220,6 +248,9 @@ angular.module('apiQueryService', [])
 						fbAccounts: fbAccounts,
 						twAccounts: twAccounts,
 						youtubeAccounts: youtubeAccounts,
+						scBarChartData: scBarChartData,
+						scTrend: scTrend,
+						scTotalTrendActions: scTotalTrendActions,
 						startDate: startDate,
 						endDate: endDate
 					};

@@ -215,6 +215,13 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 			$scope.twAccounts = response.twAccounts;
 			$scope.youtubeAccounts = response.youtubeAccounts;
 
+			// SiteCatalyst Bar Chart Data
+			$scope.scBarChartData = response.scBarChartData;
+			$scope.scTotalInteractions = response.scBarChartData.totalInteractions;
+
+			$scope.scTrend = response.scTrend;
+			$scope.scTotalTrendActions = response.scTotalTrendActions;
+
 			var orderBy = $filter('orderBy');
 
 			$scope.orderFbAccounts = function(predicate, reverse) {

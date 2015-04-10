@@ -9,6 +9,17 @@ class Redshift < ActiveRecord::Base
     :username=>"root",
     :reconnect=>true}
   )
+=begin
+  establish_connection({
+    :adapter=>"mysql2",
+    :database=>"radd_production",
+    :encoding=>"utf8",
+    :host=>"sm-dashboard.cmvglz1wknct.us-east-1.rds.amazonaws.com",
+    :username=>"oddidev",
+    :password=>"oddi3600BBG",
+    :reconnect=>true}
+  )
+=end
   RESOURCE = {"RedshiftFbPage"=>[],
               "RedshiftFbPost"=>[],
               "RedshiftTwTimeline"=>[],

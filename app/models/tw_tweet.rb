@@ -1,5 +1,6 @@
 class TwTweet < ActiveRecord::Base
 
+  belongs_to :account, :foreign_key=>:account_id
   # after_save :sync_redshift
   
   def sync_redshift

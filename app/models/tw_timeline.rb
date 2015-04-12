@@ -1,5 +1,8 @@
 class TwTimeline < ActiveRecord::Base
   # after_save :sync_redshift
+  
+  belongs_to :account, :foreign_key=>:account_id
+  
   def sync_redshift
     attr = self.attributes
     RedshiftTwTimeline.create_or_update(attr)

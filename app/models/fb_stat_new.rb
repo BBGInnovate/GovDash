@@ -7,16 +7,20 @@ class FbStatNew
     
   include ReadStatDetail
   
+  value_array = ['total_likes' ,'total_comments' ,'total_shares' ,'total_talking_about',
+   'likes' ,'comments','shares','posts' ,'replies_to_comment' ,'fan_adds_day',
+   'page_likes' ]
   SelectedColumns = ['replies_to_comment','total_likes','likes','shares', 'comments','posts','fan_adds_day']
   # FbPageClass = FbPage  # this table stores posts net new data per account per day
   # except total_* columns which for life time data
   FbPageClass = Fbpage  # this table stores life time data per account per day
   
+
   # get net increase between two date endpoints
   # records is in post_created_time asc order
   # return one record
   def get_net_increase records, min, max
-    puts "  #{Time.now.to_s(:db)}  get_net_increase"
+    # puts "  #{Time.now.to_s(:db)}  get_net_increase"
     if records.empty?
       rec = OpenStruct.new
       rec.week_start_date = min
@@ -57,6 +61,8 @@ class FbStatNew
     rec2.total_likes = total_likes
     rec2.page_likes = total_likes
     rec2.fan_adds_day = total_likes
+    # puts "  AAA net gain #{min.to_s(:db)} - #{max.to_s(:db)}"
+    # puts "  #{rec2.inspect}"
     rec2
   end
   
@@ -199,11 +205,12 @@ class FbStatNew
     max = end_date.end_of_day
     account_ids = myaccounts.map{|a| a.id}
     sql = as_periods(min+1.day, max)
-    sql += " post_created_time AS trend_date," 
+    sql += " DATE_FORMAT(post_created_time,'%Y-%m-%d') AS trend_date," 
     sql += select_summary_sql myaccounts
     records = FbPageClass.select(sql).
       where(post_created_time: (min..max)).
       where(["account_id in (?)",account_ids]).
+      group("trend_date").
       order("post_created_time").to_a
     if FbPageClass == FbPage
       record = records.first
@@ -347,7 +354,7 @@ class FbStatNew
       if FbPageClass == FbPage
         sel = "sum(#{col})"
       else
-        sel = col
+        sel = "sum(#{col})"
       end
       sql += "COALESCE(#{sel},0) as #{col},"
     end
@@ -440,5 +447,36 @@ class FbStatNew
     ErrorLog.logger.error msg
     ErrorLog.to_error msg,msg,3
     results
+  end
+  
+  def fill_one_day date
+    value_array.each do | col |
+      rec.send("#{col}=", 0)
+    end
+    rec.trend_date=cur_date
+    rec.trend_type="TREND_TYPE"
+    rec.post_creatd_time = cur_date.middle_of_day
+    rec
+  end
+  
+  def fill_missing_dates records, min, max
+    if records.empty?
+    # all dates are missing
+      rec = OpenStruct.new
+      cur_date = min.begining_of_day
+      while cur_date < max.end_of_day
+        records << fill_one_day(cur_date)
+        cur_date += 1.day
+      end
+    else
+      cur_date = min.begining_of_day
+      re = records.select{|e| e.post_created_time.middle_of_day == cur_date}
+      while re.empty?
+        records << fill_one_day(cur_date)
+        cur_date += 1.day
+        re = records.select{|e| e.post_created_time.middle_of_day == cur_date}
+      end
+    end
+    records2 = records.sort_by{|ele| ele.post_created_time}
   end
 end

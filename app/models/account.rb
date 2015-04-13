@@ -455,6 +455,7 @@ class Account < ActiveRecord::Base
        end
               
        if _subgroups
+          AccountsSubgroup.delete_all("account_id=#{account.id}")
          _subgroups.split(',').each do |sg|
             sg.strip!
             sg = 'AlHurra TV' if sg == 'Al Hurra'
@@ -491,7 +492,7 @@ class Account < ActiveRecord::Base
        end
 
        if _languages
-         # a.languages.destroy_all
+         account.languages.destroy_all
          # Zimbabwe is not a lang name
          _languages.split(',').each do | lan |
            lan.strip!
@@ -502,7 +503,7 @@ class Account < ActiveRecord::Base
              lan = 'Azeri/Azerbaijani'
            when 'Belarussian'
              lan = 'Belarusian'
-           when 'Afaan Oromoo'
+           when 'Afaan Oromo'
              lan = 'Afaan Oromoo'
            when 'Swahili'
              lan = 'Kiswahili'
@@ -527,30 +528,40 @@ class Account < ActiveRecord::Base
          end
        end
        if _regions
-         # a.regions.destroy_all
+         account.regions.destroy_all
          puts "  #{account.object_name} REGIONS #{_regions.inspect}"
          _regions.split(',').each do | reg |
             reg.strip!
             next if reg.empty?
             
-            if reg == "Near East (Middle East and North Africa)"
+            case reg
+            when "Near East (Middle East and North Africa)"
               regs = "Middle East,North Africa"
               regs.split(',').each do |rg|
                 region = Region.find_or_create_by name: rg
                 AccountsRegion.find_or_create_by account_id: account.id,  region_id:  region.id
               end
-            else
-              puts "   Region #{reg}"
+            when "Central America Caribbean"
+              reg = "Central America and the Caribbean"
               region = Region.find_or_create_by name: reg
               AccountsRegion.find_or_create_by account_id: account.id,  region_id:  region.id
+            when "Caucus","Caucusus"
+              reg  = 'Caucasus'
+              region = Region.find_or_create_by name: reg
+              AccountsRegion.find_or_create_by account_id: account.id,  region_id:  region.id
+            
             end
           end
        end
        
        if _countries
-         # a.countries.destroy_all
+         account.countries.destroy_all
          _countries.split(',').each do | co  |
            co.strip!
+           case co
+           when 'Tajikstan'
+             co = 'Tajikistan'
+           end
            country = Country.find_or_create_by name: co
            AccountsCountry.find_or_create_by account_id: account.id, country_id: country.id
          end

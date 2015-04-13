@@ -1,22 +1,14 @@
 class RedshiftFbPost < Redshift
   self.table_name = 'fb_posts'
 
+class << self
   def column_array
     ['likes' ,'comments','shares']
   end
-  def self.copy_from_socialdash
-    account_ids.each do | old_acc_id |
-      old_acc = RedshiftFbPage.find_by account_id old_acc_id
-      self.where(account_id: old_acc_id ).all.each do | old_rec |
-        begin
-          find_or_create_with old_rec, old_acc.object_name
-        rescue
-      
-        end
-      end
-    end
-  end
-  
+end
+end
+
+=begin
   def RedshiftFbPost.copy_from_fb_posts
     old_acc_ids = RedshiftFbPage.select("distinct account_id").to_a
     old_acc_ids.each do | old_acc_id |
@@ -44,5 +36,5 @@ class RedshiftFbPost < Redshift
       end
     end
   end
-  
-end
+=end
+

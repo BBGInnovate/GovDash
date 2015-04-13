@@ -455,10 +455,22 @@ class Account < ActiveRecord::Base
        end
               
        if _subgroups
+# select * from subgroups where name in ('Ukrainian', 'Afaan Oromo','PNN' ,'Tibetan','Tatar-Bashkir')
           AccountsSubgroup.delete_all("account_id=#{account.id}")
          _subgroups.split(',').each do |sg|
             sg.strip!
-            sg = 'AlHurra TV' if sg == 'Al Hurra'
+            case sg
+            when 'Al Hurra'
+              sg = 'AlHurra TV'
+            when 'Ukrainian'
+              sg = 'Ukraine'
+            when 'PNN'
+              sg = 'Persian'
+            when 'Tibetan'
+              sg = 'Tibet'
+            when 'Tatar-Bashkir'
+              sg = 'Tartar-Bashkir'
+            end
             subgroup = Subgroup.find_or_create_by name: sg
             if org
               subgroup.update_attribute :description, "#{org.name}  #{sg}"
@@ -469,21 +481,16 @@ class Account < ActiveRecord::Base
 
        if _groups
          Group.delete_all("name in ('Washington','D.C.')")
-         AccountsGroup.delete_all("account_id=#{account.id}")
+         AccountsGroup.destroy_all("account_id=#{account.id}")
          _groups.split(';').each do | grp |
            grp.strip!
            group = Group.find_or_create_by name: grp
-           if account.object_name=='RadioFreeAsia'
-             puts " #{grp} RadioFreeAsia group #{group.inspect}"
-           end
-           
            if org
              group.update_attribute :organization_id, org.id         
              if !group.description && org
                group.update_attribute :description, "#{org.name} "
              end
            end
-           puts "   #{grp} - group #{group.inspect}"
            AccountsGroup.find_or_create_by account_id: account.id, group_id: group.id
            account.subgroups.reload.to_a.each do |sg |
              GroupsSubgroups.find_or_create_by group_id: group.id, subgroup_id: sg.id
@@ -492,6 +499,7 @@ class Account < ActiveRecord::Base
        end
 
        if _languages
+       # select * from languages where name in ('Afaan Oromo')
          account.languages.destroy_all
          # Zimbabwe is not a lang name
          _languages.split(',').each do | lan |
@@ -528,6 +536,7 @@ class Account < ActiveRecord::Base
          end
        end
        if _regions
+       # select * from regions where name in ('Caucus','Caucusus')
          account.regions.destroy_all
          puts "  #{account.object_name} REGIONS #{_regions.inspect}"
          _regions.split(',').each do | reg |
@@ -555,6 +564,7 @@ class Account < ActiveRecord::Base
        end
        
        if _countries
+         # select * from countries where name in ('Tajikstan','Union of Soviet Socialist Republics')
          account.countries.destroy_all
          _countries.split(',').each do | co  |
            co.strip!

@@ -210,8 +210,8 @@ angular.module('filters', []).
 				var array = [];
 
 				if (socialMediaType === 'fb') {
-				//	array = ['comments', 'story_likes', 'shares', 'page_likes'];
-					array = ['comments', 'story_likes', 'shares'];
+					array = ['comments', 'story_likes', 'shares', 'page_likes'];
+				//	array = ['comments', 'story_likes', 'shares'];
 				} else if (socialMediaType === 'tw') {
 					array = ['retweets', 'mentions', 'favorites', 'followers'];
 				} else if (socialMediaType === 'yt') {

@@ -6,10 +6,23 @@ class Api::V2::SubgroupsController < Api::V2::BaseController
     if Subgroup === model_object
       subgroup_ids = GroupsSubgroups.where(["subgroup_id = ?", model_object.id]).map{|gs| gs.subgroup_id}.uniq
       if !subgroup_ids.empty?
-        hsh = {:related_groups=>[]}
-        subgroup_ids.each do |sgid|
-          grps = GroupsSubgroups.where(["subgroup_id in (?)", subgroup_ids]).map{ |gs| gs.group.as_json }
-          hsh[:related_groups] = grps
+        hsh = {:related_groups=>[],
+               :related_regions=>[]}
+        group_ids = GroupsSubgroups.select("group_id").
+           where(["subgroup_id in (?)", subgroup_ids]).
+           map(&:group_id)
+        Group.where(["id in (?)", group_ids] ).to_a.each do |grp|
+          attr = grp.attributes
+          ['created_at','updated_at'].each do |col|
+            attr.delete col
+          end
+          hsh[:related_groups] << attr
+        end
+        region_ids = SubgroupsRegion.select("region_id").
+                 where(["subgroup_id in (?)", subgroup_ids]).
+                 map(&:region_id)
+        Region.where(["id in (?)", region_ids] ).to_a.each do |reg|
+          hsh[:related_regions] << reg.attributes
         end
       end 
     end

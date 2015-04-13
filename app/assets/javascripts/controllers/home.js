@@ -1,6 +1,6 @@
 "use strict";
 
-function HomeCtrl($scope, APIData, APIQueryData, $filter) {
+function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) {
 
 	// Initialize start and end dates
 	$scope.endDate = moment().format('L');
@@ -142,6 +142,8 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 	// Function that makes the API call and returns data / assigns it
 	// 'period' is the date period (current, last week, last month, etc.)
 	$scope.finish = function (period) {
+		// Used for loading indicator at the top
+		$rootScope.isLoading = true;
 
 		// If period is 'custom', grab the calendar dates and set them to scope
 		// variables using jQuery
@@ -236,6 +238,10 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 				$scope.youtubeAccounts = orderBy($scope.youtubeAccounts, predicate, reverse);
 			};
 
+			$timeout(function(){
+				// hide spinner loading
+				$rootScope.isLoading = false;
+			}, 500);
 
 
 
@@ -243,6 +249,8 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter) {
 
 
 	};
+
+
 
 	$scope.findAccount = function (account, accountType) {
 		var colors = $filter('socialMediaColors')(accountType);

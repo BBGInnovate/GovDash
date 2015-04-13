@@ -38,6 +38,7 @@
 //= require moment
 //= require bootstrap-datetimepicker
 //= require jquery.flot.min
+//= require jquery.flot.pie.min
 //= require jquery.flot.categories
 //= require jquery.flot.resize
 //= require rapheal.min

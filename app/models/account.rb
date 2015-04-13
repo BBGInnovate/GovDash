@@ -389,7 +389,7 @@ class Account < ActiveRecord::Base
         end
       end
       update_group_subgroups group_subgroups_hash
-      update_subgroup_regions subgroups_regions_hash
+      update_subgroup_regions subgroup_regions_hash
       update_region_countries region_countries_hash
    end
    def self.update_region_countries region_countries_hash
@@ -406,9 +406,9 @@ class Account < ActiveRecord::Base
      end
    end
    # method OK
-   def self.update_subgroup_regions subgroups_regions_hash
+   def self.update_subgroup_regions subgroup_regions_hash
      Account.connection.execute "truncate table subgroups_regions"
-     subgroups_regions_hash.each_pair do | _subgrp, _regions|
+     subgroup_regions_hash.each_pair do | _subgrp, _regions|
        sg = _subgrp.strip
        _regions.uniq!
        # next if sg != 'Burmese'

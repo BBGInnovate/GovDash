@@ -510,7 +510,7 @@ class Account < ActiveRecord::Base
            when 'Belarussian'
              lan = 'Belarusian'
            when 'Afaan Oromoo'
-             lan = 'Afaan Oromo'
+             lan = 'Afaan Oromoo'
            when 'Swahili'
              lan = 'Kiswahili'
            when 'Tajikistan'

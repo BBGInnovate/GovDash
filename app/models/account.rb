@@ -481,7 +481,7 @@ class Account < ActiveRecord::Base
 
        if _groups
          Group.delete_all("name in ('Washington','D.C.')")
-         AccountsGroup.destroy_all("account_id=#{account.id}")
+         account.groups.clear
          _groups.split(';').each do | grp |
            grp.strip!
            group = Group.find_or_create_by name: grp
@@ -558,7 +558,9 @@ class Account < ActiveRecord::Base
               reg  = 'Caucasus'
               region = Region.find_or_create_by name: reg
               AccountsRegion.find_or_create_by account_id: account.id,  region_id:  region.id
-            
+            else
+              region = Region.find_or_create_by name: reg
+              AccountsRegion.find_or_create_by account_id: account.id,  region_id:  region.id
             end
           end
        end
@@ -588,9 +590,12 @@ class Account < ActiveRecord::Base
      end
    end
    
+   
    def Account.load_map_csv
       require 'csv'
-      tables =  ['BBG-Table 1.csv', 'DOS-Table 1.csv', 'DOD-Table 1.csv']
+      #tables =  ['BBG-Table 1.csv', 'DOS-Table 1.csv', 'DOD-Table 1.csv']
+      #    
+      # https://bbginnovate.atlassian.net/secure/attachment/20613/GovDash-Accts-All.xlsx
       tables = ['GovDash-Accts-All-final.csv']
       tables.each do |  t |
          file="/Users/lliu/Desktop/GovDash-Accounts/#{t}"

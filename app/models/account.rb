@@ -365,84 +365,77 @@ class Account < ActiveRecord::Base
 
    def Account.load_group_csv
       require 'csv'
-      subgroup_hash = Hash.new {|h,k| h[k] = [] }
-      region_hash = Hash.new {|h,k| h[k] = [] }
-      country_hash = Hash.new {|h,k| h[k] = [] }
+      group_subgroups_hash = Hash.new {|h,k| h[k] = [] }
+      region_countries_hash = Hash.new {|h,k| h[k] = [] }
+      subgroup_regions_hash = Hash.new {|h,k| h[k] = [] }
+      
       tables = ['BBG-Regions-Countries-GovDash.csv']
       tables.each do |  t |
         file="/Users/lliu/Desktop/#{t}"
         CSV.foreach(file, quote_char: '"', col_sep: ',', row_sep: :auto, headers:  true) do | line |
           next if !line['Group']
-          group=line['Group'].strip
-          subgroups=line['Sub-Groups'] || arr['Subgroup']
-          subgroup_hash[group] << subgroups.split(',')
-          region = line['Regions'].strip
-          region_hash[group] << region
-          countries = line['Countries'] || line['Countries ']
-          countries = countries.split(',')
-          country_hash[region] << countries
+          group_str=line['Group'].strip
+          subgroups_str=line['Sub-Groups'] || arr['Subgroup']
+          region_str = line['Regions'].strip
+          
+          subgroup_arr = subgroups_str.split(',')
+          subgroup_arr.each do | sub_str |
+            subgroup_regions_hash[sub_str] << region_str
+          end
+          group_subgroups_hash[group_str] << subgroup_arr
+          countries_str = line['Countries'] || line['Countries ']
+          countries_arr = countries_str.split(',')
+          region_countries_hash[region_str] << countries_arr
         end
       end
-      update_group_subgroups subgroup_hash
-      update_subgroup_regions subgroup_hash, region_hash
-      update_region_countries region_hash, country_hash
+      update_group_subgroups group_subgroups_hash
+      update_subgroup_regions subgroups_regions_hash
+      update_region_countries region_countries_hash
    end
-   def self.update_region_countries region_hash, country_hash
-     region_hash.each_pair do | grp, _regions|
-       _regions.flatten!
-       _regions.uniq!
-       _regions.each do | reg |
-         if reg == 'China and East Asia'
-           reg  = 'East Asia'
-         end
-         region = Region.find_by name: reg.strip
-         RegionsCountry.destroy_all("region_id=#{region.id}")
-         _countries = country_hash[reg]
-         _countries.flatten!
-         _countries.uniq!
-         _countries.each do |con|
-           country = Country.find_or_create_by name: con.strip
-           puts "  region: #{region.name}  country: #{country.name}"
-           RegionsCountry.create region_id: region.id,
-              country_id: country.id
-         end
+   def self.update_region_countries region_countries_hash
+     Account.connection.execute "truncate table regions_countries"
+     region_countries_hash.each_pair do | _region, _countries|
+       _countries.flatten!
+       _countries.uniq!
+       region = Region.find_by name: _region.strip
+       _countries.each do |con|
+         country = Country.find_or_create_by name: con.strip
+         RegionsCountry.find_or_create_by region_id: region.id,
+                         country_id: country.id
        end
      end
    end
-   def self.update_subgroup_regions subgroup_hash, region_hash
-     subgroup_hash.each_pair do | grp, _subgroups|
-       _subgroups.flatten!
-       _subgroups.uniq!
-       _subgroups.each do |sg|
-          puts " grp #{grp}  sg #{sg}"
-          sg.strip!
-          sg = 'AlHurra TV' if sg == 'Al Hurra'
-          subgroup = Subgroup.find_or_create_by name: sg
-          SubgroupsRegion.destroy_all("subgroup_id=#{subgroup.id}")
-          region_hash[grp].flatten.each do | reg |
-            puts " reg str #{reg}" 
-            region = Region.find_or_create_by name: reg
-            SubgroupsRegion.create subgroup_id: subgroup.id,
-               region_id: region.id
-          end
-        end
+   # method OK
+   def self.update_subgroup_regions subgroups_regions_hash
+     Account.connection.execute "truncate table subgroups_regions"
+     subgroups_regions_hash.each_pair do | _subgrp, _regions|
+       sg = _subgrp.strip
+       _regions.uniq!
+       # next if sg != 'Burmese'
+       subgroup = Subgroup.find_or_create_by name: sg
+       _regions.each do | _reg |
+         region = Region.find_or_create_by name: _reg.strip
+         puts "  Create Subgroup: #{sg} Region: #{_reg}"
+         SubgroupsRegion.find_or_create_by subgroup_id: subgroup.id,
+                            region_id: region.id
+       end
      end
    end
    
    def self.update_group_subgroups group_hash
+      Account.connection.execute "truncate table groups_subgroups"
       group_hash.each_pair do |k, v|
         v.flatten!
         v.uniq!
         group = Group.find_by name: k.strip
-        GroupsSubgroup.destroy_all("group_id=#{group.id}")
         _subgroups = v
         _subgroups.each do |sg|
-          puts " k #{k}  sg #{sg}"
           sg.strip!
           sg = 'AlHurra TV' if sg == 'Al Hurra'
+          sg = 'Ukraine' if sg == 'Ukrainian'
           subgroup = Subgroup.find_or_create_by name: sg
-          GroupsSubgroups.create group_id: group.id,
-               subgroup_id: subgroup.id
+          GroupsSubgroups.find_or_create_by group_id: group.id,
+                 subgroup_id: subgroup.id
         end
       end
    end

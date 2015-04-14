@@ -365,6 +365,13 @@ class Account < ActiveRecord::Base
 
    def Account.load_group_csv
       require 'csv'
+      ['regions_countries', 'subgroups_regions', 'groups_subgroups'].each do |name|
+        Account.connection.execute "truncate table #{name}"
+      end 
+      @bulk_group_subgroup = []
+      @bulk_region_country = []
+      @bulk_subgroup_region = []
+      
       group_subgroups_hash = Hash.new {|h,k| h[k] = [] }
       region_countries_hash = Hash.new {|h,k| h[k] = [] }
       subgroup_regions_hash = Hash.new {|h,k| h[k] = [] }
@@ -391,23 +398,26 @@ class Account < ActiveRecord::Base
       update_group_subgroups group_subgroups_hash
       update_subgroup_regions subgroup_regions_hash
       update_region_countries region_countries_hash
+      
+      GroupsSubgroups.import! @bulk_group_subgroup
+      RegionsCountry.import! @bulk_region_country
+      SubgroupsRegion.import! @bulk_subgroup_region
    end
    def self.update_region_countries region_countries_hash
-     Account.connection.execute "truncate table regions_countries"
+      
      region_countries_hash.each_pair do | _region, _countries|
        _countries.flatten!
        _countries.uniq!
        region = Region.find_by name: _region.strip
        _countries.each do |con|
          country = Country.find_or_create_by name: con.strip
-         RegionsCountry.find_or_create_by region_id: region.id,
-                         country_id: country.id
+         @bulk_region_country << {:region_id=>region.id,:country_id=>country.id}
+         #RegionsCountry.find_or_create_by region_id: region.id,country_id: country.id
        end
      end
    end
    # method OK
    def self.update_subgroup_regions subgroup_regions_hash
-     Account.connection.execute "truncate table subgroups_regions"
      subgroup_regions_hash.each_pair do | _subgrp, _regions|
        sg = _subgrp.strip
        _regions.uniq!
@@ -416,15 +426,15 @@ class Account < ActiveRecord::Base
        _regions.each do | _reg |
          region = Region.find_or_create_by name: _reg.strip
          puts "  Create Subgroup: #{sg} Region: #{_reg}"
-         SubgroupsRegion.find_or_create_by subgroup_id: subgroup.id,
-                            region_id: region.id
+         @bulk_subgroup_region << {:subgroup_id=>subgroup.id,:region_id=>region.id}
+         # SubgroupsRegion.find_or_create_by subgroup_id: subgroup.id,
+         #                   region_id: region.id
        end
      end
    end
    
    def self.update_group_subgroups group_hash
-      Account.connection.execute "truncate table groups_subgroups"
-      group_hash.each_pair do |k, v|
+     group_hash.each_pair do |k, v|
         v.flatten!
         v.uniq!
         group = Group.find_by name: k.strip
@@ -434,13 +444,15 @@ class Account < ActiveRecord::Base
           sg = 'AlHurra TV' if sg == 'Al Hurra'
           sg = 'Ukraine' if sg == 'Ukrainian'
           subgroup = Subgroup.find_or_create_by name: sg
-          GroupsSubgroups.find_or_create_by group_id: group.id,
-                 subgroup_id: subgroup.id
+          @bulk_group_subgroup << {:group_id=>group.id,:subgroup_id=>subgroup.id}
+          # GroupsSubgroups.find_or_create_by group_id: group.id,
+          #       subgroup_id: subgroup.id
         end
       end
    end
 
    def self.update_associations account, options
+      
        _languages = options[:languages]
        _groups = options[:groups]
        _subgroups = options[:subgroups]
@@ -456,8 +468,7 @@ class Account < ActiveRecord::Base
               
        if _subgroups
 # select * from subgroups where name in ('Ukrainian', 'Afaan Oromo','PNN' ,'Tibetan','Tatar-Bashkir')
-          AccountsSubgroup.delete_all("account_id=#{account.id}")
-         _subgroups.split(',').each do |sg|
+          _subgroups.split(',').each do |sg|
             sg.strip!
             case sg
             when 'Al Hurra'
@@ -475,13 +486,13 @@ class Account < ActiveRecord::Base
             if org
               subgroup.update_attribute :description, "#{org.name}  #{sg}"
             end
-            AccountsSubgroup.find_or_create_by account_id: account.id,  subgroup_id: subgroup.id
+            @bulk_account_subgroup << {:account_id=>account.id,:subgroup_id=>subgroup.id}
+            # AccountsSubgroup.find_or_create_by account_id: account.id,  subgroup_id: subgroup.id
          end
        end
 
        if _groups
          Group.delete_all("name in ('Washington','D.C.')")
-         account.groups.clear
          _groups.split(';').each do | grp |
            grp.strip!
            group = Group.find_or_create_by name: grp
@@ -491,16 +502,17 @@ class Account < ActiveRecord::Base
                group.update_attribute :description, "#{org.name} "
              end
            end
-           AccountsGroup.find_or_create_by account_id: account.id, group_id: group.id
+           @bulk_account_group << {:account_id=>account.id,:group_id=>group.id}
+           # AccountsGroup.find_or_create_by account_id: account.id, group_id: group.id
            account.subgroups.reload.to_a.each do |sg |
-             GroupsSubgroups.find_or_create_by group_id: group.id, subgroup_id: sg.id
+             @bulk_group_subgroup << {:group_id=>group.id,:subgroup_id=>sg.id}
+             # GroupsSubgroups.find_or_create_by group_id: group.id, subgroup_id: sg.id
            end
          end
        end
 
        if _languages
        # select * from languages where name in ('Afaan Oromo')
-         account.languages.destroy_all
          # Zimbabwe is not a lang name
          _languages.split(',').each do | lan |
            lan.strip!
@@ -527,7 +539,8 @@ class Account < ActiveRecord::Base
            lan.split(',').each do |la|
              language = Language.find_by name: la
              if language
-               AccountsLanguage.find_or_create_by account_id: account.id, language_id: language.id
+               @bulk_account_language << {:account_id=>account.id,:language_id=>language.id}
+               # AccountsLanguage.find_or_create_by account_id: account.id, language_id: language.id
              else
                puts "  Cannot find #{la}"
                raise
@@ -537,7 +550,6 @@ class Account < ActiveRecord::Base
        end
        if _regions
        # select * from regions where name in ('Caucus','Caucusus')
-         account.regions.destroy_all
          puts "  #{account.object_name} REGIONS #{_regions.inspect}"
          _regions.split(',').each do | reg |
             reg.strip!
@@ -548,26 +560,29 @@ class Account < ActiveRecord::Base
               regs = "Middle East,North Africa"
               regs.split(',').each do |rg|
                 region = Region.find_or_create_by name: rg
-                AccountsRegion.find_or_create_by account_id: account.id,  region_id:  region.id
+                @bulk_account_region << {:account_id=>account.id,:region_id=>region.id}
+                # AccountsRegion.find_or_create_by account_id: account.id,  region_id:  region.id
               end
             when "Central America Caribbean"
               reg = "Central America and the Caribbean"
               region = Region.find_or_create_by name: reg
-              AccountsRegion.find_or_create_by account_id: account.id,  region_id:  region.id
+              @bulk_account_region << {:account_id=>account.id,:region_id=>region.id}
+              # AccountsRegion.find_or_create_by account_id: account.id,  region_id:  region.id
             when "Caucus","Caucusus"
               reg  = 'Caucasus'
               region = Region.find_or_create_by name: reg
-              AccountsRegion.find_or_create_by account_id: account.id,  region_id:  region.id
+              @bulk_account_region << {:account_id=>account.id,:region_id=>region.id}
+              # AccountsRegion.find_or_create_by account_id: account.id,  region_id:  region.id
             else
               region = Region.find_or_create_by name: reg
-              AccountsRegion.find_or_create_by account_id: account.id,  region_id:  region.id
+              @bulk_account_region << {:account_id=>account.id,:region_id=>region.id}
+              # AccountsRegion.find_or_create_by account_id: account.id,  region_id:  region.id
             end
           end
        end
        
        if _countries
          # select * from countries where name in ('Tajikstan','Union of Soviet Socialist Republics')
-         account.countries.destroy_all
          _countries.split(',').each do | co  |
            co.strip!
            case co
@@ -575,7 +590,8 @@ class Account < ActiveRecord::Base
              co = 'Tajikistan'
            end
            country = Country.find_or_create_by name: co
-           AccountsCountry.find_or_create_by account_id: account.id, country_id: country.id
+           @bulk_account_country << {:account_id=>account.id,:country_id=>country.id}
+           # AccountsCountry.find_or_create_by account_id: account.id, country_id: country.id
          end
        end
 
@@ -592,11 +608,21 @@ class Account < ActiveRecord::Base
    
    
    def Account.load_map_csv
+     ["subgroups",'groups',
+     'languages','regions','countries'].each do | name |
+      Account.connection.execute "truncate table accounts_#{name}"
+     end
+     @bulk_account_group = []
+     @bulk_account_subgroup = []
+     @bulk_account_language = []
+     @bulk_account_region = []
+     @bulk_account_country = []
+     @bulk_group_subgroup = []
       require 'csv'
       #tables =  ['BBG-Table 1.csv', 'DOS-Table 1.csv', 'DOD-Table 1.csv']
       #    
       # https://bbginnovate.atlassian.net/secure/attachment/20613/GovDash-Accts-All.xlsx
-      tables = ['GovDash-Accts-All-final.csv']
+      tables = ['GovDash-Accts-All.csv']
       tables.each do |  t |
          file="/Users/lliu/Desktop/GovDash-Accounts/#{t}"
          file="/Users/lliu/Desktop/#{t}"
@@ -612,6 +638,12 @@ class Account < ActiveRecord::Base
             end
          end
        end
+     AccountsGroup.import! @bulk_account_group
+     AccountsSubgroup.import! @bulk_account_subgroup
+     AccountsLanguage.import! @bulk_account_language
+     AccountsRegion.import! @bulk_account_region
+     AccountsCountry.import! @bulk_account_country
+     GroupsSubgroups.import! @bulk_group_subgroup
    end
    def self.load_line line
        arr = line

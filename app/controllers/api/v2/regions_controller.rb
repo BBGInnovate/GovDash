@@ -5,7 +5,8 @@ class Api::V2::RegionsController < Api::V2::BaseController
   def add_related model_object
     hsh = nil
     hsh = {:related_region_names=>[], :related_region_names=>[],
-          :related_subgroups=>[]}
+          :related_subgroups=>[],
+          :related_countries=>[]}
         
     if Region === model_object
       account_ids = AccountsRegion.where(["region_id = ?", model_object.id]).map{|ac| ac.account_id}.uniq
@@ -29,6 +30,15 @@ class Api::V2::RegionsController < Api::V2::BaseController
           attr.delete col
         end
         hsh[:related_subgroups] << attr
+      end
+      
+      RegionsCountry.select("country_id").
+        where(region_id: model_object.id).
+        map(&:country_id).each | con |
+          country = Country.find con
+          attr = country.attributes
+          hsh[:related_countries] << attr
+        end
       end
     end
     hsh

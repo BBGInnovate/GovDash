@@ -199,7 +199,8 @@ class YoutubeAccount < Account
     hs = {:account_id => self.id,
           :video_id => video.id,
           :published_at => video.published_at.to_s(:db),
-          :likes => video.like_count - video.dislike_count,
+          :likes => video.like_count
+          :dislikes = video.dislike_count,
           :comments => video.comment_count,
           :views => video.view_count,
           :favorites => video.favorite_count}
@@ -358,126 +359,5 @@ class YoutubeAccount < Account
     YtChannel.select("min(created_at) as created_at").where(account_id: self.id).first.created_at.to_s(:db)
   end
 end
-=begin
-  def save_video vid
-    begin
-      video = Yt::Video.new id: vid
-      v = YtVideo.find_or_create_by video_id: video.id
-      hs = {:account_id => self.id,
-            :channel_id => channel.id,
-            :video_id => video.id,
-            :published_at => "#{video.published_at.to_s(:db)}",
-            :likes => video.like_count - video.dislike_count,
-            :comments => video.comment_count,
-            :favorites => video.favorite_count}
-      # @bulk_insert << hs
-      v.update_attributes hs
-      video.published_at
-    rescue Exception=>ex
-      Rails.logger.error "  #{self.class.name}#save_video #{ex.message}"
-      nil
-    end 
-  end
-  
-  def init
-    @bulk_insert = []
-    @next_page_token = nil
-    @last_published_at = nil
-  end
 
-  def process_results
-    results  = fetch
-    @next_page_token = results['nextPageToken']
-    if @next_page_token
-      @next_page_token = "&pageToken=#{@next_page_token}"
-    end
-    unless results.empty?
-      results['items'].each do |item|
-        vid = item['id']['videoId']
-        @last_published_at = save_video vid
-      end  
-    end
-    if @last_published_at && @last_published_at > eval(conf.since_date)
-      process_results
-    else
-      @last_published_at
-    end
-  end
-  
-  def path
-    endpoint="https://www.googleapis.com/youtube/v3/search"
-    api_key = YoutubeConf[:api_key]
-    "#{endpoint}?channelId=#{channel.id}&key=#{api_key}&maxResults=#{max_results}&order=date&part=snippet&type=video"
-  end
-
-  def fetch
-    url = self.path
-    if @next_page_token
-      url = url + @next_page_token
-    end
-    uri = URI.parse(url)
-    req = Net::HTTP::Get.new(uri)
-    http = Net::HTTP.new(uri.hostname, uri.port)
-    http.use_ssl = true if uri.scheme == 'https'
-    http.read_timeout = YoutubeConf[:read_timeout] || 60
-    http.open_timeout = YoutubeConf[:open_timeout] || 60
-    response=nil
-    http.start do |h|
-      response = h.request(req)
-      case response
-        when (Net::HTTPOK || Net::HTTPSuccess)
-        else
-          response.error!
-      end
-    end
-    if response
-      hsh = JSON.parse response.body
-    else
-      {}
-    end
-    
-  end
-  
-  def max_results
-    @max_results ||= YoutubeConf[:max_results] || 50
-  end
-  
-  #
-  # recursively get total_likes etc. for each day in yt_channels
-  #  
-  def summary_for_day init_date, videos
-    likes = 0
-    comments = 0
-    favorites = 0
-    views = 0
-    videos.each do | v |
-      likes += v.likes
-      comments += v.comments
-      favorites += v.favorites
-      views += v.views
-    end
-    totals = {:published_at => init_date.middle_of_day,
-              :account_id => self.id,
-              :channel_id=>self.channel.id,
-              :video_comments => comments,
-              :video_favorites => favorites,
-              :video_likes => likes,
-              :video_views => views}
-
-    ch = self.yt_channels.find_by published_at: init_date.middle_of_day
-    if ch
-      if ch.video_comments != totals[:total_comments] ||
-         ch.video_favorites != totals[:total_favorites] ||
-         ch.video_likes != totals[:total_likes] ||
-         ch.video_views != totals[:total_views]
-       
-         ch.video_attributes totals
-      end
-    else
-      # new record
-      @channel_insert << totals
-    end
-  end
-  
-=end
 

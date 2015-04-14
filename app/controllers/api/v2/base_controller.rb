@@ -179,6 +179,11 @@ class Api::V2::BaseController <  ActionController::Base
   def add_associate_name(record)
     attr = filter_attributes(record.attributes)
     if Account === record
+      if record.account_type
+        attr[:account_type_name] = record.account_type.name
+      end
+      attr.delete 'organization_id'
+      attr.delete 'status'
       # attr['group_name']= record.group.name if !!record.respond_to?(:group) && record.group
       unless record.groups.empty?
         attr['group_names'] =  record.groups.map(&:name)

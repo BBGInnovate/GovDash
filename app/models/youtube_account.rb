@@ -199,8 +199,8 @@ class YoutubeAccount < Account
     hs = {:account_id => self.id,
           :video_id => video.id,
           :published_at => video.published_at.to_s(:db),
-          :likes => video.like_count
-          :dislikes = video.dislike_count,
+          :likes => video.like_count,
+          :dislikes => video.dislike_count,
           :comments => video.comment_count,
           :views => video.view_count,
           :favorites => video.favorite_count}

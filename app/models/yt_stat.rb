@@ -95,7 +95,7 @@ class YtStat
     sql += " COALESCE(comments,0) as total_comments, "
     sql += "COALESCE(views,0) as total_views, "
     sql += "COALESCE(videos,0) as total_videos, "
-    sql += "(total_subscribers+total_comments+total_views) as total_number"
+    sql += "(total_subscribers+total_comments) as total_number"
     records = YtChannel.select(sql).where(cond).where(["account_id in (?)",account_ids]).first
   end
 
@@ -133,14 +133,14 @@ class YtStat
     results = []
     [rec1, rec2].each_with_index do |rec, i|
       result = init_struct
-      total = rec.total_subscribers + rec.total_comments + 
-         rec.total_views
+      total = rec.total_subscribers + rec.total_comments
+      #   + rec.total_views
       result.values = {:date=>rec.date,
           :subscribers=>rec.total_subscribers,
           :comments=>rec.total_comments,
-          :views=>rec.total_views,
           :totals=>total
-          }   
+          }
+      # :views=>rec.total_views, 
       results << result.values
     end
     results
@@ -167,8 +167,8 @@ class YtStat
             :comments=>@video_comments_change,
             :favorites=>@video_favorites_change, 
             :likes=>@video_likes_change, 
-            :views=>@video_views_change,
-            :totals=>rate}         
+            :totals=>rate}
+        # :views=>@video_views_change,        
         results << result.values
       end  
     end
@@ -197,8 +197,8 @@ class YtStat
             :comments=>@video_comments_change,
             :likes=>@video_likes_change,
             :subscribers=>@video_subscribers_change, 
-            :views=>@video_views_change,
-            :totals=>rate}         
+            :totals=>rate}
+        # :views=>@video_views_change,       
         results << result.values      
       end  
     end
@@ -223,10 +223,11 @@ class YtStat
      :favorites=>rec.video_favorites,
      :likes=>rec.video_likes,
      :comments=>rec.video_comments,
-     :views=>rec.video_views,
      :totals => (rec.video_favorites + rec.video_likes +
-         rec.video_comments + rec.video_views + rec.video_subscribers.to_i)
+         rec.video_comments + rec.video_subscribers.to_i)
     }
+    # :views=>rec.video_views,
+    # + rec.video_views 
     rescue Exception=>ex
       Rails.logger.error "   set_engagement_data #{ex.message}"
       {}

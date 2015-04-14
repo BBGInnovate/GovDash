@@ -1,4 +1,3 @@
-
 <!-- Page Load Modal -->
 <div class="modal fade" id="largeModal" modal-show="{{ loggedInUser }}">
     <div class="modal-dialog modal-lg">
@@ -434,6 +433,34 @@
                                     </div>
                                 </div>
                             </div>
+
+                        </div>
+                    </div><!-- ./smart-widget-inner -->
+                </div><!-- ./smart-widget -->
+            </div><!-- ./col -->
+
+            <div class="col-md-12">
+                <div class="smart-widget widget-green">
+                    <div class="smart-widget-header">
+                        All Interactions
+                    </div>
+                    <div class="smart-widget-inner">
+
+                        <div class="smart-widget-body no-padding">
+                            <div class="padding-md">
+                                <div ng-if="barChartData" style="height:250px;" flot-pie-chart data="barChartData"></div>
+
+                            </div>
+
+                            <div class="bg-grey">
+                                <div class="row">
+                                    <div class="col-md-12 text-center">
+                                        <h3 class="m-top-sm">{{ totalInteractions | number: 0 }}</h3>
+                                        <small class="m-bottom-sm block">Total Interactions</small>
+                                    </div>
+                                </div>
+                            </div>
+
 
                         </div>
                     </div><!-- ./smart-widget-inner -->

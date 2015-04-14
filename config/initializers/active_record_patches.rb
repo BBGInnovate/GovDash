@@ -23,11 +23,17 @@ class ActiveRecord::Base
   end
   
   def self.import!(record_list, ignore='IGNORE')
+    if record_list.empty?
+      return
+    end
     raise ArgumentError "record_list not an Array of Hashes" unless record_list.is_a?(Array) && record_list.all? {|rec| rec.is_a? Hash }
       
-    key_list, value_list = convert_record_list(record_list)       
-    key_list = key_list | [:created_at, :updated_at]
-    value_list = value_list.map{|a| a += ["'#{Time.now.to_s(:db)}'", "'#{Time.now.to_s(:db)}'"]} 
+    key_list, value_list = convert_record_list(record_list)   
+    
+    if self.column_names.include? "created_at"    
+      key_list = key_list | [:created_at, :updated_at]
+      value_list = value_list.map{|a| a += ["'#{Time.now.to_s(:db)}'", "'#{Time.now.to_s(:db)}'"]} 
+    end
     sql = %{INSERT #{ignore} INTO #{self.table_name} (#{key_list.join(", ")}) VALUES #{value_list.map {|rec| "(#{rec.join(", ")})" }.join(" ,")};}   
     # self.connection.insert_sql("set GLOBAL wait_timeout=28800;")   
     self.connection.insert_sql("SET unique_checks=0;")    

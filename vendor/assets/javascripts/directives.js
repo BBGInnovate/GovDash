@@ -246,7 +246,8 @@ angular.module('directives', []).
 							labels: labels,
 							barColors: barColors,
 							resize: true,
-							redraw: true
+							redraw: true,
+							horizontal: true
 						});
 					} else {
 						element.html('<p class="no-data-found">No data found</p>');
@@ -276,12 +277,12 @@ angular.module('directives', []).
 						if (attrs.modal) {
 							// Set Timeout for bootstrap modal
 							setTimeout(function () {
-								buildChart(element, data, labels, colors, attrs.socialmediatype);
+								buildChart(element, data, labels, colors);
 							}, 400);
 
 						// This is for initial filter selection load
 						} else {
-							buildChart(element, data, labels, colors, attrs.socialmediatype);
+							buildChart(element, data, labels, colors);
 						}
 
 
@@ -292,31 +293,16 @@ angular.module('directives', []).
 				});
 
 				function buildChart(element, data, labels, colors, socialMediaType) {
-					var dataArr = [];
-
-					// Facebook only has 3 pieces now
-					if (socialMediaType === 'fb') {
-
-						dataArr = [
-							{label: $filter('labelFormat')(labels[0]), value: data[labels[0]]},
-							{label: $filter('labelFormat')(labels[1]), value: data[labels[1]]},
-							{label: $filter('labelFormat')(labels[2]), value: data[labels[2]]}
-						];
-
-					} else {
-						dataArr =
-						[
-							{label: $filter('labelFormat')(labels[0]), value: data[labels[0]]},
-							{label: $filter('labelFormat')(labels[1]), value: data[labels[1]]},
-							{label: $filter('labelFormat')(labels[2]), value: data[labels[2]]},
-							{label: $filter('labelFormat')(labels[3]), value: data[labels[3]]}
-						];
-					}
 
 					// Build out Donut Chart
 					Morris.Donut({
 						element: element,
-						data: dataArr,
+						data: [
+							{label: $filter('labelFormat')(labels[0]), value: data[labels[0]]},
+							{label: $filter('labelFormat')(labels[1]), value: data[labels[1]]},
+							{label: $filter('labelFormat')(labels[2]), value: data[labels[2]]},
+							{label: $filter('labelFormat')(labels[3]), value: data[labels[3]]}
+						],
 						colors: [colors[0], colors[1], colors[2], colors[3]]
 					});
 				}
@@ -435,6 +421,56 @@ angular.module('directives', []).
 					pickTime: false
 				});
 			}
+		};
+	}])
+	.directive('flotPieChart', ['$parse', function($parse) {
+		return {
+			link: function(scope, element, attrs) {
+
+
+				var data = $parse(attrs.data)(scope);
+
+				if (data && data.totalInteractions !== 0) {
+					element.empty();
+
+					$(window).resize(function () {
+						window.m.redraw();
+					});
+
+
+
+
+					var dataArr = [
+						{label: "Facebook", data: data.fbInteractions, color: '#3278B3' },
+						{label: "Twitter", data: data.twInteractions, color: '#23B7E5' },
+						{label: "YouTube", data: data.youtubeInteractions, color: '#E36159' }
+					];
+
+
+
+					$.plot(element, dataArr, {
+						series: {
+							pie: {
+								show: true
+							}
+						},
+						legend: {
+							show: false
+						}
+					});
+
+
+				} else {
+					element.html('<p class="no-data-found">No data found</p>');
+				}
+
+			}
+
+
+
+
+
+
 		};
 	}]);
 

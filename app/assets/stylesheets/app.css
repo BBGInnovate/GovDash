@@ -212,3 +212,15 @@ div.xAxis div.tickLabel
 .data-since {
     font-size: 11px;
 }
+
+.loading-indicator-div {
+    text-align: center;
+    position: relative;
+    height: 0px;
+    top: -83px;
+}
+
+.loading-indicator {
+    font-size: 35px ! important;
+    color: #A6AAB8 !important;
+}

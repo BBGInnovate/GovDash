@@ -1,9 +1,15 @@
 class RedshiftTwTweet < Redshift
   self.table_name = "tw_tweets"
 
-  def self.column_array
+class << self 
+  def column_array
     ['favorites','retweets','mentions']
   end
+  
+  def date_array
+    ['tweet_created_at']
+  end
+end
 end
 =begin  
   def RedshiftTwTweet.copy_from_tw_tweet

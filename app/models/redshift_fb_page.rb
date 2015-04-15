@@ -9,6 +9,10 @@ class << self
           'consumptions_by_consumption_type_day' ,'stories_week' ,
           'stories_day_28' ,'stories_by_story_type_week' ]
   end
+  def date_array
+    []
+  end
+  
 end
 
 end

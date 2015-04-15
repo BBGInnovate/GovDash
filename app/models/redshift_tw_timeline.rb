@@ -1,10 +1,14 @@
 class RedshiftTwTimeline < Redshift
   self.table_name = "tw_timelines"
-
-  def self.column_array
+class << self 
+  def column_array
     ['total_tweets','total_favorites','total_followers','tweets',
            'favorites','followers','retweets','mentions']
   end
+  def date_array
+    []
+  end
+end
 end
 =begin  
   def RedshiftTwTimeline.copy_from_tw_timelines

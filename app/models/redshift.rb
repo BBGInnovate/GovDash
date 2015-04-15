@@ -19,18 +19,26 @@ class Redshift < ActiveRecord::Base
 class << self
   # called from the derived class
   def copy_from_socialdash
+    ActiveRecord::Base.logger.level = 1
+    # ActiveRecord::Base.logger.level = 0
     account_ids.each do | old_acc_id |
+      i = 0
+      started=Time.now
       @objectname = get_object_name old_acc_id
-      puts @objectname
-      rows = self.where(account_id: old_acc_id ).to_a
-      puts "  rows count #{rows.size}"
+      rows = self.where(account_id: old_acc_id).order("created_at desc").to_a
+      # puts "  rows count #{rows.size}"
       rows.each do | old_rec |
         begin
           find_or_create_with old_rec, @objectname
-        #rescue Exception=>ex
-        #  puts "   #{ex.message}"
+        rescue Exception=>ex
+          puts "   #{ex.message}"
         end
-      end
+        # i += 1
+        # break if i > 15
+      end; nil
+      ended=Time.now
+      duration= ended - started
+      puts "  #{self.name} #{@objectname} processed #{rows.size} rows in #{duration} seconds"
       # break
     end
   end
@@ -57,7 +65,10 @@ class << self
         new_rec.send("#{col}=", val)
       end 
     end
-    puts "   new_rec  #{new_rec.inspect}"
+    date_array.each do |col|
+      val = old_rec.send(col)
+      new_rec.send("#{col}=", val)
+    end
     new_rec.save
   end
 
@@ -69,42 +80,45 @@ class << self
      
     case klass_name
     when 'FbPage','FbPost'
-      puts "  govdash_klass #{govdash_klass.name}"
+      # puts "  govdash_klass #{govdash_klass.name}"
       new_acc = FacebookAccount.find_by object_name: objectname
+      if klass_name == 'FbPost'
+        new_rec = FbPost.find_or_create_by(post_id: old_rec.post_id)
+        new_rec.account_id = new_acc.id
+      else
+        date = old_rec.post_created_time.beginning_of_day
+        new_rec = FbPage.where(account_id: new_acc.id).
+          where(post_created_time: (date..date.end_of_day)).to_a.first
+        if !new_rec
+          new_rec = FbPage.create(account_id: new_acc.id,
+             object_name: objectname, post_created_time: date.middle_of_day
+          )
+        end
+      end
     when 'TwTimeline','TwTweet'
       new_acc = TwitterAccount.find_by object_name: objectname
-    end
-    puts "  find_or_create_with new_acc #{new_acc}"
-    date = nil
-    if old_rec.respond_to? :post_created_time
-      date = old_rec.post_created_time.beginning_of_day
-      new_rec = govdash_klass.where(account_id: new_acc.id).
-           where(post_created_time: (date..date.end_of_day)).to_a.first
-    else
-      date = old_rec.tweet_created_at.beginning_of_day
-      new_rec = govdash_klass.where(account_id: new_acc.id).
+      if klass_name == 'TwTweet'
+        new_rec = TwTweet.find_or_create_by(tweet_id: old_rec.tweet_id)
+        new_rec.account_id = new_acc.id
+      else
+        date = old_rec.tweet_created_at.beginning_of_day
+        new_rec = TwTimeline.where(account_id: new_acc.id).
            where(tweet_created_at: (date..date.end_of_day)).to_a.first
+      end
     end
-    
+    # puts " SmDash id: #{old_rec.id},  FOUND GovDash id: #{new_rec.id}"
     if !new_rec
       case klass_name
       when 'FbPage'
         new_rec = govdash_klass.create(account_id: new_acc.id,
           object_name: objectname, post_created_time: date.middle_of_day
         )
-      when 'FbPost'
-        new_rec = govdash_klass.create(account_id: new_acc.id,
-          post_id: old_rec.post_id, post_created_time: old_rec.post_created_time
-        )
       when 'TwTimeline'
         new_rec = govdash_klass.create(account_id: new_acc.id,
           object_name: objectname, tweet_created_at: old_rec.tweet_created_at
         )
-      when 'TwTweet'
-        new_rec = govdash_klass.create(account_id: new_acc.id,
-          tweet_id: old_rec.tweet_id, tweet_created_at: old_rec.tweet_created_at
-        )
-      end  
+      end
+      # puts "  CREATED GovDash account id: #{new_rec.id}"
     end
     copy_data new_rec, old_rec
   end

@@ -404,7 +404,6 @@ class Account < ActiveRecord::Base
       SubgroupsRegion.import! @bulk_subgroup_region
    end
    def self.update_region_countries region_countries_hash
-      
      region_countries_hash.each_pair do | _region, _countries|
        _countries.flatten!
        _countries.uniq!
@@ -618,6 +617,12 @@ class Account < ActiveRecord::Base
      @bulk_account_region = []
      @bulk_account_country = []
      @bulk_group_subgroup = []
+     # new
+     @bulk_subgroup_region = []
+     @bulk_region_country = []
+     @region_countries_hash = Hash.new {|h,k| h[k] = [] }
+     @subgroup_regions_hash = Hash.new {|h,k| h[k] = [] }
+     
       require 'csv'
       #tables =  ['BBG-Table 1.csv', 'DOS-Table 1.csv', 'DOD-Table 1.csv']
       #    
@@ -644,11 +649,35 @@ class Account < ActiveRecord::Base
      AccountsRegion.import! @bulk_account_region
      AccountsCountry.import! @bulk_account_country
      GroupsSubgroups.import! @bulk_group_subgroup
+     
+     update_subgroup_regions @subgroup_regions_hash
+     update_region_countries @region_countries_hash
+     
+     SubgroupsRegion.import! @bulk_subgroup_region
+     RegionsCountry.import! @bulk_region_country
    end
    def self.load_line line
        arr = line
        return if !arr['Platform']
-       
+       # for subgroup-region-country mapping
+       subgroups_str=line['Sub-Groups'] || arr['Subgroup'] rescue nil
+       regions_str = line['Region'].strip rescue nil
+       countries_str = line['Country'] || line['Countries '] rescue nil
+       if subgroups_str
+         subgroups_str.split(',').each do | sub_str |
+           if regions_str
+             regions_str.split(',').each do |  region_str |
+               @subgroup_regions_hash[sub_str] << region_str.strip
+               if countries_str
+                 countries_str.split(',').each do |  country_str |
+                   @region_countries_hash[region_str] << country_str
+                 end
+               end
+             end
+           end
+         end
+       end
+       #  
        klass="#{arr['Platform'].strip.titleize}Account".constantize
        objectname=arr['Account Name'] || arr['Name']
        objectname.strip!

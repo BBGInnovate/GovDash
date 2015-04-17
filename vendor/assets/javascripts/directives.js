@@ -185,9 +185,7 @@ angular.module('directives', []).
 					if (data && data.totalInteractions !== 0) {
 						element.empty();
 
-						$(window).resize(function() {
-							window.m.redraw();
-						});
+
 
 						var dataArr = [];
 						var yKeys = [];
@@ -230,6 +228,16 @@ angular.module('directives', []).
 								labels = ['Facebook', 'Twitter'];
 								barColors = ['#3278B3', '#23B7E5'];
 							}
+
+							$(window).resize(function() {
+								window.m.redraw();
+
+								setTimeout(function () {
+									addLabels(dataArr);
+								}, 500);
+
+
+							});
 						}
 
 
@@ -247,13 +255,37 @@ angular.module('directives', []).
 							barColors: barColors,
 							resize: true,
 							redraw: true,
-							horizontal: true
+							horizontal: true,
+							hideHover: 'always'
 						});
+
+
+						addLabels(dataArr);
+
+
+
 					} else {
 						element.html('<p class="no-data-found">No data found</p>');
 					}
 
 				});
+
+				function addLabels(dataArr) {
+					var totalInteractions = dataArr[0].a + dataArr[0].b + dataArr[0].c;
+					var fbPercentage = Math.round((dataArr[0].a / totalInteractions) * 100) + '%';
+					var twPercentage = Math.round((dataArr[0].b / totalInteractions) * 100) + '%';
+					var ytPercentage = Math.round((dataArr[0].c / totalInteractions) * 100) + '%';
+
+					var xPosOne = ($('rect')[0].width.baseVal.value + $('rect')[0].x.baseVal.value) + 10;
+					var xPosTwo = ($('rect')[1].width.baseVal.value + $('rect')[1].x.baseVal.value) + 10;
+					var xPosThree = ($('rect')[2].width.baseVal.value + $('rect')[2].x.baseVal.value) + 10;
+					var fbValue = dataArr[0].a.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' ('+fbPercentage+')';
+					var twValue = dataArr[0].b.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' ('+twPercentage+')';
+					var ytValue = dataArr[0].c.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' ('+ytPercentage+')';
+					$('rect')[0].outerHTML += '<svg x="'+xPosOne+'" y="52.375" height="30" width="200"><text x="0" y="15" fill="#3278B3">'+fbValue+'</text></svg>';
+					$('rect')[1].outerHTML += '<svg x="'+xPosTwo+'" y="92.375" height="30" width="200"><text x="0" y="15" fill="#23B7E5">'+twValue+'</text></svg>';
+					$('rect')[2].outerHTML += '<svg x="'+xPosThree+'" y="132.375" height="30" width="200"><text x="0" y="15" fill="#E36159">'+ytValue+'</text></svg>';
+				}
 
 			}
 		};
@@ -267,6 +299,8 @@ angular.module('directives', []).
 					var data = $parse(attrs.data)(scope);
 
 					if (data && data.length === undefined) {
+						element.empty();
+
 						// Get the colors and labels from the angular filters function
 						// for the proper socialmediatype (facebook, twitter, youtube)
 						var colors = $filter('socialMediaColors')(attrs.socialmediatype);
@@ -277,14 +311,18 @@ angular.module('directives', []).
 						if (attrs.modal) {
 							// Set Timeout for bootstrap modal
 							setTimeout(function () {
-								buildChart(element, data, labels, colors);
+								buildChart(element, data, labels, colors, attrs.socialmediatype);
 							}, 400);
 
 						// This is for initial filter selection load
 						} else {
-							buildChart(element, data, labels, colors);
+							buildChart(element, data, labels, colors, attrs.socialmediatype);
 						}
 
+						/*
+						// remove pie chart data not found message if exists
+						$('.pie-chart-data').remove();
+						*/
 
 					} else {
 						element.html('<p class="no-data-found">No data found</p>');
@@ -294,17 +332,32 @@ angular.module('directives', []).
 
 				function buildChart(element, data, labels, colors, socialMediaType) {
 
+					var dataArray = [
+						{label: $filter('labelFormat')(labels[0]), value: data[labels[0]]},
+						{label: $filter('labelFormat')(labels[1]), value: data[labels[1]]},
+						{label: $filter('labelFormat')(labels[2]), value: data[labels[2]]},
+						{label: $filter('labelFormat')(labels[3]), value: data[labels[3]]}
+					];
+
+					// if it's YouTube, remove last element since YouTube only has 3 engagement actions
+					if (socialMediaType === 'yt') {
+						dataArray.splice(3, 1);
+					}
+
 					// Build out Donut Chart
 					Morris.Donut({
 						element: element,
-						data: [
-							{label: $filter('labelFormat')(labels[0]), value: data[labels[0]]},
-							{label: $filter('labelFormat')(labels[1]), value: data[labels[1]]},
-							{label: $filter('labelFormat')(labels[2]), value: data[labels[2]]},
-							{label: $filter('labelFormat')(labels[3]), value: data[labels[3]]}
-						],
+						data: dataArray,
+						formatter: function (y, value) {
+							var percentage = Math.round((value.value / data.totals) * 100);
+
+							// add commas to number
+							var num = y.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+							return num + '   ('+percentage+'%)';
+						},
 						colors: [colors[0], colors[1], colors[2], colors[3]]
 					});
+
 				}
 
 

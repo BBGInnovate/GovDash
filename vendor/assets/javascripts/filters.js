@@ -215,7 +215,8 @@ angular.module('filters', []).
 				} else if (socialMediaType === 'tw') {
 					array = ['retweets', 'mentions', 'favorites', 'followers'];
 				} else if (socialMediaType === 'yt') {
-					array = ['views', 'likes', 'comments', 'subscribers'];
+				//	array = ['views', 'likes', 'comments', 'subscribers'];
+					array = ['likes', 'comments', 'subscribers'];
 				}
 
 				return array;

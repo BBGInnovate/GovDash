@@ -57,13 +57,16 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 							// If there was an ID match
 							if ($scope.subgroups[i].id === ids[j]) {
 								// Push to newIds array to assign later to $scope.subgroups
-								newIds.push($scope.subgroups[i]);
+								var subgroup = $scope.subgroups[i];
+								newIds.push(subgroup);
 							}
 						}
 
 					}
 					// Assign $scope.subgroups to the accumulated Ids
 					$scope.subgroups = newIds;
+
+
 				} else {
 					// If there were no subgroup Ids for the selected group, set $scope.subgroups to empty
 					if (newIds.length === 0) {
@@ -74,6 +77,8 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 					}
 
 				}
+
+
 			}
 		});
 /*

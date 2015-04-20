@@ -18,13 +18,32 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 
 		// this is a placeholder for the subgroups that gets filtered down
 		$scope.allSubgroups = response[5].subgroups;
+		$scope.allCountries = response[3].countries;
+		$scope.allGroups = response[2].groups;
 
 		$scope.$watchCollection('selectedOrganizations', function(newVal, oldVal) {
 			if (newVal) {
-				$scope.selectedGroups = [];
-				$scope.selectedSubgroups = [];
 
-				$scope.subgroups = $scope.allSubgroups;
+				if (newVal.length > 0) {
+					var groups = [];
+					for (var i = 0; i < newVal.length; i++) {
+						for (var j = 0; j < $scope.allGroups.length; j++) {
+							if ($scope.allGroups[j].organization_id === newVal[i].id) {
+								groups.push($scope.allGroups[j]);
+							}
+						}
+					}
+
+					$scope.groups = groups;
+				// reset list
+				} else {
+					$scope.selectedGroups = [];
+					$scope.selectedSubgroups = [];
+					$scope.groups = $scope.allGroups;
+					$scope.subgroups = $scope.allSubgroups;
+				}
+
+
 			}
 
 		});
@@ -81,20 +100,89 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 
 			}
 		});
-/*
-		$scope.$watchCollection('selectedGroups', function(newVal, oldVal) {
-			if (newVal && newVal.length > 0) {
-				$scope.subgroups = newVal[0].related_subgroups;
-			}
 
+
+		// This scope watch function handles the many to many regions -> countries relationship
+		$scope.$watch('selectedRegions', function() {
+			$scope.countries = response[3].countries;
+			if ($scope.selectedRegions) {
+				var ids = [];
+				// Loop through the selected groups
+				for (var i = 0; i < $scope.selectedRegions.length; i++) {
+					// If the selected item has subgroup ids
+					if ($scope.selectedRegions[i].related_countries) {
+						for (var j = 0; j < $scope.selectedRegions[i].related_countries.length; j++) {
+							ids.push($scope.selectedRegions[i].related_countries[j].id);
+						}
+					}
+
+				}
+
+				// Place holder array for new ids
+				var newIds = [];
+
+				// if there were IDs found from the groups
+				if (ids.length > 0) {
+					// Loop through all the subgroups
+					for (var i = 0; i < $scope.countries.length; i++) {
+						// Now loop through all of the IDs that were accumulated from previous loop
+						for (var j = 0; j < ids.length; j++) {
+							// If there was an ID match
+							if ($scope.countries[i].id === ids[j]) {
+								// Push to newIds array to assign later to $scope.subgroups
+								var country = $scope.countries[i];
+								newIds.push(country);
+							}
+						}
+
+					}
+					// Assign $scope.subgroups to the accumulated Ids
+					$scope.countries = newIds;
+
+
+				} else {
+					// If there were no subgroup Ids for the selected group, set $scope.subgroups to empty
+					if (newIds.length === 0) {
+						$scope.countries = [];
+						// Otherwise, reset $scope.subgroups to the full list of subgroups
+					} else {
+						$scope.countries = response[3].countries;
+					}
+
+				}
+
+
+			}
 		});
-*/
+
 	});
 
 
 	// Remove functions for wizard builder
 	$scope.removeRegion = function (index) {
+		//	$scope.selectedRegions.splice(index, 1);
+		// remove the subgroups associated with the group that was removed
+		for (var i = 0; i < $scope.selectedRegions[index].related_countries.length; i++) {
+			for (var j = 0; j < $scope.countries.length; j++) {
+				if ($scope.countries[j].id === $scope.selectedRegions[index].related_countries[i].id) {
+					$scope.countries.splice(j, 1);
+				}
+			}
+		}
+
+		// if there are no subgroups, reset the list
+		if ($scope.countries.length === 0) {
+			$scope.countries = $scope.allCountries;
+		}
+
+
 		$scope.selectedRegions.splice(index, 1);
+
+		// if no groups are selected, reset subgroups
+		if ($scope.selectedRegions.length === 0) {
+			$scope.countries = $scope.allCountries;
+			$scope.selectedCountries = [];
+		}
 	};
 
 	$scope.removeCountry = function (index) {
@@ -105,8 +193,8 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 		$scope.selectedLanguages.splice(index, 1);
 	};
 
-	$scope.removeOrganization = function () {
-		$scope.selectedOrganizations = null;
+	$scope.removeOrganization = function (index) {
+		$scope.selectedOrganizations.splice(index, 1);
 		$scope.subgroups = $scope.allSubgroups;
 	};
 

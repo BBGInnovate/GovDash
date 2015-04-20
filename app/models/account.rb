@@ -365,7 +365,7 @@ class Account < ActiveRecord::Base
 
    def Account.load_group_csv
       require 'csv'
-      ['regions_countries', 'subgroups_regions', 'groups_subgroups'].each do |name|
+      ['subgroups','regions_countries', 'subgroups_regions', 'groups_subgroups'].each do |name|
         Account.connection.execute "truncate table #{name}"
       end 
       @bulk_group_subgroup = []
@@ -376,17 +376,18 @@ class Account < ActiveRecord::Base
       region_countries_hash = Hash.new {|h,k| h[k] = [] }
       subgroup_regions_hash = Hash.new {|h,k| h[k] = [] }
       
-      tables = ['BBG-Regions-Countries-GovDash.csv']
+      tables = ['BBG-Regions-Countries-GovDash3.csv']
       tables.each do |  t |
         file="/Users/lliu/Desktop/#{t}"
         CSV.foreach(file, quote_char: '"', col_sep: ',', row_sep: :auto, headers:  true) do | line |
           next if !line['Group']
           group_str=line['Group'].strip
-          subgroups_str=line['Sub-Groups'] || arr['Subgroup']
+          subgroups_str=line['Sub-Groups'] || line['Subgroup']
           region_str = line['Regions'].strip
-          
-          subgroup_arr = subgroups_str.split(',')
+          subgroup_arr = subgroups_str.split(',') rescue []
           subgroup_arr.each do | sub_str |
+            sub_str.strip!
+            next if sub_str.empty?
             subgroup_regions_hash[sub_str] << region_str
           end
           group_subgroups_hash[group_str] << subgroup_arr
@@ -607,8 +608,7 @@ class Account < ActiveRecord::Base
    
    
    def Account.load_map_csv
-     ["subgroups",'groups',
-     'languages','regions','countries'].each do | name |
+     ["subgroups",'groups','languages','regions','countries'].each do | name |
       Account.connection.execute "truncate table accounts_#{name}"
      end
      @bulk_account_group = []
@@ -627,9 +627,9 @@ class Account < ActiveRecord::Base
       #tables =  ['BBG-Table 1.csv', 'DOS-Table 1.csv', 'DOD-Table 1.csv']
       #    
       # https://bbginnovate.atlassian.net/secure/attachment/20613/GovDash-Accts-All.xlsx
-      tables = ['GovDash-Accts-All.csv']
+      tables = ['GovDash-Accts-All3.csv']
       tables.each do |  t |
-         file="/Users/lliu/Desktop/GovDash-Accounts/#{t}"
+         # file="/Users/lliu/Desktop/GovDash-Accounts/#{t}"
          file="/Users/lliu/Desktop/#{t}"
          CSV.foreach(file, quote_char: '"', col_sep: ',', row_sep: :auto, headers:  true) do | line |
             if t.match(/BBG/)
@@ -651,10 +651,10 @@ class Account < ActiveRecord::Base
      GroupsSubgroups.import! @bulk_group_subgroup
      
      update_subgroup_regions @subgroup_regions_hash
-     update_region_countries @region_countries_hash
+     # update_region_countries @region_countries_hash
      
      SubgroupsRegion.import! @bulk_subgroup_region
-     RegionsCountry.import! @bulk_region_country
+     # RegionsCountry.import! @bulk_region_country
    end
    def self.load_line line
        arr = line

@@ -18,111 +18,142 @@ class Redshift < ActiveRecord::Base
 
 class << self
   # called from the derived class
+  # copy from socialdash fb_pages,fb_posts,tw_timelines,tw_tweets
+  # to GovDash
   def copy_from_socialdash
-    ActiveRecord::Base.logger.level = 1
+    self.name.match(/Redshift(\w+)/)
+    puts "  govdash_klass #{$1}"
+    t_started=Time.now
+    # ActiveRecord::Base.logger.level = 1
     # ActiveRecord::Base.logger.level = 0
-    account_ids.each do | old_acc_id |
+    # socialdash_account_ids
+    socialdash_account_ids.each do | old_acc_id |
+      new_account = govdash_account(old_acc_id)
+      next if !new_account
       i = 0
       started=Time.now
-      @objectname = get_object_name old_acc_id
       rows = self.where(account_id: old_acc_id).order("created_at desc").to_a
       # puts "  rows count #{rows.size}"
+      # with each row from radd_production, copy to
+      # govdash_app corresponding table
       rows.each do | old_rec |
         begin
-          find_or_create_with old_rec, @objectname
+          find_or_create_with old_rec, new_account
         rescue Exception=>ex
           puts "   #{ex.message}"
+          raise
         end
         # i += 1
-        # break if i > 15
+        # break if i > 5
       end; nil
       ended=Time.now
       duration= ended - started
-      puts "  #{self.name} #{@objectname} processed #{rows.size} rows in #{duration} seconds"
-      # break
+      puts "  #{self.name} #{new_account.object_name} processed #{rows.size} rows in #{duration} seconds"
     end
+    t_ended=Time.now
+    duration= t_ended - t_started
+    puts "  #{self.name} total processed in #{duration} seconds"
+    
   end
   
-  def account_ids
-    @account_ids =
-      select('distinct account_id').map(&:account_id)
+  def govdash_account(old_account_id)
+    @govdash_account = nil
+    self.name.match(/Redshift(\w+)/)
+    klass_name = $1
+    case klass_name
+    when 'FbPage','FbPost'
+      old_account = RedshiftFbPage.find_by account_id: old_account_id
+      if old_account      
+        @govdash_account = FacebookAccount.find_by object_name:  old_account.object_name
+        if !@govdash_account
+          # raise "  Not exists  FacebookAccount #{old_account.object_name} "
+        end
+      end
+    when 'TwTimeline','TwTweet'
+      old_account = RedshiftTwTimeline.find_by account_id: old_account_id
+      if old_account      
+        @govdash_account = TwitterAccount.find_by object_name:  old_account.object_name
+        if !@govdash_account
+        #  raise "  Not exists  TwitterAccount #{old_account.object_name} "
+        end
+      end
+    end
+    @govdash_account
   end
 
-  def get_object_name old_account_id
-    @object_name =
-      case self.name
-      when 'RedshiftFbPage','RedshiftFbPost'
-        RedshiftFbPage.find_by(account_id: old_account_id).object_name
-      when 'RedshiftTwTimeline', 'RedshiftTwTweet'
-        RedshiftTwTimeline.find_by(account_id: old_account_id).object_name
-      end
+  def socialdash_account_ids
+    self.name.match(/Redshift(\w+)/)
+    klass_name = $1
+    case klass_name
+    when 'FbPage','FbPost'
+      RedshiftFbPage.select('distinct account_id').map(&:account_id)
+    when 'TwTimeline','TwTweet'
+      RedshiftTwTimeline.select('distinct account_id').map(&:account_id)
+    else
+      []    
+    end
   end
-  
+
   def copy_data new_rec, old_rec
+    changed = false
     column_array.each do |col|
       if new_rec.send(col).to_i < old_rec.send(col).to_i
         val = old_rec.send(col)
         new_rec.send("#{col}=", val)
+        changed = true
       end 
     end
     date_array.each do |col|
       val = old_rec.send(col)
       new_rec.send("#{col}=", val)
     end
-    new_rec.save
+    if changed
+      # puts "   Updating #{new_rec.object_name} #{new_rec.id}"
+      new_rec.save
+    else
+      # puts "   Nothing changed"
+    end
   end
 
-  def find_or_create_with old_rec, objectname
-    self.name.match(/Redshift(\w+)/)
+  def find_or_create_with old_rec, new_account
+    test = new_account.kind_of? Account
+    return if !test
+    
+    old_rec.class.name.match(/Redshift(\w+)/)
     klass_name = $1
-    govdash_klass = klass_name.constantize
-    new_acc = nil
-     
     case klass_name
-    when 'FbPage','FbPost'
-      # puts "  govdash_klass #{govdash_klass.name}"
-      new_acc = FacebookAccount.find_by object_name: objectname
-      if klass_name == 'FbPost'
-        new_rec = FbPost.find_or_create_by(post_id: old_rec.post_id)
-        new_rec.account_id = new_acc.id
-      else
-        date = old_rec.post_created_time.beginning_of_day
-        new_rec = FbPage.where(account_id: new_acc.id).
+    when 'FbPost'
+      new_rec = FbPost.find_or_create_by(post_id: old_rec.post_id)
+      new_rec.account_id = new_account.id
+    when 'FbPage'
+      date = old_rec.post_created_time.beginning_of_day
+      new_rec = FbPage.where(account_id: new_account.id).
           where(post_created_time: (date..date.end_of_day)).to_a.first
-        if !new_rec
-          new_rec = FbPage.create(account_id: new_acc.id,
-             object_name: objectname, post_created_time: date.middle_of_day
-          )
-        end
-      end
-    when 'TwTimeline','TwTweet'
-      new_acc = TwitterAccount.find_by object_name: objectname
-      if klass_name == 'TwTweet'
-        new_rec = TwTweet.find_or_create_by(tweet_id: old_rec.tweet_id)
-        new_rec.account_id = new_acc.id
-      else
-        date = old_rec.tweet_created_at.beginning_of_day
-        new_rec = TwTimeline.where(account_id: new_acc.id).
-           where(tweet_created_at: (date..date.end_of_day)).to_a.first
-      end
-    end
-    # puts " SmDash id: #{old_rec.id},  FOUND GovDash id: #{new_rec.id}"
-    if !new_rec
-      case klass_name
-      when 'FbPage'
-        new_rec = govdash_klass.create(account_id: new_acc.id,
-          object_name: objectname, post_created_time: date.middle_of_day
-        )
-      when 'TwTimeline'
-        new_rec = govdash_klass.create(account_id: new_acc.id,
-          object_name: objectname, tweet_created_at: old_rec.tweet_created_at
+      if !new_rec
+        new_rec = FbPage.create(account_id: new_account.id,
+             object_name: new_account.object_name, post_created_time: date.middle_of_day
         )
       end
-      # puts "  CREATED GovDash account id: #{new_rec.id}"
+      new_rec.object_name = new_account.object_name
+    when 'TwTweet'
+      new_rec = TwTweet.find_or_create_by(tweet_id: old_rec.tweet_id)
+      new_rec.account_id = new_account.id
+    when 'TwTimeline'
+      date = old_rec.tweet_created_at.beginning_of_day
+      new_rec = TwTimeline.where(account_id: new_account.id).
+           where(tweet_created_at: (date..date.end_of_day)).to_a.first    
+      if !new_rec
+        new_rec = TwTimeline.create(account_id: new_account.id,
+          object_name: new_account.object_name, tweet_created_at: old_rec.tweet_created_at
+        )
+      end
+      new_rec.object_name = new_account.object_name
     end
     copy_data new_rec, old_rec
   end
-
+#
+# above for copy data from radd_produciton
+#
   def mysql_model_class
     @mysql_model_class ||=
       if self.name =~ /Redshift(\w*)/

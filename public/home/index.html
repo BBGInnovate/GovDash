@@ -11,25 +11,36 @@
 
                         <div class="widget-tab clearfix">
                             <ul class="tab-bar">
-                                <li class="active"><a ng-click="do($event)" href="#regions" data-toggle="tab"> Regions</a></li>
-                                <li class=""><a ng-click="do($event)" href="#countries" data-toggle="tab"> Countries</a></li>
+                                <li class="active"><a ng-click="do($event)" href="#locations" data-toggle="tab"> Locations</a></li>
+                                <!--<li class=""><a ng-click="do($event)" href="#countries" data-toggle="tab"> Countries</a></li> -->
                                 <li class=""><a ng-click="do($event)"  href="#languages" data-toggle="tab"> Languages</a></li>
                                 <li class=""><a ng-click="do($event)" href="#organizations" data-toggle="tab"> Organizations</a></li>
                             </ul>
                         </div>
                         <div class="smart-widget-body">
                             <div class="tab-content">
-                                <div class="tab-pane fade in active" id="regions">
+                                <div class="tab-pane fade in active" id="locations">
 
+                                    <!--
                                     <div class="block h4"><strong>Regions</strong></div>
                                     <p class="m-top-sm">
 
                                     <div class="col-lg-10">
                                         <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedRegions" ng-options="region.name for region in regions"></select>
                                     </div>
+                                    -->
 
+                                    <div class="col-md-6">
+                                        <div class="block h4"><strong>Regions</strong></div>
+                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedRegions" ng-options="region.name for region in regions"></select>
+                                    </div>
 
+                                    <div class="col-md-6">
+                                        <div class="block h4"><strong>Countries</strong></div>
+                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedCountries" ng-options="country.name for country in countries | orderBy:'name'"></select>
+                                    </div>
                                 </div><!-- ./tab-pane -->
+                                <!--
                                 <div class="tab-pane fade" id="countries">
 
                                     <div class="block h4"><strong>Countries</strong></div>
@@ -40,7 +51,8 @@
 
 
 
-                                </div><!-- ./tab-pane -->
+                                </div>
+                                -->
                                 <div class="tab-pane fade" id="languages">
                                     <div class="block h4"><strong>Languages</strong></div>
 
@@ -55,19 +67,17 @@
 
                                     <div class="col-md-4">
                                         <div class="block h4"><strong>Organizations</strong></div>
-                                        <select class="form-control" size="10" ng-model="selectedOrganizations" ng-options="organization.name for organization in organizations">
-                                            <option style="display:none" value="">select a type</option>
-                                        </select>
+                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedOrganizations" ng-options="organization.name | uppercase for organization in organizations"></select>
                                     </div>
 
                                     <div class="col-md-4">
                                         <div class="block h4"><strong>Groups</strong></div>
-                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedGroups" ng-options="group.name for group in groups | filter:{organization_id: selectedOrganizations.id}"></select>
+                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedGroups" ng-click="selectedGroup(group)" ng-options="group.name for group in groups | orderBy:'name'"></select>
                                     </div>
 
                                     <div class="col-md-4">
                                         <div class="block h4"><strong>Subgroups</strong></div>
-                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedSubgroups" ng-options="subgroup.name for subgroup in subgroups"></select>
+                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedSubgroups" ng-options="(subgroup.name+' '+subgroup.parentGroup) for subgroup in subgroups | orderBy:'name'"></select>
                                     </div>
 
 
@@ -96,9 +106,9 @@
                                 <span class="ion-close"></span>
                             </a>
                         </span>
-                        <span class="tag teal-tag" ng-if="selectedOrganizations">
-                            <span>{{ selectedOrganizations.name }}&nbsp;&nbsp;</span>
-                            <a href="" ng-click="removeOrganization()" title="Removing tag" style="color: white">
+                         <span class="tag teal-tag" ng-repeat="organization in selectedOrganizations">
+                            <span>{{ organization.name | uppercase }}&nbsp;&nbsp;</span>
+                            <a href="" ng-click="removeOrganization($index)" title="Removing tag" style="color: white">
                                 <span class="ion-close"></span>
                             </a>
                         </span>
@@ -151,7 +161,7 @@
 
                 </div>
 
-                <p class="date-collected-since" ng-show="dateCollectedSince">Date Collected Since: {{ dateCollectedSince }} at {{ timeCollectedSince }}</p>
+                <p class="date-collected-since" ng-show="dateCollectedSince">Data Collected Since: {{ dateCollectedSince }}</p>
 
                 <div class="col-lg-{{ columnNum }} col-sm-{{ columnNum }}">
                     <div class="statistic-box bg-gray m-bottom-md box-small">
@@ -314,7 +324,7 @@
                     <span class="tag teal-tag" ng-repeat="region in selectedRegions">{{ region.name }}</span>
                     <span class="tag teal-tag" ng-repeat="country in selectedCountries">{{ country.name }}</span>
                     <span class="tag teal-tag" ng-repeat="language in selectedLanguages">{{ language.name }}</span>
-                    <span class="tag teal-tag" ng-if="selectedOrganizations">{{ selectedOrganizations.name }}</span>
+                    <span class="tag teal-tag" ng-repeat="organization in selectedOrganizations">{{ organization.name | uppercase }}</span>
                     <span class="tag teal-tag" ng-repeat="group in selectedGroups">{{ group.name }}</span>
                     <span class="tag teal-tag" ng-repeat="subgroup in selectedSubgroups">{{ subgroup.name }}</span>
                 </div>
@@ -416,7 +426,7 @@
             <div class="col-lg-12">
                 <div class="smart-widget widget-green">
                     <div class="smart-widget-header">
-                        All Interactions
+                        Interactions
                     </div>
                     <div class="smart-widget-inner">
 
@@ -442,7 +452,7 @@
             <div class="col-md-12">
                 <div class="smart-widget widget-green">
                     <div class="smart-widget-header">
-                        All Interactions
+                        Interactions
                     </div>
                     <div class="smart-widget-inner">
 
@@ -529,11 +539,8 @@
                     <div class="smart-widget-inner">
                         <div class="smart-widget-body no-padding">
                             <div class="padding-md">
-
                                 <div style="height:250px;" pie-chart data="fbPieChartData" socialmediatype="fb"></div>
-
                             </div>
-
                         </div>
                     </div><!-- ./smart-widget-inner -->
                 </div><!-- ./smart-widget -->
@@ -689,9 +696,9 @@
                                 <tr>
                                     <th class="text-left"><a href="" ng-click="reverse=!reverse;orderYoutubeAccounts('values[0].comments', reverse)">Name <i class="fa fa-sort"></i></a></th>
                                     <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderYoutubeAccounts('values[0].totals', reverse)">Actions <i class="fa fa-sort"></i></a></th>
-                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderYoutubeAccounts('values[0].views', reverse)">Views <i class="fa fa-sort"></i></a></th>
+                            <!--    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderYoutubeAccounts('values[0].views', reverse)">Views <i class="fa fa-sort"></i></a></th> -->
                                     <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderYoutubeAccounts('values[0].likes', reverse)">Video Likes <i class="fa fa-sort"></i></a></th>
-                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderYoutubeAccounts('values[0].subscribers', reverse)">Subscribers <i class="fa fa-sort"></i></a></th>
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderYoutubeAccounts('values[0].subscribers', reverse)">New Subscribers <i class="fa fa-sort"></i></a></th>
                                     <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderYoutubeAccounts('values[0].comments', reverse)">Comments <i class="fa fa-sort"></i></a></th>
                                 </tr>
                                 </thead>
@@ -704,7 +711,7 @@
                                         <span class="data-since">Data Since: {{ account.profile.data_collect_started | dateFormatMMDDYYYY }}</span>
                                     </td>
                                     <td data-title="Actions" class="text-left">{{ account.values[0].totals | number: 0 }}</td>
-                                    <td data-title="Views" class="text-left">{{ account.values[0].views | number: 0 }}</td>
+                            <!--    <td data-title="Views" class="text-left">{{ account.values[0].views | number: 0 }}</td> -->
                                     <td data-title="Video Likes" class="text-left">{{ account.values[0].likes | number: 0 }}</td>
                                     <td data-title="Subscribers" class="text-left">{{ account.values[0].subscribers | number: 0 }}</td>
                                     <td data-title="Comments" class="text-left">{{ account.values[0].comments | number: 0 }}</td>

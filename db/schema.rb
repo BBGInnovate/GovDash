@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150325141333) do
+ActiveRecord::Schema.define(version: 20150416141929) do
 
   create_table "account_profiles", force: :cascade do |t|
     t.integer  "account_id",      limit: 4
@@ -29,7 +29,7 @@ ActiveRecord::Schema.define(version: 20150325141333) do
   end
 
   create_table "account_types", force: :cascade do |t|
-    t.string   "name",       limit: 20
+    t.string   "name",       limit: 40
     t.boolean  "is_active",  limit: 1,  default: true
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -124,7 +124,7 @@ ActiveRecord::Schema.define(version: 20150325141333) do
 
   create_table "countries", force: :cascade do |t|
     t.string  "name",      limit: 60
-    t.string  "code",      limit: 4
+    t.string  "code",      limit: 10
     t.boolean "is_active", limit: 1,  default: true
     t.integer "region_id", limit: 4
   end
@@ -206,8 +206,36 @@ ActiveRecord::Schema.define(version: 20150325141333) do
   add_index "fb_posts", ["post_created_time"], name: "index_fb_posts_on_post_created_time", using: :btree
   add_index "fb_posts", ["post_id"], name: "index_fb_posts_on_post_id", unique: true, using: :btree
 
+  create_table "fbpages", force: :cascade do |t|
+    t.integer  "account_id",                           limit: 4
+    t.string   "object_name",                          limit: 40
+    t.integer  "total_likes",                          limit: 4
+    t.integer  "total_comments",                       limit: 4
+    t.integer  "total_shares",                         limit: 4
+    t.integer  "total_talking_about",                  limit: 4
+    t.integer  "likes",                                limit: 4
+    t.integer  "comments",                             limit: 4
+    t.integer  "shares",                               limit: 4
+    t.integer  "posts",                                limit: 4
+    t.integer  "replies_to_comment",                   limit: 4
+    t.integer  "fan_adds_day",                         limit: 4
+    t.integer  "story_adds_day",                       limit: 4
+    t.string   "story_adds_by_story_type_day",         limit: 255
+    t.integer  "consumptions_day",                     limit: 4
+    t.string   "consumptions_by_consumption_type_day", limit: 255
+    t.integer  "stories_week",                         limit: 4
+    t.integer  "stories_day_28",                       limit: 4
+    t.string   "stories_by_story_type_week",           limit: 255
+    t.datetime "post_created_time"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "fbpages", ["account_id"], name: "index_fb_pages_on_account_id", using: :btree
+  add_index "fbpages", ["post_created_time"], name: "index_fb_pages_on_post_created_time", using: :btree
+
   create_table "groups", force: :cascade do |t|
-    t.string   "name",            limit: 10
+    t.string   "name",            limit: 100
     t.string   "description",     limit: 255
     t.boolean  "is_active",       limit: 1,   default: true
     t.datetime "created_at"
@@ -267,9 +295,14 @@ ActiveRecord::Schema.define(version: 20150325141333) do
   add_index "region_reports", ["region_id"], name: "index_region_reports_on_region_id", using: :btree
 
   create_table "regions", force: :cascade do |t|
-    t.string  "name",       limit: 30
-    t.boolean "is_active",  limit: 1,  default: true
+    t.string  "name",       limit: 100
+    t.boolean "is_active",  limit: 1,   default: true
     t.string  "segment_id", limit: 30
+  end
+
+  create_table "regions_countries", force: :cascade do |t|
+    t.integer "region_id",  limit: 4
+    t.integer "country_id", limit: 4
   end
 
   create_table "roles", force: :cascade do |t|
@@ -307,11 +340,16 @@ ActiveRecord::Schema.define(version: 20150325141333) do
   end
 
   create_table "subgroups", force: :cascade do |t|
-    t.string   "name",        limit: 40
+    t.string   "name",        limit: 100
     t.string   "description", limit: 255
     t.boolean  "is_active",   limit: 1,   default: true
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "subgroups_regions", force: :cascade do |t|
+    t.integer "subgroup_id", limit: 4
+    t.integer "region_id",   limit: 4
   end
 
   create_table "tw_timelines", force: :cascade do |t|
@@ -394,6 +432,7 @@ ActiveRecord::Schema.define(version: 20150325141333) do
     t.datetime "published_at"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "video_dislikes",    limit: 4,   default: 0
   end
 
   add_index "yt_channels", ["account_id"], name: "index_yt_channels_on_account_id", using: :btree
@@ -410,6 +449,7 @@ ActiveRecord::Schema.define(version: 20150325141333) do
     t.datetime "published_at"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "dislikes",     limit: 4,  default: 0
   end
 
   add_index "yt_videos", ["account_id"], name: "index_yt_videos_on_account_id", using: :btree

@@ -2,11 +2,7 @@ class Fbpage < ActiveRecord::Base
   belongs_to :account
 
   def Fbpage.column_array
-    ['total_likes' ,'total_comments' ,'total_shares' ,'total_talking_about',
-          'likes' ,'comments','shares','posts' ,'replies_to_comment' ,'fan_adds_day',
-          'story_adds_day','story_adds_by_story_type_day' ,'consumptions_day',
-          'consumptions_by_consumption_type_day' ,'stories_week' ,
-          'stories_day_28' ,'stories_by_story_type_week' ]
+    ['total_likes']
   end
   # after_save :sync_redshift
   def Fbpage.copy_from_fb_pages
@@ -39,6 +35,8 @@ class Fbpage < ActiveRecord::Base
           logger.error "  Fbpage.copy_from_fb_pages #{ex.message}"
         end
       end
+      puts "  Finished account: #{acc.object_name} #{acc.id}"
+      STDOUT.flush
     end
   end
 

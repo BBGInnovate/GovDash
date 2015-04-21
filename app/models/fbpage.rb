@@ -1,6 +1,13 @@
 class Fbpage < ActiveRecord::Base
   belongs_to :account
 
+  def Fbpage.column_array
+    ['total_likes' ,'total_comments' ,'total_shares' ,'total_talking_about',
+          'likes' ,'comments','shares','posts' ,'replies_to_comment' ,'fan_adds_day',
+          'story_adds_day','story_adds_by_story_type_day' ,'consumptions_day',
+          'consumptions_by_consumption_type_day' ,'stories_week' ,
+          'stories_day_28' ,'stories_by_story_type_week' ]
+  end
   # after_save :sync_redshift
   def Fbpage.copy_from_fb_pages
     i = 0
@@ -14,12 +21,21 @@ class Fbpage < ActiveRecord::Base
           if !fp_new
             fp_new = acc.fbpages.create(:post_created_time=>d.middle_of_day)
           end
-          if !fp_new.total_likes || (fp_new.total_likes < fp_old.total_likes)
-            puts " #{fp_new.total_likes} = #{fp_old.total_likes}"
-            fp_new.total_likes = fp_old.total_likes
-            fp_new.save
+          changed = false
+          column_array.each do |col|
+            if fp_new.send(col).to_i < fp_old.send(col).to_i
+               val = fp_old.send(col)
+               fp_new.send("#{col}=", val)
+               changed = true
+            end
           end
-        rescue exception=>ex
+          if changed
+            # puts "   Updating #{fp_new.object_name} #{fp_new.id}"
+            fp_new.save
+          else
+           # puts "   Nothing changed"
+          end
+        rescue Exception=>ex
           logger.error "  Fbpage.copy_from_fb_pages #{ex.message}"
         end
       end

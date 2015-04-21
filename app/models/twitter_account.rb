@@ -96,9 +96,8 @@ class TwitterAccount < Account
        begin_time = since_date.beginning_of_day
        end_time = today.end_of_day
        last_tweet = tw_tweets.select("tweet_id").
-          where("tweet_created_at BETWEEN '#{begin_time.to_s(:db)}' AND '#{end_time.to_s(:db)}'").
-          order("tweet_created_at ASC").first
-          
+          where("tweet_created_at BETWEEN '#{begin_time.to_s(:db)}' AND '#{end_time.to_s(:db)}'").first
+       # order("tweet_created_at ASC").first   
        last_tweet_id = !!last_tweet ? last_tweet.tweet_id : nil
        if last_tweet_id
          opt = options.merge(:since_id=>(last_tweet_id + 1))
@@ -158,7 +157,7 @@ class TwitterAccount < Account
       last_id = TwTweet.import!(@bulk_tweets)
       from_id = last_id - @bulk_tweets.size
       # sync to Redshif database
-      RedshiftTwTweet.upload from_id
+      # RedshiftTwTweet.upload from_id
       @bulk_tweets = []
       reload_tw_tweets
     end
@@ -204,7 +203,7 @@ class TwitterAccount < Account
       last_id = TwTimeline.import! @bulk_timelines
       from_id = last_id - @bulk_timelines.size
       # sync to Redshif database
-      RedshiftTwTimeline.upload from_id
+      # RedshiftTwTimeline.upload from_id
       @bulk_timelines = []
     end
     create_today_timeline

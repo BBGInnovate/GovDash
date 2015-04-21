@@ -299,6 +299,14 @@ class FacebookAccount < Account
     end
   end
   
+  def self.save_post_details sincedate=90.days.ago
+    arr = FacebookAccount.where("is_active=1").to_a
+    arr.each do | acc |
+      acc.since_date = sincedate
+      acc.save_post_details
+    end
+  end
+  
   def save_post_details
      count = 0
      total_processed = 0

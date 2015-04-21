@@ -328,12 +328,9 @@ class FacebookAccount < Account
            # log_fail "Tried #{@num_attempts} times. #{error.message[0..200]}", 5
            logger.error error.message
          end
-       rescue Koala::Facebook::GraphMethodException=>error
-         # log_fail error.message
-         logger.error "   save_post_details GraphMethodException post #{post.post_id}"
        rescue Exception=>error
-         # log_fail error.message
          logger.error error.message
+         logger.error "   save_post_details Exception post #{post.post_id}"
        end
        completed = ((total_processed.to_f / myposts.size) * 100).to_i
        logger.debug "#{completed} % completed" if ((total_processed % 10)==0 )
@@ -785,8 +782,10 @@ class FacebookAccount < Account
       'N/A'
     end
   end
+  
+end
+=begin
   def post_details post_id
-    post_id="122256314471875_958019527562212"
     data = graph_api.get_object(post_id, :fields => "shares,likes.summary(true),comments.summary(true)")
     feed = graph_api.get_object('/' + post_id + '/likes?limit=1000')
     like_id="1422452251401888"
@@ -796,9 +795,6 @@ class FacebookAccount < Account
       feed = feed.next_page rescue []
     end
   end
-  
-end
-=begin
   def get_likes_count(post_id)
     count = 0     
     feed = self.graph_api.get_object('/' + post_id + '/likes?limit=1000')

@@ -299,11 +299,14 @@ class FacebookAccount < Account
     end
   end
   
+  # this mothod is run by admin manually
   def self.save_post_details sincedate=90.days.ago
     arr = FacebookAccount.where("is_active=1").to_a
     arr.each do | acc |
       acc.since_date = sincedate
       acc.save_post_details
+      puts "  processed #{acc.object_name}  #{acc.id}"
+      STDOUT.flush
     end
   end
   
@@ -613,7 +616,12 @@ class FacebookAccount < Account
         end
      end
   end
-  # run it daily to update fb_page
+  #
+  # run it daily to update today's fb_pages and fbpages
+  # total_likes and total_talking_about are from the 
+  # User's Facebook home page
+  # likes, shares etc. are from summary over 1 year's post data
+  # from fb_posts table
   def daily_aggregate_data start_date=1.year.ago, end_date=Time.now
     end_date = end_date.end_of_day
     start_date = start_date.beginning_of_day
@@ -644,7 +652,7 @@ class FacebookAccount < Account
        logger.debug "  daily_aggregate_data NOT RECORDS for  "
     end
   end
-  
+  # for today's fb_pages
   def aggregate_data_daily start_date, end_date
     start_date = Time.zone.parse start_date if String ===  start_date
     end_date = Time.zone.parse end_date if String ===  end_date

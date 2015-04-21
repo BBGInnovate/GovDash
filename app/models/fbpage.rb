@@ -5,6 +5,9 @@ class Fbpage < ActiveRecord::Base
     ['total_likes']
   end
   # after_save :sync_redshift
+  #
+  # copy total_likes from fb_pages to fbpages
+  # do only once
   def Fbpage.copy_from_fb_pages
     i = 0
     FacebookAccount.where("id>0").where("is_active=1").to_a.each do |acc|
@@ -32,7 +35,7 @@ class Fbpage < ActiveRecord::Base
            # puts "   Nothing changed"
           end
         rescue Exception=>ex
-          logger.error "  Fbpage.copy_from_fb_pages #{ex.message}"
+          puts "  Fbpage.copy_from_fb_pages #{ex.message}"
         end
       end
       puts "  Finished account: #{acc.object_name} #{acc.id}"

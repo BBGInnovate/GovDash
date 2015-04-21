@@ -1,7 +1,7 @@
 class Redshift < ActiveRecord::Base
   self.abstract_class = true
   # establish_connection "redshift_#{Rails.env}".to_sym
-  
+
   establish_connection({
     :adapter=>"mysql2",
     :database=>"radd_production",
@@ -49,6 +49,7 @@ class << self
       ended=Time.now
       duration= ended - started
       puts "  #{self.name} #{new_account.object_name} processed #{rows.size} rows in #{duration} seconds"
+      STDOUT.flush
     end
     t_ended=Time.now
     duration= t_ended - t_started
@@ -66,7 +67,7 @@ class << self
       if old_account      
         @govdash_account = FacebookAccount.find_by object_name:  old_account.object_name
         if !@govdash_account
-          # raise "  Not exists  FacebookAccount #{old_account.object_name} "
+           puts "  Not exists  FacebookAccount #{old_account.object_name} "
         end
       end
     when 'TwTimeline','TwTweet'
@@ -74,7 +75,7 @@ class << self
       if old_account      
         @govdash_account = TwitterAccount.find_by object_name:  old_account.object_name
         if !@govdash_account
-        #  raise "  Not exists  TwitterAccount #{old_account.object_name} "
+          puts "  Not exists  TwitterAccount #{old_account.object_name} "
         end
       end
     end

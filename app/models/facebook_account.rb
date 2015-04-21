@@ -618,10 +618,28 @@ class FacebookAccount < Account
   end
   #
   # run it daily to update today's fb_pages and fbpages
+  # total_likes and total_talking_about are set for 
+  # today's fb_pages
+  # total_likes and total_talking_about, as well as likes, shares,
+  # comments summary over 1 year's post data are set for
+  # today's fbpages.
+  # 
   # total_likes and total_talking_about are from the 
   # User's Facebook home page
   # likes, shares etc. are from summary over 1 year's post data
   # from fb_posts table
+  # Because there was bug in save_post_details, certain post_id
+  # does not allow to get likes, shares etc. details and
+  # throws exception. save_post_details stopped at such post_ids
+  # and thus the daily aggragated data is incomplete.
+  # Now the bug is fixed, and the numbers of likes, shares, comments 
+  # on and after today (2015-04-21) will be larger then the
+  # dates before (2015-04-21).
+  # In ReportsController#get_stat_class, use FbStat.new
+  # to use table fb_pages data
+  # for now. Let daily_aggregate_data run for another 3 weeks
+  # we may switch to FbStatNew.new to use table fbpages data
+  #
   def daily_aggregate_data start_date=1.year.ago, end_date=Time.now
     end_date = end_date.end_of_day
     start_date = start_date.beginning_of_day
@@ -652,7 +670,7 @@ class FacebookAccount < Account
        logger.debug "  daily_aggregate_data NOT RECORDS for  "
     end
   end
-  # for today's fb_pages
+  # for start_date thru end_date fb_pages
   def aggregate_data_daily start_date, end_date
     start_date = Time.zone.parse start_date if String ===  start_date
     end_date = Time.zone.parse end_date if String ===  end_date
@@ -675,11 +693,12 @@ class FacebookAccount < Account
                 }
            options[:post_created_time] = current_date.end_of_day
            find_or_create_page(options)
-           current_date = current_date + 1.day
+           # current_date = current_date + 1.day
            logger.debug " aggregate_data for #{current_date.to_s(:db)}"
        else
            logger.debug "aggregate_data_daily NOT RECORDS for #{start_date.to_s(:db)} .. #{end_date.to_s(:db)}"
        end
+       current_date = current_date + 1.day
     end
   end
   

@@ -5,12 +5,18 @@ class Api::V2::GroupsController < Api::V2::BaseController
     #attach related Subgroups
     hsh = nil
     if Group === model_object
-      group_ids = GroupsSubgroups.where(["group_id = ?", model_object.id]).map{|gs| gs.group_id}.uniq
+      group_ids = GroupsSubgroups.select("distinct group_id").
+        where(["group_id = ?", model_object.id]).map(&:group_id).to_a
       if !group_ids.empty?
-        hsh = {:related_subgroups=>[]}
-        group_ids.each do |gid|
-          subgrps = GroupsSubgroups.where(["group_id in (?)", group_ids]).map{ |gs| gs.subgroup.as_json }
-          hsh[:related_subgroups] = subgrps
+        subgroup_ids = GroupsSubgroups.select("distinct subgroup_id").
+          where(["group_id in (?)", group_ids]).map(&:subgroup_id).to_a
+        
+        subgrps = Subgroup.where(["id in (?)", subgroup_ids]).to_a
+        if !subgrps.empty?
+          hsh = {:related_subgroups=>[]}
+          subgrps.each do |sg|
+            hsh[:related_subgroups] = sg.attributes
+          end
         end
       end 
     end

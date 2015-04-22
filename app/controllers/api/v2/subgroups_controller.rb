@@ -4,11 +4,12 @@ class Api::V2::SubgroupsController < Api::V2::BaseController
   def add_related model_object
     hsh = nil
     if Subgroup === model_object
-      subgroup_ids = GroupsSubgroups.where(["subgroup_id = ?", model_object.id]).map{|gs| gs.subgroup_id}.uniq
+      subgroup_ids = GroupsSubgroups.select("distinct subgroup_id").
+          where(["subgroup_id = ?", model_object.id]).map(&:subgroup_id)
       if !subgroup_ids.empty?
         hsh = {:related_groups=>[],
                :related_regions=>[]}
-        group_ids = GroupsSubgroups.select("group_id").
+        group_ids = GroupsSubgroups.select("distinct group_id").
            where(["subgroup_id in (?)", subgroup_ids]).
            map(&:group_id)
         Group.where(["id in (?)", group_ids] ).to_a.each do |grp|
@@ -18,7 +19,7 @@ class Api::V2::SubgroupsController < Api::V2::BaseController
           end
           hsh[:related_groups] << attr
         end
-        region_ids = SubgroupsRegion.select("region_id").
+        region_ids = SubgroupsRegion.select("distinct region_id").
                  where(["subgroup_id in (?)", subgroup_ids]).
                  map(&:region_id)
         Region.where(["id in (?)", region_ids] ).to_a.each do |reg|

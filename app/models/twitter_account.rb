@@ -27,8 +27,8 @@ class TwitterAccount < Account
          if a.retrieve
            count += 1
          end
-         Rails.logger.debug "Sleep 15 seconds for next account"
-         sleep 15
+         Rails.logger.debug "Sleep 1 seconds for next account"
+         sleep 1
        end
      rescue Exception=>ex
        logger.error "  TwitterAccount#retrieve #{ex.message}"

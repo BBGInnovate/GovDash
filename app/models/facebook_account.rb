@@ -191,7 +191,8 @@ class FacebookAccount < Account
     end
     self.update_attributes :new_item=>false,:status=>success,:updated_at=>DateTime.now.utc
     ended=Time.now
-    logger.info "   finished retrieve #{started} - #{ended}"
+    puts "   finished retrieve #{started} - #{ended}"
+    STDOUT.flush
   end
   
     

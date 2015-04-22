@@ -204,7 +204,7 @@ angular.module('directives', []).
 						// Otherwise normal bar chart
 						} else {
 							// Chart with YouTube
-							if (data.youtubeInteractions) {
+							if (data.youtubeInteractions || data.youtubeInteractions === 0) {
 								dataArr = [{
 									y: 'Total Interactions',
 									a: data.fbInteractions,
@@ -282,9 +282,9 @@ angular.module('directives', []).
 					var fbValue = dataArr[0].a.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' ('+fbPercentage+')';
 					var twValue = dataArr[0].b.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' ('+twPercentage+')';
 					var ytValue = dataArr[0].c.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' ('+ytPercentage+')';
-					$('rect')[0].outerHTML += '<svg x="'+xPosOne+'" y="52.375" height="30" width="200"><text x="0" y="15" fill="#3278B3">'+fbValue+'</text></svg>';
-					$('rect')[1].outerHTML += '<svg x="'+xPosTwo+'" y="92.375" height="30" width="200"><text x="0" y="15" fill="#23B7E5">'+twValue+'</text></svg>';
-					$('rect')[2].outerHTML += '<svg x="'+xPosThree+'" y="132.375" height="30" width="200"><text x="0" y="15" fill="#E36159">'+ytValue+'</text></svg>';
+					$('rect')[0].outerHTML += '<svg x="'+xPosOne+'" y="55.375" height="30" width="200"><text x="0" y="15" fill="#3278B3">'+fbValue+'</text></svg>';
+					$('rect')[1].outerHTML += '<svg x="'+xPosTwo+'" y="97.375" height="30" width="200"><text x="0" y="15" fill="#23B7E5">'+twValue+'</text></svg>';
+					$('rect')[2].outerHTML += '<svg x="'+xPosThree+'" y="141.375" height="30" width="200"><text x="0" y="15" fill="#E36159">'+ytValue+'</text></svg>';
 				}
 
 			}

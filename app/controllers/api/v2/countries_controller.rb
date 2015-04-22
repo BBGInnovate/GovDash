@@ -15,8 +15,8 @@ class Api::V2::CountriesController < Api::V2::BaseController
         names = []
         ids = []
         names_pair.each do | n |
-          names << n[1]
-          ids << n[0]
+          names << n.name
+          ids << n.id
         end
         related_country_names  = names.uniq - [model_object.name] 
         if !related_country_names.empty?

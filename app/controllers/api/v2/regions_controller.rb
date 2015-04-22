@@ -8,21 +8,28 @@ class Api::V2::RegionsController < Api::V2::BaseController
            :related_subgroups=>[],
            :related_countries=>[]}       
     if Region === model_object
-      account_ids = AccountsRegion.select("account_id").
+      account_ids = AccountsRegion.select("distinct account_id").
                       where(["region_id = ?", model_object.id]).
                       map(&:account_id).uniq
       if !account_ids.empty?
-        names = AccountsRegion.where(["account_id in (?)", account_ids]).
-           map{|ac| ac.region.name }.uniq
+        region_ids = AccountsRegion.select("distinct region_id").
+            where(["account_id in (?)", account_ids])
+            
+        names_pair = Region.select("id, name").where(["id in (?)", region_ids])
+        names = []
+        ids = []
+        names_pair.each do | n |
+          names << n[1]
+          ids << n[0]
+        end
         related_region_names = names - [model_object.name] 
         if !related_region_names.empty?
           hsh[:related_region_names] = related_region_names
-          ids = AccountsRegion.where(["account_id in (?)", account_ids]).map{|ac| ac.region.id }
           hsh[:related_region_ids] = ids.uniq - [model_object.id]
         end
       end
-      subgroup_ids = SubgroupsRegion.select("subgroup_id").
-        where(["region_id = ?", model_object.id]).map(&:subgroup_id).uniq
+      subgroup_ids = SubgroupsRegion.select("distinct subgroup_id").
+        where(["region_id = ?", model_object.id]).map(&:subgroup_id)
       
       Subgroup.where(["id in (?)", subgroup_ids]).to_a.each do |sg|
         attr = sg.attributes
@@ -31,12 +38,10 @@ class Api::V2::RegionsController < Api::V2::BaseController
         end
         hsh[:related_subgroups] << attr
       end
-      
-      country_ids = RegionsCountry.select("country_id").
+      country_ids = RegionsCountry.select("distinct country_id").
                       where(region_id: model_object.id).
-                      map(&:country_id).uniq
-      country_ids.each do | con |
-        country = Country.find con
+                      map(&:country_id)
+      Country.where(["id in (?)", country_ids]).to_a.each do |country|
         attr = country.attributes
         ['is_active','region_id'].each do |n|
           attr.delete n

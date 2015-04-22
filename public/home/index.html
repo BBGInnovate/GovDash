@@ -32,7 +32,7 @@
 
                                     <div class="col-md-6">
                                         <div class="block h4"><strong>Regions</strong></div>
-                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedRegions" ng-options="region.name for region in regions"></select>
+                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedRegions" ng-options="region.name for region in regions | orderBy:'name'"></select>
                                     </div>
 
                                     <div class="col-md-6">
@@ -449,6 +449,7 @@
                 </div><!-- ./smart-widget -->
             </div><!-- ./col -->
 
+            <!--
             <div class="col-md-12">
                 <div class="smart-widget widget-green">
                     <div class="smart-widget-header">
@@ -470,12 +471,11 @@
                                     </div>
                                 </div>
                             </div>
-
-
                         </div>
-                    </div><!-- ./smart-widget-inner -->
-                </div><!-- ./smart-widget -->
-            </div><!-- ./col -->
+                    </div>
+                </div>
+            </div>
+            -->
 
 
             <div class="col-md-4">
@@ -599,7 +599,7 @@
                                 <tr>
                                     <th class="text-left"><a href="" ng-click="reverse=!reverse;orderFbAccounts('name', reverse)">Name <i class="fa fa-sort"></i></a></th>
                                     <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderFbAccounts('values[0].totals', reverse)">Actions <i class="fa fa-sort"></i></a></th>
-                              <!--  <th class="text-left numeric">New Fans</th> -->
+                                    <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderFbAccounts('values[0].page_likes', reverse)">New Fans <i class="fa fa-sort"></i></a></th>
                                     <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderFbAccounts('values[0].story_likes', reverse)">Story Likes <i class="fa fa-sort"></i></a></th>
                                     <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderFbAccounts('values[0].shares', reverse)">Shares <i class="fa fa-sort"></i></a></th>
                                     <th class="text-left numeric"><a href="" ng-click="reverse=!reverse;orderFbAccounts('values[0].comments', reverse)">Comments <i class="fa fa-sort"></i></a></th>
@@ -614,7 +614,7 @@
                                         <span class="data-since">Data Since: {{ account.profile.data_collect_started | dateFormatMMDDYYYY }}</span>
                                     </td>
                                     <td data-title="Actions" class="text-left">{{ account.values[0].totals | number: 0 }}</td>
-                                <!--    <td data-title="New Fans" class="text-left">{{ account.values[0].page_likes | number: 0 }}</td> -->
+                                    <td data-title="New Fans" class="text-left">{{ account.values[0].page_likes | number: 0 }}</td>
                                     <td data-title="Story Likes" class="text-left">{{ account.values[0].story_likes | number: 0 }}</td>
                                     <td data-title="Shares" class="text-left">{{ account.values[0].shares | number: 0 }}</td>
                                     <td data-title="Comments" class="text-left">{{ account.values[0].comments | number: 0 }}</td>

@@ -9,8 +9,8 @@ class ActiveRecord::Base
     results= connection.execute "show processlist"
     results.each do |res|
        puts "#{res}"
-    end
     nil
+    puts " Total count: #{results.count}"
   end
   
   def self.show_var(name, global=nil)

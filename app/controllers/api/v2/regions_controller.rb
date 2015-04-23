@@ -7,47 +7,39 @@ class Api::V2::RegionsController < Api::V2::BaseController
            :related_subgroups=>[],
            :related_countries=>[]}       
     if Region === model_object
-      account_ids = AccountsRegion.select("distinct account_id").
-                      where(["region_id = ?", model_object.id]).
-                      map(&:account_id).to_a
-      if !account_ids.empty?
-        region_ids = AccountsRegion.select("distinct region_id").
-            where(["account_id in (?)", account_ids]).map(&:region_id).to_a
-         
-        names_pair = Region.select("id, name").where(["id in (?)", region_ids])
-        names = []
-        ids = []
-        names_pair.each do | n |
-          names << n.name
-          ids << n.id
-        end
-        related_region_names = names - [model_object.name] 
-        if !related_region_names.empty?
-          hsh[:related_region_names] = related_region_names
-          hsh[:related_region_ids] = ids.uniq - [model_object.id]
-        end
+      sql1 = "select distinct account_id from accounts_regions where region_id = #{model_object.id}"
+      sql2 = "select distinct region_id from accounts_regions "
+      sql2 += " where account_id in (#{sql1})"
+      names_pair = Region.select("id, name").where("id in (#{sql2})").to_a
+      names = []
+      ids = []
+      names_pair.each do | n |
+        names << n.name
+        ids << n.id
       end
-      subgroup_ids = SubgroupsRegion.select("distinct subgroup_id").
-        where(["region_id = ?", model_object.id]).map(&:subgroup_id)
-      
-      Subgroup.where(["id in (?)", subgroup_ids]).to_a.each do |sg|
+      related_region_names = names - [model_object.name] 
+      if !related_region_names.empty?
+        hsh[:related_region_names] = related_region_names
+        hsh[:related_region_ids] = ids.uniq - [model_object.id]
+      end
+
+      sql1= "select distinct subgroup_id from subgroups_regions "
+      sql1 += " where region_id = #{model_object.id} "
+      Subgroup.where("id in (#{sql1})").to_a.each do |sg|
         attr = sg.attributes
         ['created_at','updated_at','is_active'].each do |col|
           attr.delete col
         end
         hsh[:related_subgroups] << attr
       end
-      country_ids = RegionsCountry.select("distinct country_id").
-                      where(region_id: model_object.id).
-                      map(&:country_id).to_a
-      if !country_ids.empty?
-        Country.where(["id in (?)", country_ids]).to_a.each do |country|
-          attr = country.attributes
-          ['is_active','region_id'].each do |n|
-            attr.delete n
-          end
-          hsh[:related_countries] << attr
+      sql1 = "select distinct country_id from regions_countries "
+      sql1 += "  where region_id=#{model_object.id}"
+      Country.where("id in (#{sql1})").order("id").to_a.each do |country|
+        attr = country.attributes
+        ['is_active','region_id'].each do |n|
+          attr.delete n
         end
+        hsh[:related_countries] << attr
       end
     end
     hsh

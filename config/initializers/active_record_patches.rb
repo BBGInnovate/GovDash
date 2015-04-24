@@ -5,8 +5,18 @@ class ActiveRecord::Base
      connection_pool.clear_stale_cached_connections!
   end
   
-  def self.show_processlist
-    results= connection.execute "show processlist"
+  def self.show_processlist(db=nil, command=nil)
+    q = "SELECT * FROM information_schema.processlist "
+    if db
+      q = "#{q} where db='cxp_production' "
+      if command
+        q = "#{q} and Command='#{command}' "
+      end
+    end
+    if command
+      q = "#{q} where Command='#{command}'"
+    end
+    results= ActiveRecord::Base.connection.execute q
     results.each do |res|
        puts "#{res}"
     end

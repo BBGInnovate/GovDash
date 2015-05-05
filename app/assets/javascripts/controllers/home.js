@@ -55,9 +55,15 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 				var ids = [];
 				// Loop through the selected groups
 				for (var i = 0; i < $scope.selectedGroups.length; i++) {
+					console.log('Selected subgroups');
+					console.log($scope.selectedGroups);
 					// If the selected item has subgroup ids
 					if ($scope.selectedGroups[i].related_subgroups) {
+						console.log('Related Subgroups :' + $scope.selectedGroups[i].related_subgroups.length);
+						console.log($scope.selectedGroups[i].related_subgroups);
 						for (var j = 0; j < $scope.selectedGroups[i].related_subgroups.length; j++) {
+							console.log('PUSH: ');
+							console.log($scope.selectedGroups[i].related_subgroups[j]);
 							ids.push($scope.selectedGroups[i].related_subgroups[j].id);
 						}
 					}

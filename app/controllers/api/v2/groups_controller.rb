@@ -10,7 +10,7 @@ class Api::V2::GroupsController < Api::V2::BaseController
       if subgrps.count > 0
         hsh = {:related_subgroups=>[]}
         subgrps.each do |sg|
-          hsh[:related_subgroups] = sg.attributes
+          hsh[:related_subgroups] << sg.attributes
         end
       end
     end

@@ -112,7 +112,8 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 			.when('/segments', {templateUrl:'/segments/list.html', controller:SegmentsCtrl})
 			.when('/segments/edit/:segmentId', {templateUrl:'/segments/edit.html', controller:SegmentsCtrl})
 			.when('/users', {templateUrl:'/users/list.html', controller:UsersCtrl})
-			.when('/users/edit/:userId', {templateUrl:'/users/edit.html', controller:UsersCtrl});
+			.when('/users/edit/:userId', {templateUrl:'/users/edit.html', controller:UsersCtrl})
+			.when('/faq', {templateUrl:'/home/faq.html'});
 	}])
 
 	// register listener to watch for route changes

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150416141929) do
+ActiveRecord::Schema.define(version: 20150424122641) do
 
   create_table "account_profiles", force: :cascade do |t|
     t.integer  "account_id",      limit: 4
@@ -60,10 +60,16 @@ ActiveRecord::Schema.define(version: 20150416141929) do
     t.datetime "updated_at"
   end
 
+  add_index "accounts_countries", ["account_id"], name: "index_accounts_countries_on_account_id", using: :btree
+  add_index "accounts_countries", ["country_id"], name: "index_accounts_countries_on_country_id", using: :btree
+
   create_table "accounts_groups", id: false, force: :cascade do |t|
     t.integer "account_id", limit: 4, null: false
     t.integer "group_id",   limit: 4, null: false
   end
+
+  add_index "accounts_groups", ["account_id"], name: "index_accounts_groups_on_account_id", using: :btree
+  add_index "accounts_groups", ["group_id"], name: "index_accounts_groups_on_group_id", using: :btree
 
   create_table "accounts_languages", force: :cascade do |t|
     t.integer  "account_id",  limit: 4
@@ -72,12 +78,18 @@ ActiveRecord::Schema.define(version: 20150416141929) do
     t.datetime "updated_at"
   end
 
+  add_index "accounts_languages", ["account_id"], name: "index_accounts_languages_on_account_id", using: :btree
+  add_index "accounts_languages", ["language_id"], name: "index_accounts_languages_on_language_id", using: :btree
+
   create_table "accounts_regions", force: :cascade do |t|
     t.integer  "account_id", limit: 4
     t.integer  "region_id",  limit: 4
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "accounts_regions", ["account_id"], name: "index_accounts_regions_on_account_id", using: :btree
+  add_index "accounts_regions", ["region_id"], name: "index_accounts_regions_on_region_id", using: :btree
 
   create_table "accounts_sc_segments", id: false, force: :cascade do |t|
     t.integer "sc_segment_id", limit: 4
@@ -91,6 +103,9 @@ ActiveRecord::Schema.define(version: 20150416141929) do
     t.integer "account_id",  limit: 4, null: false
     t.integer "subgroup_id", limit: 4, null: false
   end
+
+  add_index "accounts_subgroups", ["account_id"], name: "index_accounts_subgroups_on_account_id", using: :btree
+  add_index "accounts_subgroups", ["subgroup_id"], name: "index_accounts_subgroups_on_subgroup_id", using: :btree
 
   create_table "accounts_users", force: :cascade do |t|
     t.integer  "account_id", limit: 4
@@ -128,6 +143,9 @@ ActiveRecord::Schema.define(version: 20150416141929) do
     t.boolean "is_active", limit: 1,  default: true
     t.integer "region_id", limit: 4
   end
+
+  add_index "countries", ["name"], name: "index_countries_on_name", using: :btree
+  add_index "countries", ["region_id"], name: "index_countries_on_region_id", using: :btree
 
   create_table "delayed_jobs", force: :cascade do |t|
     t.integer  "priority",   limit: 4,     default: 0, null: false
@@ -300,10 +318,16 @@ ActiveRecord::Schema.define(version: 20150416141929) do
     t.string  "segment_id", limit: 30
   end
 
+  add_index "regions", ["name"], name: "index_regions_on_name", using: :btree
+  add_index "regions", ["segment_id"], name: "index_regions_on_segment_id", using: :btree
+
   create_table "regions_countries", force: :cascade do |t|
     t.integer "region_id",  limit: 4
     t.integer "country_id", limit: 4
   end
+
+  add_index "regions_countries", ["country_id"], name: "index_regions_countries_on_country_id", using: :btree
+  add_index "regions_countries", ["region_id"], name: "index_regions_countries_on_region_id", using: :btree
 
   create_table "roles", force: :cascade do |t|
     t.string   "name",        limit: 255
@@ -322,6 +346,8 @@ ActiveRecord::Schema.define(version: 20150416141929) do
     t.datetime "updated_at"
   end
 
+  add_index "sc_referral_traffic", ["sc_segment_id"], name: "index_sc_referral_traffic_on_sc_segment_id", using: :btree
+
   create_table "sc_segments", force: :cascade do |t|
     t.string   "name",       limit: 255
     t.string   "sc_id",      limit: 255
@@ -329,6 +355,9 @@ ActiveRecord::Schema.define(version: 20150416141929) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "sc_segments", ["account_id"], name: "index_sc_segments_on_account_id", using: :btree
+  add_index "sc_segments", ["sc_id"], name: "index_sc_segments_on_sc_id", using: :btree
 
   create_table "services", force: :cascade do |t|
     t.string   "name",        limit: 40
@@ -347,10 +376,15 @@ ActiveRecord::Schema.define(version: 20150416141929) do
     t.datetime "updated_at"
   end
 
+  add_index "subgroups", ["name"], name: "index_subgroups_on_name", using: :btree
+
   create_table "subgroups_regions", force: :cascade do |t|
     t.integer "subgroup_id", limit: 4
     t.integer "region_id",   limit: 4
   end
+
+  add_index "subgroups_regions", ["region_id"], name: "index_subgroups_regions_on_region_id", using: :btree
+  add_index "subgroups_regions", ["subgroup_id"], name: "index_subgroups_regions_on_subgroup_id", using: :btree
 
   create_table "tw_timelines", force: :cascade do |t|
     t.integer  "account_id",       limit: 4

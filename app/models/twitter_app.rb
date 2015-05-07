@@ -19,6 +19,9 @@ class TwitterApp < Object # ActiveRecord::Base
         c.access_token        = config[:access_token]
         c.access_token_secret = config[:access_token_secret]
       end
+      @client.connection_options.merge(
+         request: { open_timeout: 30, timeout: 60 } )
+      @client
     end
     
     def stream_client

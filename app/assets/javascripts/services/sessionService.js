@@ -18,7 +18,8 @@ angular.module('sessionService', [])
                       
                         if (service.isAuthenticated()) {
                             //$location.path(response.data.redirect);
-                            $location.path('/record');
+                           // $location.path('/record');
+							$location.path('/');
                         }
                     });
             },
@@ -38,7 +39,7 @@ angular.module('sessionService', [])
                 .then(function(response) {
                     service.currentUser = response.data;
                     if (service.isAuthenticated()) {
-                        $location.path('/record');
+                        $location.path('/');
                     }
                 });
             },

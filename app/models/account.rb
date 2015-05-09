@@ -216,10 +216,19 @@ class Account < ActiveRecord::Base
            map{|a| a.account_id}
       combined_account_ids << subgroup_account_ids
     end
-    if combined_account_ids.empty?
-      account_ids = Account.where("is_active=1").map(&:id)
+    
+    # remove 1 == 0 when user role is setup
+    if 1 == 0 && current_user && !current_user.is_admin?
+      current_user.organizations.each do |org|
+        account_ids = org.accounts.map(&:id)
+        account_ids.flatten
+      end
     else
-      account_ids = consolidate_account_ids combined_account_ids
+      if combined_account_ids.empty?
+        account_ids = Account.where("is_active=1").map(&:id)
+      else
+        account_ids = consolidate_account_ids combined_account_ids
+      end
     end
   end
   

@@ -1,4 +1,7 @@
 class Role < ActiveRecord::Base
+  belongs_to :user
+  belongs_to :organization
+  
   def self.populate
     self.create :name=>'Administrator', :weight=>8,
       :description => 'administer users'

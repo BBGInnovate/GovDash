@@ -18,10 +18,12 @@
 class Api::V2::ReportsController < Api::V2::BaseController
   include Api::ReportsHelper
     
-  skip_before_filter :authenticate_user!
+  before_filter :authenticate_user!
+  before_filter :enforce_user_role
+  
   #before_filter :is_analyst?
-
   before_filter :init
+  
   def index
     begin
       @collection = get_reports @options[:source]
@@ -37,6 +39,17 @@ class Api::V2::ReportsController < Api::V2::BaseController
 
   def create
     index
+  end
+  
+  def enforce_user_role
+  params[:options][:organization_ids] = [] #current_user.roles.map(&:organization_id)
+      
+    unless current_user.is_admin?
+      # come from /api/reports
+      if params[:options]
+        params[:options][:organization_ids] = current_user.roles.map(&:organization_id)
+      end
+    end
   end
   
   private

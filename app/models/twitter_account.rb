@@ -27,8 +27,8 @@ class TwitterAccount < Account
          if a.retrieve
            count += 1
          end
-         Rails.logger.debug "Sleep 1 seconds for next account"
-         sleep 1
+         Rails.logger.debug "Sleep 40 seconds for next account"
+         sleep 40
        end
      rescue Exception=>ex
        logger.error "  TwitterAccount#retrieve #{ex.message}"
@@ -44,6 +44,7 @@ class TwitterAccount < Account
      # log_error msg,level
   end
   def retrieve(rabbit_channel=false)
+    retry_count = 0
     @bulk_insert = []
     self.is_download = false
     begin
@@ -62,6 +63,15 @@ class TwitterAccount < Account
       logger.info "   #{self.id} since: #{since_date.to_s(:db)} retrieve success"
       self.update_attributes :new_item=>false,:status=>true,:updated_at=>DateTime.now.utc
       return 'Success'
+    rescue Timeout::Error => execution_expired
+      retry_count += 1
+      if retry_count < 2
+        logger.error " #{execution_expired.message} retry in 10 sec..."
+        sleep 10
+        retry
+      else
+        return false
+      end  
     rescue Exception=>error
       log_fail error.message
       logger.error "   #{error.backtrace}"
@@ -75,7 +85,8 @@ class TwitterAccount < Account
   end
   # handle_asynchronously :delayed_retrieve,:run_at => Proc.new { 1.hour.from_now }
   
-  # timeline.json
+
+
   def request_twitter timelines=nil
     @num_attempts = 0
     retweets = []
@@ -691,7 +702,11 @@ class TwitterAccount < Account
   end
 
   def collect_started
-    TwTimeline.select("min(created_at) as created_at").where(account_id: self.id).first.created_at.to_s(:db)
+    begin
+      TwTimeline.select("min(created_at) as created_at").where(account_id: self.id).first.created_at.to_s(:db)
+    rescue
+       'N/A'
+    end
   end
   
   def self.populate

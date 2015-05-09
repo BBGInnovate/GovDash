@@ -86,7 +86,10 @@ class Account < ActiveRecord::Base
   def info
     begin
      profile_attr = {data_collect_started: self.collect_started}
-     profile_attr.merge! self.account_profile.attributes
+     begin
+       profile_attr.merge! self.account_profile.attributes
+     rescue
+     end
      ['id','account_id','location','created_at','updated_at'].each do |rm|
         profile_attr.delete(rm)
      end

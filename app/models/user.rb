@@ -9,8 +9,18 @@ class User < ActiveRecord::Base
   validates :password, length: { in: 6..128 }, on: :create
   validates :password, length: { in: 6..128 }, on: :update, allow_blank: true
   
-  belongs_to :role
+  has_many :roles
   has_and_belongs_to_many :accounts
+  belongs_to :organization
+  
+  after_save :update_organization
+  
+  def update_organization
+    if self.email.match(/@(\w+)\.gov/)
+      og = Organization.find_by name: $1
+      self.roles.find_or_create_by organization_id: og.id
+    end
+  end
   
   def to_label
     'User'
@@ -27,19 +37,37 @@ class User < ActiveRecord::Base
     update_attibutes :firstname=>arr[0], :lastname=>arr[1]
   end
   
+  def organizations
+    self.roles.map(&:organization)
+  end
+  
   def merge_role
     user = OpenStruct.new(self.attributes)
+    attr = []
+    orgs = self.roles.map(&:organization).map(&:name)
+    if !orgs.empty?
+      org_names = orgs.join(',')
+    else
+      org_names = 'Nobody'
+    end
+    # role={:name=>"bbg,dos"}
+    user.role = OpenStruct.new :name=>org_names
+=begin
     if self.role_id
-      user.role = OpenStruct.new(self.role.attributes) 
+      user.role = OpenStruct.new(attr) 
+    elsif self.is_admin
+      user.role = OpenStruct.new(self.roles.attributes)
     else
       user.role = OpenStruct.new :name=>'Nobody'
     end
+=end
     user.role = user.role.send 'table'
     user
   end
   
   def is_admin?
-    self.role && self.role.name == 'Administrator'
+    is_admin
+    # self.role && self.role.name == 'Administrator'
   end
   
   def is_analyst?

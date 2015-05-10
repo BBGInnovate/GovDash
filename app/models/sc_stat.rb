@@ -232,7 +232,7 @@ class ScStat
     result.values[:changes] = {:facebook=>ch, 
             :twitter=>ch,
             :totals=>ch}         
-    results << result.data
+    results << result.send("table")
     msg = "#{self.class.name} Data missing in #{rec.name} #{previous_period}"
     ErrorLog.to_error msg,msg,3   
 

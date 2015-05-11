@@ -178,6 +178,7 @@ class Api::V2::BaseController <  ActionController::Base
   
   def add_associate_name(record)
     attr = filter_attributes(record.attributes)
+    attr = delete_attributes attr
     if Account === record
       if record.account_type
         attr[:account_type_name] = record.account_type.name
@@ -245,6 +246,13 @@ class Api::V2::BaseController <  ActionController::Base
     end
     related = add_related(record)
     attr.merge!(related) if related
+    attr
+  end
+  
+  def delete_attributes attr
+    ['id','is_active','created_at', 'updated_at'].each do |col|
+      attr.delete col
+    end
     attr
   end
   

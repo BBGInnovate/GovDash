@@ -99,6 +99,18 @@ module Api::ReportsHelper
     end
   end
   
+  def get_related_region_array region_id
+    if !@_ac1
+      @_ac1 = AccountsRegion.all
+    end
+    if !@_regions
+      @_regions  = Region.select("id, name").all
+    end
+    account_ids = @_ac1.select{|a| a.region_id == region_id}.map(&:account_id).uniq
+    region_ids = @_ac1.select{|a| account_ids.include? a.account_id}.map(&:region_id).uniq
+    @_regions.select{|c| region_ids.include? c.id }
+  end
+  
   def get_related_country_array country_id
     if !@_ac1
       @_ac1 = AccountsCountry.all
@@ -142,9 +154,9 @@ module Api::ReportsHelper
   
   def get_region_subgroup_hash 
     hash_array = Hash.new {|h,k| h[k] = Array.new }
-    res = Region.select("regions.*, subgroups_regions.region_id").
-           joins("JOIN subgroups_regions on subgroups_regions.region_id = regions.id").
-           order("subgroups_regions.region_id").to_a
+    res = Subgroup.select("subgroups.*, subgroups_regions.region_id").
+           joins("JOIN subgroups_regions on subgroups_regions.subgroup_id = subgroups.id").
+           order("subgroups_regions.subgroup_id").to_a
     res.each do |a|
       attr = a.attributes
       region_id = attr.delete 'region_id'
@@ -152,6 +164,17 @@ module Api::ReportsHelper
       hash_array[region_id].uniq!
     end
     hash_array
+  end
+  
+  def get_region_country_hash region_id
+    if !@_rc
+      @_rc = RegionsCountry.select("country_id, region_id")
+    end
+    country_ids = @_rc.select{|c| c.region_id == region_id}.map(&:country_id)
+    if !@_countries
+      @_countries  = Country.select("id, name").all
+    end
+    @_countries.select{|c| country_ids.include? c.id }
   end
   
 end

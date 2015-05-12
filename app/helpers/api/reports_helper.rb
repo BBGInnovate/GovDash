@@ -98,6 +98,64 @@ module Api::ReportsHelper
       []
     end
   end
+  
+  def get_related_country_hash
+    hash_array = Hash.new {|h,k| h[k] = Array.new }
+    res = Country.select("countries.*, accounts_countries.country_id").
+      joins("JOIN accounts_countries on accounts_countries.country_id = countries.id").
+      order("accounts_countries.country_id").to_a
+    res.each do |a|
+      attr = a.attributes
+      country_id = attr.delete 'country_id'
+      hash_array[country_id] << attr
+      hash_array[country_id].uniq!
+    end
+    hash_array
+  end
+  
+  def get_subgroup_group_hash 
+  # TODO need more work
+    hash_array = Hash.new {|h,k| h[k] = Array.new }
+    res = Group.select("groups.*, groups_subgroups.subgroup_id").
+       joins("JOIN groups_subgroups on groups_subgroups.group_id = groups.id").
+       order("groups_subgroups.subgroup_id").to_a
+    res.each do |a|
+      attr = a.attributes
+      subgroup_id = attr.delete 'subgroup_id'
+      hash_array[subgroup_id] << attr
+      hash_array[subgroup_id].uniq!
+    end
+    hash_array
+  end
+  
+  def get_subgroup_region_hash 
+    hash_array = Hash.new {|h,k| h[k] = Array.new }
+    res = Region.select("regions.*, subgroups_regions.subgroup_id").
+           joins("JOIN subgroups_regions on subgroups_regions.region_id = regions.id").
+           order("subgroups_regions.subgroup_id").to_a
+    res.each do |a|
+      attr = a.attributes
+      subgroup_id = attr.delete 'subgroup_id'
+      hash_array[subgroup_id] << attr
+      hash_array[subgroup_id].uniq!
+    end
+    hash_array
+  end
+  
+  def get_region_subgroup_hash 
+    hash_array = Hash.new {|h,k| h[k] = Array.new }
+    res = Region.select("regions.*, subgroups_regions.region_id").
+           joins("JOIN subgroups_regions on subgroups_regions.region_id = regions.id").
+           order("subgroups_regions.region_id").to_a
+    res.each do |a|
+      attr = a.attributes
+      region_id = attr.delete 'region_id'
+      hash_array[region_id] << attr
+      hash_array[region_id].uniq!
+    end
+    hash_array
+  end
+  
 end
 =begin
   def fb_involved_countries

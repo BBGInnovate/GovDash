@@ -99,18 +99,16 @@ module Api::ReportsHelper
     end
   end
   
-  def get_related_country_hash
-    hash_array = Hash.new {|h,k| h[k] = Array.new }
-    res = Country.select("countries.*, accounts_countries.country_id").
-      joins("JOIN accounts_countries on accounts_countries.country_id = countries.id").
-      order("accounts_countries.country_id").to_a
-    res.each do |a|
-      attr = a.attributes
-      country_id = attr.delete 'country_id'
-      hash_array[country_id] << attr
-      hash_array[country_id].uniq!
+  def get_related_country_array country_id
+    if !@_ac1
+      @_ac1 = AccountsCountry.all
     end
-    hash_array
+    if !@_countries
+      @_countries  = Country.select("id, name").all
+    end
+    account_ids = @_ac1.select{|a| a.country_id == country_id}.map(&:account_id).uniq
+    country_ids = @_ac1.select{|a| account_ids.include? a.account_id}.map(&:country_id).uniq
+    @_countries.select{|c| country_ids.include? c.id }
   end
   
   def get_subgroup_group_hash 

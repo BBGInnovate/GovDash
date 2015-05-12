@@ -1,20 +1,31 @@
 class Api::V2::SubgroupsController < Api::V2::BaseController
-
+  include Api::ReportsHelper
   #attach related Groups output
   def add_related model_object
     if Subgroup === model_object
-      hsh = {:related_groups=>[],:related_regions=>[]}
-      sql1 = "select distinct group_id from groups_subgroups where subgroup_id = #{model_object.id}"
-      groups = Group.select("id,name,description,organization_id").where("id in (#{sql1})").to_a
-      groups.to_a.each do |grp|
-        attr = grp.attributes
-        hsh[:related_groups] << attr
+      if !@region_hash
+        @region_hash = get_subgroup_region_hash
       end
-      sql1 = "select distinct region_id from subgroups_regions where subgroup_id = #{model_object.id}"
-      Region.where("id in (#{sql1})").to_a.each do |reg|
-        hsh[:related_regions] << reg.attributes
+      if !@group_hash
+        @group_hash = get_subgroup_group_hash
+      end
+      hsh = {:related_groups=>[],:related_regions=>[]}
+      # sql1 = "select distinct group_id from groups_subgroups where subgroup_id = #{model_object.id}"
+      # groups = Group.select("id,name,description,organization_id").where("id in (#{sql1})").to_a
+      # groups.to_a.each do |grp|
+      @group_hash[model_object.id].each do |grp|
+        # attr = grp.attributes
+        hsh[:related_groups] << grp
+      end
+      # sql1 = "select distinct region_id from subgroups_regions where subgroup_id = #{model_object.id}"
+      # Region.where("id in (#{sql1})").to_a.each do |reg|
+      @region_hash[model_object.id].each do |reg|
+        # hsh[:related_regions] << reg.attributes
+        hsh[:related_regions] << reg
       end
     end
+    hsh[:related_groups].sort_by!{|a| a['id']}
+    hsh[:related_regions].sort_by!{|a| a['id']}
     hsh
   end
 

@@ -123,33 +123,52 @@ module Api::ReportsHelper
     @_countries.select{|c| country_ids.include? c.id }
   end
   
-  def get_subgroup_group_hash 
-  # TODO need more work
-    hash_array = Hash.new {|h,k| h[k] = Array.new }
-    res = Group.select("groups.*, groups_subgroups.subgroup_id").
-       joins("JOIN groups_subgroups on groups_subgroups.group_id = groups.id").
-       order("groups_subgroups.subgroup_id").to_a
-    res.each do |a|
-      attr = a.attributes
-      subgroup_id = attr.delete 'subgroup_id'
-      hash_array[subgroup_id] << attr
-      hash_array[subgroup_id].uniq!
+  def get_group_subgroup_hash
+    if !@_group_subgroup_hash
+      @_group_subgroup_hash = Hash.new {|h,k| h[k] = Array.new }
+      res = Subgroup.select("subgroups.*, groups_subgroups.group_id").
+        joins("JOIN groups_subgroups on groups_subgroups.subgroup_id = subgroups.id").
+        order("groups_subgroups.group_id").to_a
+      res.each do |a|
+        attr = a.attributes
+        group_id = attr.delete 'group_id'
+        @_group_subgroup_hash[group_id] << attr
+        @_group_subgroup_hash[group_id].uniq!
+      end
     end
-    hash_array
+    @_group_subgroup_hash
   end
   
-  def get_subgroup_region_hash 
-    hash_array = Hash.new {|h,k| h[k] = Array.new }
-    res = Region.select("regions.*, subgroups_regions.subgroup_id").
-           joins("JOIN subgroups_regions on subgroups_regions.region_id = regions.id").
-           order("subgroups_regions.subgroup_id").to_a
-    res.each do |a|
-      attr = a.attributes
-      subgroup_id = attr.delete 'subgroup_id'
-      hash_array[subgroup_id] << attr
-      hash_array[subgroup_id].uniq!
+  def get_subgroup_group_hash
+    if !@_subgroup_group_hash
+      @_subgroup_group_hash = Hash.new {|h,k| h[k] = Array.new }
+      res = Group.select("groups.*, groups_subgroups.subgroup_id").
+         joins("JOIN groups_subgroups on groups_subgroups.group_id = groups.id").
+         order("groups_subgroups.subgroup_id").to_a
+      res.each do |a|
+        attr = a.attributes
+        subgroup_id = attr.delete 'subgroup_id'
+        @_subgroup_group_hash[subgroup_id] << attr
+        @_subgroup_group_hash[subgroup_id].uniq!
+      end
     end
-    hash_array
+    @_subgroup_group_hash
+  end
+  
+  def get_subgroup_region_hash
+    if !@_subgroup_region_hash
+      @_subgroup_region_hash = Hash.new {|h,k| h[k] = Array.new }
+      res = Region.select("regions.*, subgroups_regions.subgroup_id").
+            joins("JOIN subgroups_regions on subgroups_regions.region_id = regions.id").
+            order("subgroups_regions.subgroup_id").to_a
+      res.each do |a|
+        attr = a.attributes
+        subgroup_id = attr.delete 'subgroup_id'
+        @_subgroup_region_hash[subgroup_id] << attr
+        @_subgroup_region_hash[subgroup_id].uniq!
+      end
+    end
+    @_subgroup_region_hash
   end
   
   def get_region_subgroup_hash 

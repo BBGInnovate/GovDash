@@ -250,7 +250,7 @@ class Api::V2::BaseController <  ActionController::Base
   end
   
   def delete_attributes attr
-    ['id','is_active','created_at', 'updated_at'].each do |col|
+    ['id','created_at', 'updated_at'].each do |col|
       attr.delete col
     end
     attr

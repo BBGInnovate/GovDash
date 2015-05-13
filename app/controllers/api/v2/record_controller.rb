@@ -3,7 +3,9 @@ class Api::V2::RecordController < Api::V2::BaseController
 
 
   def roles
-    respond_with(User.roles)
+    # respond_with(User.roles)
+    ro = Organization.all.map(&:name)
+    respond_with(ro)
   end
   
   def index 

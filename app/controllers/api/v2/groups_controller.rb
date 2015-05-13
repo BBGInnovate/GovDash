@@ -1,7 +1,23 @@
 class Api::V2::GroupsController < Api::V2::BaseController
-
+  include Api::ReportsHelper
 
   def add_related model_object
+    #attach related Subgroups
+    hsh = nil
+    if Group === model_object
+      @group_subgroups = get_group_subgroup_hash[model_object.id]
+      if @group_subgroups.size > 0
+        hsh = {:related_subgroups=>[]}
+        @group_subgroups.each do |sg|
+          hsh[:related_subgroups] << sg
+        end
+      end
+    end
+    hsh
+  end
+
+
+  def __add_related model_object
     #attach related Subgroups
     hsh = nil
     if Group === model_object

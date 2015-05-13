@@ -17,8 +17,17 @@ class User < ActiveRecord::Base
   
   def update_organization
     if self.email.match(/@(\w+)\.gov/)
-      og = Organization.find_by name: $1
-      self.roles.find_or_create_by organization_id: og.id
+      n = $1
+      case n
+      when 'state'
+        orn = 'DOS'
+      else
+        orn = n
+      end
+      og = Organization.find_by name: orn
+      if og
+        self.roles.find_or_create_by organization_id: og.id
+      end
     end
   end
   

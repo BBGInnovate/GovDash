@@ -19,7 +19,7 @@
 
 **Question:** How is the data aggregated?
 
-**Answer:** For Facebook Posts, engagement actions are tracked and aggregated over a period of 21-days. For Twitter and Youtube...?
+**Answer:** For Facebook Posts, engagement actions are tracked and aggregated over a period of 28 days. For Tweets and Youtube videos, it's 7 days.
 
 **Question:** How do I use the Dashboard?
 
@@ -27,9 +27,9 @@
 
 Individual accounts are always listed in a separate table at the bottom of each aggregate report for review. Clicking on an individual account name will show a more detailed breakdown view of the account engagement action data.
 
-**Question:** Why are some numbers different in FB?
+**Question:** Why are some numbers in the dashbaord different from the numbers on Facebook Insights ?
 
-**Answer:** Because reasons
+**Answer:** Facebook Insights data aggregates additional 'Likes' and 'Comments' from shared Posts. This data is not available through the Public Facebook API used to generated the numbers in this dashboard.
 
 **Question:** Who can I contact for help?
 

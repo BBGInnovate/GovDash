@@ -30,9 +30,11 @@ Individual accounts are always listed in a separate table at the bottom of each 
 **Answer:** Facebook Insights data aggregates additional 'Likes' and 'Comments' from shared Posts. This data is not available through the Public Facebook API used to generated the numbers in this dashboard.
 
 ** Question:** Where can I find more data about my individual accounts on each platform?
-[facebook.com/insights/](https://www.facebook.com/insights)
-[analytics.twitter.com](https://analytics.twitter.com)
-[youtube.com/analytics](https://www.youtube.com/analytics)
+
+*Answer:**
+* [facebook.com/insights/](https://www.facebook.com/insights)
+* [analytics.twitter.com](https://analytics.twitter.com)
+* [youtube.com/analytics](https://www.youtube.com/analytics)
 
 **Question:** Who can I contact for help?
 

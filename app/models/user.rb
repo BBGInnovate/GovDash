@@ -16,13 +16,21 @@ class User < ActiveRecord::Base
   after_save :update_organization
   
   def update_organization
-    if self.email.match(/@(\w+)\.gov/)
+    if self.email.match(/@(\w+\.gov|\w+\.com|\w+\.mil|\w+\.org)/)
       n = $1
       case n
-      when 'state'
-        orn = 'DOS'
+      when 'state.gov','america.gov'
+        orn = 'dos'
+      when 'voanews.com','rferl.org','martinoticias.com'
+        orn = 'bbg'
+      when 'alhurra.com','radiosawa.com','rfa.org'
+        orn = 'bbg'
+      when 'cttso.gov'
+        orn = 'dod'
       else
-        orn = n
+        if n.match /\.mil$/
+          orn = 'dod'
+        end
       end
       og = Organization.find_by name: orn
       if og

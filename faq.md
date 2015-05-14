@@ -1,17 +1,15 @@
-##About
-
 ##Frequently Asked Questions
 
 **Question:** What Social Media Platforms are currently being tracked?
 
 **Answer:** Facebook, Twitter and Youtube
 
-**Question:** How is the data for the Social Media Dashboard collected, manually or programatically using the Platform APIs?
+**Question:** How is the data for the Dashboard collected, manually or by using the Social Media Platform APIs?
 
-**Answer:** Programatically using the following APIs
+**Answer:** Programatically by using the following APIs
 * [Facebook Public APIs](https://developers.facebook.com/docs)
 * [Twitter Public APIs](https://dev.twitter.com/rest/public)
-* [Youtube Analytics APIs] (https://developers.google.com/youtube/analytics/)
+* [Youtube Analytics APIs](https://developers.google.com/youtube/analytics/)
 
 **Question:** What are Engagement Actions?
 
@@ -19,7 +17,7 @@
 
 **Question:** How is the data aggregated?
 
-**Answer:** For Facebook Posts, engagement actions are tracked and aggregated over a period of 21-days. For Twitter and Youtube...?
+**Answer:** For Facebook Posts, engagement actions are tracked and aggregated over a period of 28 days. For Tweets and Youtube videos, it's 7 days.
 
 **Question:** How do I use the Dashboard?
 
@@ -27,9 +25,16 @@
 
 Individual accounts are always listed in a separate table at the bottom of each aggregate report for review. Clicking on an individual account name will show a more detailed breakdown view of the account engagement action data.
 
-**Question:** Why are some numbers different in FB?
+**Question:** Why are some numbers in the dashbaord different from the numbers on Facebook Insights ?
 
-**Answer:** Because reasons
+**Answer:** Facebook Insights data aggregates additional 'Likes' and 'Comments' from shared Posts. This data is not available through the Public Facebook API used to generated the numbers in this dashboard.
+
+**Question:** Where can I find more data about my individual accounts on each platform?
+
+**Answer:** 
+* [facebook.com/insights/](https://www.facebook.com/insights)
+* [analytics.twitter.com](https://analytics.twitter.com)
+* [youtube.com/analytics](https://www.youtube.com/analytics)
 
 **Question:** Who can I contact for help?
 

@@ -221,18 +221,25 @@ class Account < ActiveRecord::Base
     end
     
     # remove 1 == 0 when user role is setup
-    if 1 == 0 && current_user && !current_user.is_admin?
+    if !current_user.is_admin?
+      user_account_ids = []
       current_user.organizations.each do |org|
-        account_ids = org.accounts.map(&:id)
-        account_ids.flatten
+        user_account_ids << org.accounts.map(&:id)
       end
-    else
-      if combined_account_ids.empty?
-        account_ids = Account.where("is_active=1").map(&:id)
-      else
-        account_ids = consolidate_account_ids combined_account_ids
-      end
+      user_account_ids.flatten!
     end
+   
+    if combined_account_ids.empty?
+        account_ids = Account.where("is_active=1").map(&:id)
+    else
+        account_ids = consolidate_account_ids combined_account_ids
+    end
+    if !current_user.is_admin?
+      account_ids = (user_account_ids & account_ids)
+    else
+      account_ids
+    end
+    account_ids
   end
   
   def self.consolidate_account_ids account_ids_array

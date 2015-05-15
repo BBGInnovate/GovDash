@@ -58,7 +58,7 @@ angular.module('filters', []).
      // Filter for displaying Status in UserList instead of true / false
     .filter('displayStatus', function () {
         return function (text) {
-            if (text == true) {
+            if (text == null || text == true) {
             	return 'Active';
             } else {
             	return 'Inactive';

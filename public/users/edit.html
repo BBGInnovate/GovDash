@@ -44,7 +44,7 @@
 		<div class="form-group">
 			<label for="description" class="col-md-2 control-label">Role</label>
 			<div class="col-md-10">
-				<select id="selected-role" ng-model="selectedRole" ng-options="role.name for role in roles"></select>
+				<select class="form-control" id="selected-role" multiple ng-model="selectedRole" ng-options="role  | uppercase for role in roles"></select>
 			</div>
 		</div>
 		<div class="form-group" ng-if="user.is_active == false">

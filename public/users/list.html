@@ -53,11 +53,12 @@
           <tr ng-repeat="user in users" ng-attr-class="{{ user.is_active && 'user-active' || 'user-inactive' }}">
 				<td>{{ user.email }}</td>
 				<td>{{ user.firstname}} {{user.lastname }}</td>
-				<td>{{ user.role_id | displayRole }}</td>
+				<td><span ng-repeat="role in user.roles">{{ role | uppercase }}<span data-ng-if="!$last">, </span></td>
 				<td>{{ user.is_active | displayStatus }}</td>
 				<td>
-					<a href="#/users/edit/{{user.id}}"><i class="icon-pencil"></i></a>
-					<a class="delete-icon" data-toggle="modal" data-target=".bs-example-modal-sm" ng-if="user.is_active == true" ng-click="getUserName($index)"><strong>X</strong></i></a>
+					<a href="#/users/edit/{{$index + 1}}"><i class="fa fa-pencil"></i></a>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<a class="delete-icon" data-toggle="modal" data-target=".bs-example-modal-sm" ng-if="user.is_active == true" ng-click="getUserName($index)"><i class="fa fa-remove"></i></a>
 				</td>
             </tr>
         </tbody>

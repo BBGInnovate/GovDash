@@ -49,21 +49,24 @@ function UsersCtrl($scope, Session, $rootScope, Users, $routeParams, $location, 
   	$scope.find = function() {
   		Users.getUserById($routeParams.userId)
             .then(function(response) {
-               $scope.user = response.data.user;
-               var roleId = $scope.user.role.id;
+               $scope.user = response.data[0];
+             //  var roleId = $scope.user.role.id;
             
             	// Get all Roles and pre-select the one from the users record
                RolesAPI.getAllRoles()
 					.then(function(response) {
 					   $scope.roles = response;
-					   $scope.selectedRole = $scope.roles[roleId - 1];
+
+					   $scope.selectedRole = $scope.user.roles;
+
+
 			   });
  	
         });	
   	};
   	
   	$scope.update = function() {
-  		Users.update($routeParams.userId, $scope.user.firstname, $scope.user.lastname, $scope.user.email, $scope.password1, $scope.selectedRole.id)
+  		Users.update($routeParams.userId, $scope.user.firstname, $scope.user.lastname, $scope.user.email, $scope.password1, $scope.selectedRole)
             .then(function(response) {
                $location.path('users');
         });

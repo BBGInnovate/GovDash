@@ -8,9 +8,7 @@
 </div>
 <div style="clear:both;"></div>
 
-
-
-<div class="col-md-3 segment-block" ng-if="userRole == 'Administrator'">
+<div class="col-md-3 segment-block" ng-if="isAdmin">
     <h3>Organizations</h3>
     <ul>
         <li><a href="#/organizations/create">Create a Organization</a></li>
@@ -43,7 +41,7 @@
     </ul>
 </div>
 
-<div class="col-md-3 segment-block" ng-if="userRole == 'Administrator'">
+<div class="col-md-3 segment-block" ng-if="isAdmin">
 	<h3>Regions</h3>
 	<ul>
 		<li><a href="#/regions/create">Create a Region</a></li>
@@ -51,7 +49,7 @@
 	</ul>
 </div>
 
-<div class="col-md-3 segment-block" ng-if="userRole == 'Administrator'">
+<div class="col-md-3 segment-block" ng-if="isAdmin">
 	<h3>Countries</h3>
 	<ul>
 		<li><a href="#/countries/create">Create a Country</a></li>
@@ -59,14 +57,14 @@
 	</ul>
 </div>
 
-<div class="col-md-3 segment-block" ng-if="userRole == 'Administrator'">
+<div class="col-md-3 segment-block" ng-if="isAdmin">
 	<h3>Users</h3>
 	<ul>
 		<li><a href="#/users">View all Users</a></li>
 	</ul>
 </div>
 
-<div class="col-md-3 segment-block" ng-if="userRole == 'Administrator'">
+<div class="col-md-3 segment-block" ng-if="isAdmin">
 	<h3>Segments</h3>
 	<ul>
 		<li><a href="#/segments/create">Create a Segment</a></li>

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150424122641) do
+ActiveRecord::Schema.define(version: 20150424132000) do
 
   create_table "account_profiles", force: :cascade do |t|
     t.integer  "account_id",      limit: 4
@@ -126,26 +126,113 @@ ActiveRecord::Schema.define(version: 20150424122641) do
   end
 
   create_table "app_tokens", force: :cascade do |t|
-    t.string   "platform",          limit: 20
-    t.string   "canvas_url",        limit: 255
-    t.string   "api_user_email",    limit: 40
-    t.string   "client_id",         limit: 255
-    t.string   "client_secret",     limit: 255
-    t.string   "page_access_token", limit: 255
-    t.string   "user_access_token", limit: 255
+    t.string   "platform",       limit: 20
+    t.string   "canvas_url",     limit: 255
+    t.string   "api_user_email", limit: 40
+    t.string   "client_id",      limit: 255
+    t.string   "client_secret",  limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  create_table "countries", force: :cascade do |t|
-    t.string  "name",      limit: 60
-    t.string  "code",      limit: 10
-    t.boolean "is_active", limit: 1,  default: true
-    t.integer "region_id", limit: 4
+  create_table "articles", force: :cascade do |t|
+    t.string   "url",        limit: 255
+    t.string   "format",     limit: 20
+    t.text     "body",       limit: 65535
+    t.string   "byline",     limit: 255
+    t.datetime "pub_date"
+    t.string   "keywords",   limit: 255
+    t.integer  "content_id", limit: 4
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.binary   "uuid",       limit: 16
   end
 
-  add_index "countries", ["name"], name: "index_countries_on_name", using: :btree
-  add_index "countries", ["region_id"], name: "index_countries_on_region_id", using: :btree
+  add_index "articles", ["content_id"], name: "index_articles_on_content_id", using: :btree
+  add_index "articles", ["url"], name: "index_articles_on_url", using: :btree
+  add_index "articles", ["uuid"], name: "index_articles_on_uuid", unique: true, using: :btree
+
+  create_table "audios", force: :cascade do |t|
+    t.string   "mimetype",   limit: 20
+    t.string   "url",        limit: 255
+    t.integer  "bitrate",    limit: 4
+    t.integer  "duration",   limit: 4
+    t.integer  "filesize",   limit: 4
+    t.integer  "content_id", limit: 4
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.binary   "uuid",       limit: 16
+    t.string   "quality",    limit: 255
+  end
+
+  add_index "audios", ["content_id"], name: "index_audios_on_content_id", using: :btree
+  add_index "audios", ["url"], name: "index_audios_on_url", using: :btree
+  add_index "audios", ["uuid"], name: "index_audios_on_uuid", unique: true, using: :btree
+
+  create_table "contents", force: :cascade do |t|
+    t.binary   "uuid",            limit: 16
+    t.string   "title",           limit: 255
+    t.text     "description",     limit: 65535
+    t.datetime "pub_date"
+    t.string   "state",           limit: 20
+    t.string   "object_name",     limit: 255
+    t.integer  "network_id",      limit: 4
+    t.integer  "organization_id", limit: 4
+    t.integer  "language_id",     limit: 4
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.text     "keywords",        limit: 65535
+  end
+
+  add_index "contents", ["language_id"], name: "index_contents_on_language_id", using: :btree
+  add_index "contents", ["network_id"], name: "index_contents_on_network_id", using: :btree
+  add_index "contents", ["object_name"], name: "index_contents_on_object_name", unique: true, using: :btree
+  add_index "contents", ["organization_id"], name: "index_contents_on_organization_id", using: :btree
+  add_index "contents", ["pub_date"], name: "index_contents_on_pub_date", using: :btree
+  add_index "contents", ["uuid"], name: "index_contents_on_uuid", unique: true, using: :btree
+
+  create_table "contents_countries", id: false, force: :cascade do |t|
+    t.integer  "country_id", limit: 4
+    t.integer  "content_id", limit: 4
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "contents_countries", ["content_id"], name: "index_contents_countries_on_content_id", using: :btree
+  add_index "contents_countries", ["country_id"], name: "index_contents_countries_on_country_id", using: :btree
+
+  create_table "contents_opencalais_categories", id: false, force: :cascade do |t|
+    t.integer "content_id",             limit: 4, null: false
+    t.integer "opencalais_category_id", limit: 4, null: false
+  end
+
+  add_index "contents_opencalais_categories", ["content_id"], name: "index_contents_opencalais_categories_on_content_id", using: :btree
+  add_index "contents_opencalais_categories", ["opencalais_category_id"], name: "index_contents_opencalais_categories_on_opencalais_category_id", using: :btree
+
+  create_table "contents_opencalais_entities", id: false, force: :cascade do |t|
+    t.integer "content_id",           limit: 4, null: false
+    t.integer "opencalais_entity_id", limit: 4, null: false
+  end
+
+  add_index "contents_opencalais_entities", ["content_id"], name: "index_contents_opencalais_entities_on_content_id", using: :btree
+  add_index "contents_opencalais_entities", ["opencalais_entity_id"], name: "index_contents_opencalais_entities_on_opencalais_entity_id", using: :btree
+
+  create_table "contents_opencalais_geographies", id: false, force: :cascade do |t|
+    t.integer "content_id",              limit: 4, null: false
+    t.integer "opencalais_geography_id", limit: 4, null: false
+  end
+
+  add_index "contents_opencalais_geographies", ["content_id"], name: "index_contents_opencalais_geographies_on_content_id", using: :btree
+  add_index "contents_opencalais_geographies", ["opencalais_geography_id"], name: "index_contents_opencalais_geographies_on_opencalais_geography_id", using: :btree
+
+  create_table "countries", force: :cascade do |t|
+    t.string "name", limit: 60
+    t.string "code", limit: 4
+    t.binary "uuid", limit: 16
+  end
+
+  add_index "countries", ["code"], name: "index_countries_on_code", using: :btree
+  add_index "countries", ["uuid"], name: "index_countries_on_uuid", unique: true, using: :btree
 
   create_table "delayed_jobs", force: :cascade do |t|
     t.integer  "priority",   limit: 4,     default: 0, null: false
@@ -162,6 +249,20 @@ ActiveRecord::Schema.define(version: 20150424122641) do
   end
 
   add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority", using: :btree
+
+  create_table "documents", force: :cascade do |t|
+    t.string   "mimetype",   limit: 20
+    t.integer  "filesize",   limit: 4
+    t.string   "url",        limit: 255
+    t.integer  "content_id", limit: 4
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.binary   "uuid",       limit: 16
+  end
+
+  add_index "documents", ["content_id"], name: "index_documents_on_content_id", using: :btree
+  add_index "documents", ["url"], name: "index_documents_on_url", using: :btree
+  add_index "documents", ["uuid"], name: "index_documents_on_uuid", unique: true, using: :btree
 
   create_table "error_logs", force: :cascade do |t|
     t.string   "message",    limit: 1024
@@ -268,11 +369,56 @@ ActiveRecord::Schema.define(version: 20150424122641) do
     t.integer "subgroup_id", limit: 4, null: false
   end
 
-  create_table "languages", force: :cascade do |t|
-    t.string  "name",      limit: 30
-    t.string  "iso_639_1", limit: 6
-    t.boolean "is_active", limit: 1,  default: true
+  create_table "images", force: :cascade do |t|
+    t.string   "url",        limit: 255
+    t.string   "mimetype",   limit: 20
+    t.integer  "filesize",   limit: 4
+    t.integer  "width",      limit: 4
+    t.integer  "height",     limit: 4
+    t.integer  "content_id", limit: 4
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.text     "caption",    limit: 65535
+    t.string   "credit",     limit: 255
+    t.string   "source",     limit: 255
+    t.binary   "uuid",       limit: 16
   end
+
+  add_index "images", ["content_id"], name: "index_images_on_content_id", using: :btree
+  add_index "images", ["url"], name: "index_images_on_url", using: :btree
+  add_index "images", ["uuid"], name: "index_images_on_uuid", unique: true, using: :btree
+
+  create_table "ingressed_items", force: :cascade do |t|
+    t.string   "type",                                    limit: 20
+    t.string   "original_lang_code",                      limit: 10
+    t.integer  "machine_translated_character_count",      limit: 4
+    t.integer  "derived_original_word_count",             limit: 4
+    t.integer  "rss_item_rss_source_id",                  limit: 4
+    t.string   "rss_item_url",                            limit: 255
+    t.string   "rss_item_original_title",                 limit: 255
+    t.string   "rss_item_original_description",           limit: 500
+    t.string   "rss_item_machine_translated_title",       limit: 255
+    t.string   "rss_item_machine_translated_description", limit: 500
+    t.string   "rss_item_human_translated_title",         limit: 255
+    t.string   "rss_item_human_translated_description",   limit: 255
+    t.datetime "rss_item_published_at"
+    t.string   "original_lang_code_detected",             limit: 10
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "ingressed_items", ["rss_item_rss_source_id", "rss_item_url"], name: "index_ingressed_items_on_rss_item_rss_source_id_and_rss_item_url", unique: true, using: :btree
+  add_index "ingressed_items", ["type"], name: "index_ingressed_items_on_type", using: :btree
+
+  create_table "languages", force: :cascade do |t|
+    t.string   "name",       limit: 100
+    t.string   "lang_code",  limit: 20
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.binary   "uuid",       limit: 16
+  end
+
+  add_index "languages", ["uuid"], name: "index_languages_on_uuid", unique: true, using: :btree
 
   create_table "media_types", force: :cascade do |t|
     t.string   "name",       limit: 20
@@ -282,18 +428,74 @@ ActiveRecord::Schema.define(version: 20150424122641) do
   end
 
   create_table "networks", force: :cascade do |t|
-    t.string   "name",        limit: 10
-    t.string   "description", limit: 255
-    t.boolean  "is_active",   limit: 1,   default: true
+    t.string   "name",            limit: 255
+    t.string   "object_name",     limit: 255
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "url",             limit: 255
+    t.text     "description",     limit: 65535
+    t.integer  "organization_id", limit: 4
+    t.binary   "uuid",            limit: 16
+  end
+
+  add_index "networks", ["organization_id"], name: "index_networks_on_organization_id", using: :btree
+  add_index "networks", ["uuid"], name: "index_networks_on_uuid", unique: true, using: :btree
+
+  create_table "networks_countries", id: false, force: :cascade do |t|
+    t.integer  "country_id", limit: 4
+    t.integer  "network_id", limit: 4
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "networks_countries", ["country_id"], name: "index_networks_countries_on_country_id", using: :btree
+  add_index "networks_countries", ["network_id"], name: "index_networks_countries_on_network_id", using: :btree
+
+  create_table "opencalais_categories", force: :cascade do |t|
+    t.string   "name",       limit: 255
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "opencalais_entities", force: :cascade do |t|
+    t.string   "name",        limit: 255
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "entity_type", limit: 255
+  end
+
+  create_table "opencalais_geographies", force: :cascade do |t|
+    t.string   "name",       limit: 255
+    t.float    "latitude",   limit: 24
+    t.float    "longitude",  limit: 24
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   create_table "organizations", force: :cascade do |t|
-    t.string   "name",       limit: 255
-    t.datetime "created_at",             null: false
-    t.datetime "updated_at",             null: false
+    t.string   "name",        limit: 255
+    t.string   "object_name", limit: 255
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "url",         limit: 255
+    t.text     "description", limit: 65535
+    t.binary   "uuid",        limit: 16
   end
+
+  add_index "organizations", ["uuid"], name: "index_organizations_on_uuid", unique: true, using: :btree
+
+  create_table "photo_galleries", force: :cascade do |t|
+    t.string   "title",      limit: 255
+    t.string   "url",        limit: 255
+    t.integer  "content_id", limit: 4
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.binary   "uuid",       limit: 16
+  end
+
+  add_index "photo_galleries", ["content_id"], name: "index_photo_galleries_on_content_id", using: :btree
+  add_index "photo_galleries", ["url"], name: "index_photo_galleries_on_url", using: :btree
+  add_index "photo_galleries", ["uuid"], name: "index_photo_galleries_on_uuid", unique: true, using: :btree
 
   create_table "records", force: :cascade do |t|
     t.string   "data",       limit: 255
@@ -330,13 +532,39 @@ ActiveRecord::Schema.define(version: 20150424122641) do
   add_index "regions_countries", ["region_id"], name: "index_regions_countries_on_region_id", using: :btree
 
   create_table "roles", force: :cascade do |t|
-    t.string   "name",        limit: 255
+    t.string   "name",        limit: 20
     t.string   "description", limit: 255
-    t.boolean  "is_active",   limit: 1,   default: true
-    t.integer  "weight",      limit: 4
+    t.boolean  "disabled",    limit: 1,   default: false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  create_table "rss_sources", force: :cascade do |t|
+    t.string   "url",             limit: 255
+    t.datetime "last_fetched_at"
+    t.string   "rss_title",       limit: 40
+    t.string   "rss_description", limit: 255
+    t.string   "rss_language",    limit: 16
+    t.integer  "rss_ttl",         limit: 4
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "rss_sources", ["url"], name: "index_rss_sources_on_url", unique: true, using: :btree
+
+  create_table "rss_subscriptions", force: :cascade do |t|
+    t.boolean  "active",                                        limit: 1,  default: true
+    t.integer  "rss_source_id",                                 limit: 4
+    t.string   "name",                                          limit: 40
+    t.integer  "ingressed_item_count",                          limit: 4,  default: 0
+    t.integer  "ingressed_item_byte_count",                     limit: 4,  default: 0
+    t.integer  "ingressed_item_machine_translation_byte_count", limit: 4,  default: 0
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "rss_subscriptions", ["active", "rss_source_id"], name: "index_rss_subscriptions_on_active_and_rss_source_id", unique: true, using: :btree
+  add_index "rss_subscriptions", ["rss_source_id"], name: "rss_subscriptions_rss_source_id_fk", using: :btree
 
   create_table "sc_referral_traffic", force: :cascade do |t|
     t.integer  "facebook_count", limit: 4
@@ -368,6 +596,23 @@ ActiveRecord::Schema.define(version: 20150424122641) do
     t.datetime "updated_at"
   end
 
+  create_table "socialmedia_accounts", force: :cascade do |t|
+    t.binary   "uuid",            limit: 16
+    t.integer  "network_id",      limit: 4
+    t.integer  "organization_id", limit: 4
+    t.string   "name",            limit: 255
+    t.text     "description",     limit: 65535
+    t.integer  "status",          limit: 4
+    t.string   "url",             limit: 255
+    t.string   "account_type",    limit: 255
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "socialmedia_accounts", ["network_id"], name: "index_socialmedia_accounts_on_network_id", using: :btree
+  add_index "socialmedia_accounts", ["organization_id"], name: "index_socialmedia_accounts_on_organization_id", using: :btree
+  add_index "socialmedia_accounts", ["uuid"], name: "index_socialmedia_accounts_on_uuid", unique: true, using: :btree
+
   create_table "subgroups", force: :cascade do |t|
     t.string   "name",        limit: 100
     t.string   "description", limit: 255
@@ -385,6 +630,37 @@ ActiveRecord::Schema.define(version: 20150424122641) do
 
   add_index "subgroups_regions", ["region_id"], name: "index_subgroups_regions_on_region_id", using: :btree
   add_index "subgroups_regions", ["subgroup_id"], name: "index_subgroups_regions_on_subgroup_id", using: :btree
+
+  create_table "system_infos", force: :cascade do |t|
+    t.string   "property_name",   limit: 40
+    t.integer  "last_content_id", limit: 4
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "topics", force: :cascade do |t|
+    t.string   "name",         limit: 40
+    t.string   "topic",        limit: 255
+    t.string   "source",       limit: 20
+    t.string   "organization", limit: 50
+    t.string   "network",      limit: 20
+    t.string   "language",     limit: 40
+    t.string   "country",      limit: 255
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "topics", ["topic"], name: "index_topics_on_topic", using: :btree
+
+  create_table "translations", force: :cascade do |t|
+    t.integer  "content_id",             limit: 4
+    t.string   "translated_title",       limit: 255
+    t.text     "translated_description", limit: 16777215
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "translations", ["content_id"], name: "index_translations_on_content_id", using: :btree
 
   create_table "tw_timelines", force: :cascade do |t|
     t.integer  "account_id",       limit: 4
@@ -430,26 +706,74 @@ ActiveRecord::Schema.define(version: 20150424122641) do
   end
 
   create_table "users", force: :cascade do |t|
-    t.string   "email",                  limit: 255, default: "",   null: false
-    t.string   "encrypted_password",     limit: 255, default: "",   null: false
-    t.string   "reset_password_token",   limit: 255
-    t.datetime "reset_password_sent_at"
-    t.datetime "remember_created_at"
-    t.integer  "sign_in_count",          limit: 4,   default: 0
-    t.datetime "current_sign_in_at"
-    t.datetime "last_sign_in_at"
-    t.string   "current_sign_in_ip",     limit: 255
-    t.string   "last_sign_in_ip",        limit: 255
+    t.string   "username",            limit: 20,    null: false
+    t.string   "crypted_password",    limit: 100,   null: false
+    t.string   "password_salt",       limit: 40,    null: false
+    t.string   "persistence_token",   limit: 255,   null: false
+    t.string   "single_access_token", limit: 255,   null: false
+    t.text     "settings",            limit: 65535
+    t.string   "email",               limit: 40
+    t.boolean  "admin",               limit: 1
+    t.integer  "role_id",             limit: 4
+    t.boolean  "disabled",            limit: 1
+    t.string   "full_name",           limit: 255
+    t.string   "organization",        limit: 20
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "role_id",                limit: 4
-    t.string   "firstname",              limit: 40
-    t.string   "lastname",               limit: 60
-    t.boolean  "is_active",              limit: 1,   default: true
   end
 
-  add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
-  add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
+  add_index "users", ["single_access_token"], name: "index_users_on_single_access_token", unique: true, using: :btree
+  add_index "users", ["username"], name: "index_users_on_username", unique: true, using: :btree
+
+  create_table "versions", force: :cascade do |t|
+    t.string   "item_type",  limit: 255,   null: false
+    t.integer  "item_id",    limit: 4,     null: false
+    t.string   "event",      limit: 255,   null: false
+    t.string   "whodunnit",  limit: 255
+    t.text     "object",     limit: 65535
+    t.datetime "created_at"
+  end
+
+  add_index "versions", ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id", using: :btree
+
+  create_table "videos", force: :cascade do |t|
+    t.string   "url",        limit: 255
+    t.string   "mimetype",   limit: 20
+    t.integer  "bitrate",    limit: 4
+    t.integer  "duration",   limit: 4
+    t.integer  "filesize",   limit: 4
+    t.integer  "content_id", limit: 4
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.binary   "uuid",       limit: 16
+    t.string   "quality",    limit: 255
+  end
+
+  add_index "videos", ["content_id"], name: "index_videos_on_content_id", using: :btree
+  add_index "videos", ["url"], name: "index_videos_on_url", using: :btree
+  add_index "videos", ["uuid"], name: "index_videos_on_uuid", unique: true, using: :btree
+
+  create_table "web_pages", force: :cascade do |t|
+    t.integer  "ingressed_item_id",                       limit: 4
+    t.string   "initial_url",                             limit: 255
+    t.string   "final_url",                               limit: 255
+    t.string   "media_type",                              limit: 64
+    t.string   "original_title",                          limit: 255
+    t.text     "original_text",                           limit: 65535
+    t.string   "original_lang_code",                      limit: 10
+    t.string   "machine_translated_title",                limit: 255
+    t.text     "machine_translated_text",                 limit: 65535
+    t.integer  "machine_translated_character_count",      limit: 4
+    t.string   "human_translated_title",                  limit: 255
+    t.text     "human_translated_text",                   limit: 65535
+    t.integer  "source_word_count_for_human_translation", limit: 4
+    t.string   "categories_from_calais",                  limit: 255
+    t.string   "original_lang_code_detected",             limit: 10
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "web_pages", ["ingressed_item_id"], name: "web_pages_ingressed_item_id_fk", using: :btree
 
   create_table "yt_channels", force: :cascade do |t|
     t.integer  "account_id",        limit: 4
@@ -479,11 +803,9 @@ ActiveRecord::Schema.define(version: 20150424122641) do
     t.integer  "likes",        limit: 4
     t.integer  "comments",     limit: 4
     t.integer  "favorites",    limit: 4
-    t.integer  "views",        limit: 4,  default: 0
     t.datetime "published_at"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "dislikes",     limit: 4,  default: 0
   end
 
   add_index "yt_videos", ["account_id"], name: "index_yt_videos_on_account_id", using: :btree
@@ -491,4 +813,6 @@ ActiveRecord::Schema.define(version: 20150424122641) do
   add_index "yt_videos", ["video_id"], name: "index_yt_videos_on_video_id", unique: true, using: :btree
 
   add_foreign_key "groups", "organizations"
+  add_foreign_key "rss_subscriptions", "rss_sources", name: "rss_subscriptions_rss_source_id_fk"
+  add_foreign_key "web_pages", "ingressed_items", name: "web_pages_ingressed_item_id_fk"
 end

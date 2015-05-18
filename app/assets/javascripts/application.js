@@ -139,6 +139,7 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 				} else if (response.info == 'Logged in') {
 					$rootScope.loggedInUser = true;
 					$rootScope.email = response.user.email;
+					$rootScope.isAdmin = response.user['is_admin'];
 				}
 
 				// this event will fire every time the route changes
@@ -158,7 +159,7 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 					// Only ADMIN users can access user based pages
 					if (next.templateUrl) {
 						if (next.templateUrl.indexOf('/users/') > -1 &&
-							next.templateUrl != "/users/login.html" && next.templateUrl != "/users/register.html" && $rootScope.userRole != 'Administrator') {
+							next.templateUrl != "/users/login.html" && next.templateUrl != "/users/register.html" && $rootScope.isAdmin === false) {
 							$location.path("/config");
 						}
 					}

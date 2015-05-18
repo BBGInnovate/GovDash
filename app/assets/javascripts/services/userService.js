@@ -14,8 +14,8 @@ angular.module('userService', [])
 					return user;
 				});
             },
-            update: function(userId, firstname, lastname, email, password, roleId) {
-            	return $http.put('api/users/' + userId, {user: {id: userId, firstname: firstname, lastname: lastname, email: email, password: password, password_confirmation: password, role_id: roleId } })
+            update: function(userId, firstname, lastname, email, password, roles) {
+            	return $http.put('api/users/' + userId, {user: {id: userId, firstname: firstname, lastname: lastname, email: email, password: password, password_confirmation: password, roles: roles } })
 				.then(function(response) {
                     
                 });

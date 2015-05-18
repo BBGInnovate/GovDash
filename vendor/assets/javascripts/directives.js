@@ -271,20 +271,22 @@ angular.module('directives', []).
 				});
 
 				function addLabels(dataArr) {
-					var totalInteractions = dataArr[0].a + dataArr[0].b + dataArr[0].c;
-					var fbPercentage = Math.round((dataArr[0].a / totalInteractions) * 100) + '%';
-					var twPercentage = Math.round((dataArr[0].b / totalInteractions) * 100) + '%';
-					var ytPercentage = Math.round((dataArr[0].c / totalInteractions) * 100) + '%';
+					if (dataArr[0].a && dataArr[0].b && dataArr[0].c) {
+						var totalInteractions = dataArr[0].a + dataArr[0].b + dataArr[0].c;
+						var fbPercentage = Math.round((dataArr[0].a / totalInteractions) * 100) + '%';
+						var twPercentage = Math.round((dataArr[0].b / totalInteractions) * 100) + '%';
+						var ytPercentage = Math.round((dataArr[0].c / totalInteractions) * 100) + '%';
 
-					var xPosOne = ($('rect')[0].width.baseVal.value + $('rect')[0].x.baseVal.value) + 10;
-					var xPosTwo = ($('rect')[1].width.baseVal.value + $('rect')[1].x.baseVal.value) + 10;
-					var xPosThree = ($('rect')[2].width.baseVal.value + $('rect')[2].x.baseVal.value) + 10;
-					var fbValue = dataArr[0].a.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' ('+fbPercentage+')';
-					var twValue = dataArr[0].b.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' ('+twPercentage+')';
-					var ytValue = dataArr[0].c.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' ('+ytPercentage+')';
-					$('rect')[0].outerHTML += '<svg x="'+xPosOne+'" y="55.375" height="30" width="200"><text x="0" y="15" fill="#3278B3">'+fbValue+'</text></svg>';
-					$('rect')[1].outerHTML += '<svg x="'+xPosTwo+'" y="97.375" height="30" width="200"><text x="0" y="15" fill="#23B7E5">'+twValue+'</text></svg>';
-					$('rect')[2].outerHTML += '<svg x="'+xPosThree+'" y="141.375" height="30" width="200"><text x="0" y="15" fill="#E36159">'+ytValue+'</text></svg>';
+						var xPosOne = ($('rect')[0].width.baseVal.value + $('rect')[0].x.baseVal.value) + 10;
+						var xPosTwo = ($('rect')[1].width.baseVal.value + $('rect')[1].x.baseVal.value) + 10;
+						var xPosThree = ($('rect')[2].width.baseVal.value + $('rect')[2].x.baseVal.value) + 10;
+						var fbValue = dataArr[0].a.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' (' + fbPercentage + ')';
+						var twValue = dataArr[0].b.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' (' + twPercentage + ')';
+						var ytValue = dataArr[0].c.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' (' + ytPercentage + ')';
+						$('rect')[0].outerHTML += '<svg x="' + xPosOne + '" y="55.375" height="30" width="200"><text x="0" y="15" fill="#3278B3">' + fbValue + '</text></svg>';
+						$('rect')[1].outerHTML += '<svg x="' + xPosTwo + '" y="97.375" height="30" width="200"><text x="0" y="15" fill="#23B7E5">' + twValue + '</text></svg>';
+						$('rect')[2].outerHTML += '<svg x="' + xPosThree + '" y="141.375" height="30" width="200"><text x="0" y="15" fill="#E36159">' + ytValue + '</text></svg>';
+					}
 				}
 
 			}

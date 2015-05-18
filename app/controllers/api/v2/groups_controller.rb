@@ -16,7 +16,14 @@ class Api::V2::GroupsController < Api::V2::BaseController
     hsh
   end
 
-
+  def __option_for_select
+    cond = super
+    user = current_user
+    cond << "(organization_id in (select organization_id from roles where roles.user_id=#{user.id}))"
+    puts " Groups option_for_select #{cond}"     
+    cond
+  end
+  
   def __add_related model_object
     #attach related Subgroups
     hsh = nil

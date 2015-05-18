@@ -7,7 +7,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 	$scope.startDate =  moment($scope.endDate,"MM/DD/YYYY").subtract(6,'day').format('MM/DD/YYYY');
 
 	// get all data on page load
-	APIData.getInitialData().then(function(response) {
+	APIData.getInitialData($rootScope.userRole).then(function(response) {
 
 		$scope.regions = response[0].regions;
 		$scope.languages = response[1].languages;

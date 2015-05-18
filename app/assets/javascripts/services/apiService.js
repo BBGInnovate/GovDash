@@ -5,7 +5,7 @@ angular.module('apiService', []).factory('APIData', ['$http', '$q', function($ht
 
 	return {
 		// This function will poll the initial data
-		getInitialData: function () {
+		getInitialData: function (userRole) {
 			return $q.all([
 				// $q will keep the list of promises in a array
 				$http.get('/api/regions'),
@@ -21,6 +21,9 @@ angular.module('apiService', []).factory('APIData', ['$http', '$q', function($ht
 				var listData = ['regions', 'languages', 'groups', 'countries', 'organizations', 'subgroups'];
 				var listCount = 0;
 
+				// array used to hold the ids of the organization the user belongs to
+				var organizationIds = [];
+
 				angular.forEach(results, function (result) {
 					if (result) {
 						if (listCount == 0) {
@@ -32,16 +35,69 @@ angular.module('apiService', []).factory('APIData', ['$http', '$q', function($ht
 						} else if (listCount == 3) {
 							aggregatedData.push({ 'countries' : result.data});
 						} else if (listCount == 4) {
-							aggregatedData.push({ 'organizations' : result.data});
+							var organizations = [];
+
+							// if multiple user roles, they are split by comma
+							var userRoles = userRole.split(',');
+
+							for (var i = 0; i < result.data.length; i++) {
+								for (var j = 0; j < userRoles.length; j++) {
+									if (result.data[i].name.indexOf(userRoles[j]) > -1) {
+										organizations.push(result.data[i]);
+										organizationIds.push(result.data[i].id);
+									}
+
+								}
+
+							}
+
+							aggregatedData.push({ 'organizations' : organizations });
 						} else if (listCount == 5) {
-							aggregatedData.push({ 'subgroups' : result.data});
+							var subgroups = [];
+
+							// loop through organizationIds
+							for (var k = 0; k < organizationIds.length; k++) {
+								// loop through subgroups
+								for (var i = 0; i < result.data.length; i++) {
+									// loop through subgroups's related groups array
+									for (var j = 0; j < result.data[i].related_groups.length; j++) {
+										// if the current organizationId is equal to the current subgroup's current
+										// related group, push it to subgroups array
+										if (organizationIds[k] === result.data[i].related_groups[j].organization_id) {
+											subgroups.push(result.data[i]);
+										}
+									}
+								}
+							}
+							aggregatedData.push({ 'subgroups' : subgroups});
 						}
+
+
 
 
 						listCount++;
 					}
 
 				});
+
+				// re-establish the subgroups based on organization
+				var groups = [];
+
+				// loop through organizationIds
+				for (var i = 0; i < organizationIds.length; i++) {
+					// loop through the current groups
+					for (var j = 0; j < aggregatedData[2].groups.length; j++) {
+
+						// if the user's organizationId matches the groups organizationId
+						if (organizationIds[i] === aggregatedData[2].groups[j].organization_id) {
+							groups.push(aggregatedData[2].groups[j]);
+						}
+					}
+				}
+
+				// set the aggregated data group to new subgroups
+				aggregatedData[2].groups = groups;
+
 
 				return aggregatedData;
 			});

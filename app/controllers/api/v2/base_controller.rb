@@ -56,11 +56,8 @@ class Api::V2::BaseController <  ActionController::Base
     # respond_with(model_class.all)
     arr = []
     name = ''
-    if model_class.column_names.include? 'is_active'
-      cond = {:is_active=>true}
-    else
-      cond = {}
-    end
+    
+    cond = option_for_select.join(' AND ')
     model_class.where(cond).each do |s|
       attr = add_associate_name(s)
       arr << attr
@@ -132,6 +129,14 @@ class Api::V2::BaseController <  ActionController::Base
   end
 
   protected
+  # overwrite by derived class
+  def option_for_select
+    cond = []
+    if model_class.column_names.include? 'is_active'
+      cond << "is_active=1"
+    end
+    cond
+  end
   
   def responding
     respond_to do |format|

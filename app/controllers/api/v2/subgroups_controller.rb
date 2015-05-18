@@ -34,6 +34,20 @@ class Api::V2::SubgroupsController < Api::V2::BaseController
     responding
   end
 
+  protected
+  def __option_for_select
+    cond = super
+    user = current_user
+    sql = %{select subgroup_id from groups_subgroups where 
+      groups_subgroups.group_id in (select id from groups where 
+        organization_id in (
+          select organization_id from roles where roles.user_id=#{user.id}
+        ))}
+    cond << "(id in (#{sql}))"
+    puts " Groups option_for_select #{cond}"     
+    cond
+  end
+  
   private
   def _params_
     cols = model_class.columns.map{|a| a.name.to_sym}

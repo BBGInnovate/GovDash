@@ -29,9 +29,11 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		}
   		
   		var segments = [];
-		for (var i = 0; i < this.selectedSegment.length; i++) {
-  			segments.push(this.selectedSegment[i].id);
-  		}
+		if (this.selectedSegment) {
+			for (var i = 0; i < this.selectedSegment.length; i++) {
+				segments.push(this.selectedSegment[i].id);
+			}
+		}
 
   		
   		Accounts.create(this.name, this.description, this.object_name, 

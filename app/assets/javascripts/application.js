@@ -130,6 +130,14 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 			}
 		});
 
+		// capture the user's original path in the event they are trying to access a
+		// page where a user needs to be authenticated
+		$rootScope.$on('$locationChangeStart',function(evt, absNewUrl, absOldUrl) {
+			if (absOldUrl.indexOf('login') === -1) {
+				$rootScope.origPath = absOldUrl;
+			}
+		});
+
 		Session.checkUserLoggedIn()
 			.then(function(response) {
 				if (response.info == null) {
@@ -141,6 +149,7 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 					$rootScope.email = response.user.email;
 					$rootScope.isAdmin = response.user['is_admin'];
 				}
+
 
 				// this event will fire every time the route changes
 				$rootScope.$on("$routeChangeStart", function (event, next, current) {

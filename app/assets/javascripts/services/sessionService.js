@@ -20,7 +20,15 @@ angular.module('sessionService', [])
                         if (service.isAuthenticated()) {
                             //$location.path(response.data.redirect);
                            // $location.path('/record');
-							$location.path('/');
+
+							// if the user had an intended path, redirect them there
+							if ($rootScope.origPath) {
+								$location.path($rootScope.origPath.split('#')[1]);
+
+							// otherwise redirect them to the home page
+							} else {
+								$location.path('/');
+							}
                         }
                     });
             },

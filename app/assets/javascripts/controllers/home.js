@@ -35,6 +35,11 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 					}
 
 					$scope.groups = groups;
+
+					// set the subgroups based on the organization(s) selected
+					// DASH-370
+					$scope.resetSubgroupsByOrganization(newVal);
+
 				// reset list
 				} else {
 					$scope.selectedGroups = [];
@@ -88,7 +93,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 
 				} else {
 					// If there were no subgroup Ids for the selected group, set $scope.subgroups to empty
-					if (newIds.length === 0) {
+					if (newIds.length === 0 && $scope.selectedOrganizations.length > 0) {
 						$scope.subgroups = [];
 						// Otherwise, reset $scope.subgroups to the full list of subgroups
 					} else {
@@ -220,9 +225,29 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 		$scope.selectedGroups.splice(index, 1);
 
 		// if no groups are selected, reset subgroups
-		if ($scope.selectedGroups.length === 0) {
+		if ($scope.selectedGroups.length === 0 && $scope.selectedOrganizations.length === 0) {
 			$scope.subgroups = $scope.allSubgroups;
 			$scope.selectedSubgroups = [];
+
+		// if the user removed a group but there are still groups selected, filter the subgroups
+		// by the currently selected groups
+		} else if ($scope.selectedGroups.length > 0) {
+			var subgroups = [];
+			for (var i = 0; i < $scope.selectedGroups.length; i++) {
+				for (var j = 0; j < $scope.allSubgroups.length; j++) {
+					for (var k = 0; k < $scope.allSubgroups[j].related_groups.length; k++) {
+						if($scope.selectedGroups[i].id === $scope.allSubgroups[j].related_groups[k].id) {
+							subgroups.push($scope.allSubgroups[j]);
+						}
+					}
+				}
+			}
+
+			$scope.subgroups = subgroups;
+
+		// reset subgroups based on which current organizations are selected
+		} else {
+			$scope.resetSubgroupsByOrganization($scope.selectedOrganizations);
 		}
 
 	};
@@ -383,6 +408,24 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 
 
 
+	};
+
+
+	// This function is used to reset the subgroups when there is an organization still selected
+	// DASH-370
+	$scope.resetSubgroupsByOrganization = function (organizations) {
+		var subgroups = [];
+		for (var i = 0; i < organizations.length; i++) {
+			for (var j = 0; j < $scope.allSubgroups.length; j++) {
+				for (var k = 0; k < $scope.allSubgroups[j].related_groups.length; k++) {
+					if (organizations[i].id === $scope.allSubgroups[j].related_groups[k].organization_id) {
+						subgroups.push($scope.allSubgroups[j]);
+					}
+				}
+			}
+		}
+
+		$scope.subgroups = subgroups;
 	};
 
 

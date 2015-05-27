@@ -87,7 +87,14 @@ angular.module('directives', []).
 						// Process Spark Chart Data
 						for (var i = 0; i < d1.length; i++) {
 							var dateFormatted = d1[i].date.substring(5, 10).replace('-', '/');
-							data.push([dateFormatted, d1[i].totals]);
+							var num = d1[i].totals;
+
+							// if the data number is less than 0, set it to 0
+							// to avoid negative number explanation in the chart
+							if (num < 0) {
+								num = 0;
+							}
+							data.push([dateFormatted, num]);
 						}
 
 						var colors = $filter('socialMediaColors')(attrs.socialmediatype);

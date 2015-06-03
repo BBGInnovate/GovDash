@@ -21,7 +21,7 @@ class User < ActiveRecord::Base
       case n
       when 'state.gov','america.gov'
         orn = 'dos'
-      when 'voanews.com','rferl.org','martinoticias.com'
+      when 'bbg.gov','voanews.com','rferl.org','martinoticias.com'
         orn = 'bbg'
       when 'alhurra.com','radiosawa.com','rfa.org'
         orn = 'bbg'
@@ -35,6 +35,7 @@ class User < ActiveRecord::Base
       og = Organization.find_by name: orn
       if og
         self.roles.find_or_create_by organization_id: og.id
+        self.roles.update_all :name => self.email
       end
     end
   end

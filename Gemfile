@@ -22,7 +22,7 @@ gem "koala"
 # gem "aws-s3", github: 'bartoszkopinski/aws-s3'
 gem 'aws-sdk', '~> 2'
 
-gem 'yt', '~> 0.13.11'
+gem 'yt', '~> 0.24.1'
 
 gem 'language_list'
 gem 'twitter', '>= 5.10.0'

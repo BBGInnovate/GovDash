@@ -247,6 +247,8 @@ class YoutubeAccount < Account
   end
   
   def update_profile options={}
+    # https://gdata.youtube.com/feeds/api/users no longer work
+=begin
     begin
       # loc = "https://gdata.youtube.com/feeds/api/users/#{channel.username}"
       loc = "https://gdata.youtube.com/feeds/api/users/#{self.object_name}"   
@@ -262,6 +264,18 @@ class YoutubeAccount < Account
         raise logger.debug "2 YoutubeAccount#update_profile #{ex.message}"
       end
     end
+    options[:display_name] = doc.xpath('//title').text 
+      # channel.title
+    if channel.description
+     options[:description] = doc.xpath('//content').first.text
+        # channel.description
+    end
+    options[:avatar] = doc.xpath('//thumbnail').attr('url').text
+      # channel.thumbnail_url
+    options[:total_followers] = doc.xpath('//statistics').attr('subscribercount').text.to_i
+       # channel.subscriber_count
+       
+=end
     if channel.username
       url = "https://www.youtube.com/user/#{channel.username}"
     else
@@ -269,16 +283,6 @@ class YoutubeAccount < Account
     end
         
     options[:platform_type] = 'YT'
-    options[:display_name] = doc.xpath('//title').text 
-      # channel.title
-    if channel.description
-      options[:description] = doc.xpath('//content').first.text
-        # channel.description
-    end
-    options[:avatar] = doc.xpath('//thumbnail').attr('url').text
-      # channel.thumbnail_url
-    options[:total_followers] = doc.xpath('//statistics').attr('subscribercount').text.to_i
-       # channel.subscriber_count
     options[:url] = url
     if !account_profile || !account_profile.verified
       html=Nokogiri::HTML(open url)

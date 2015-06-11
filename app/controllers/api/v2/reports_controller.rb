@@ -42,8 +42,8 @@ class Api::V2::ReportsController < Api::V2::BaseController
   end
   
   def enforce_user_role
-  params[:options][:organization_ids] = [] #current_user.roles.map(&:organization_id)
-      
+    # params[:options][:organization_ids] = [] 
+    #current_user.roles.map(&:organization_id)
     unless current_user.is_admin?
       # come from /api/reports
       if params[:options]
@@ -125,8 +125,9 @@ class Api::V2::ReportsController < Api::V2::BaseController
     @report = Hash.new {|h,k| h[k] = {} }
     get_options
   end
-  
+
   def get_options
+    puts " BBB AAAAA #{params[:options].inspect}"
     @options = params[:options] || {}
     end_date = @options[:end_date]
     start_date = @options[:start_date]

@@ -162,6 +162,7 @@ class Account < ActiveRecord::Base
     ids = options.delete(:account_ids) || []
     options[:ids] = ids
     account_type_ids = options[:account_type_ids] || []
+    organization_ids = options[:organization_ids] || []
     group_ids = options[:group_ids] || []
     subgroup_ids = options[:subgroup_ids] || []
     service_ids = options[:service_ids] || []
@@ -209,17 +210,21 @@ class Account < ActiveRecord::Base
            map{|a| a.account_id}
       combined_account_ids << country_account_ids
     end
-    if !group_ids.empty?
-      group_account_ids = AccountsGroup.where(["group_id in (#{group_ids.join(',')})"]).
-           map{|a| a.account_id}
-      combined_account_ids << group_account_ids
-    end
     if !subgroup_ids.empty?
       subgroup_account_ids = AccountsSubgroup.where(["subgroup_id in (#{subgroup_ids.join(',')})"]).
            map{|a| a.account_id}
       combined_account_ids << subgroup_account_ids
+    elsif !group_ids.empty?
+      group_account_ids = AccountsGroup.where(["group_id in (#{group_ids.join(',')})"]).
+           map{|a| a.account_id}
+      combined_account_ids << group_account_ids
+    elsif !organization_ids.empty?
+      org_account_ids = Account.
+        where(["organization_id in (?)",organization_ids]).
+        map{|a| a.id}
+      combined_account_ids << org_account_ids  
     end
-    
+
     # remove 1 == 0 when user role is setup
     if !current_user.is_admin?
       user_account_ids = []
@@ -228,7 +233,6 @@ class Account < ActiveRecord::Base
       end
       user_account_ids.flatten!
     end
-   
     if combined_account_ids.empty?
         account_ids = Account.where("is_active=1").map(&:id)
     else
@@ -627,9 +631,9 @@ class Account < ActiveRecord::Base
    
    
    def Account.load_map_csv
-     ["subgroups",'groups','languages','regions','countries'].each do | name |
-      Account.connection.execute "truncate table accounts_#{name}"
-     end
+   #  ["subgroups",'groups','languages','regions','countries'].each do | name |
+   #   Account.connection.execute "truncate table accounts_#{name}"
+   #  end
      @bulk_account_group = []
      @bulk_account_subgroup = []
      @bulk_account_language = []
@@ -646,7 +650,8 @@ class Account < ActiveRecord::Base
       #tables =  ['BBG-Table 1.csv', 'DOS-Table 1.csv', 'DOD-Table 1.csv']
       #    
       # https://bbginnovate.atlassian.net/secure/attachment/20613/GovDash-Accts-All.xlsx
-      tables = ['GovDash-Accts-All3.csv']
+      # tables = ['GovDash-Accts-All3.csv']
+      tables = ['GovDash-Accts-Updates.csv']
       tables.each do |  t |
          # file="/Users/lliu/Desktop/GovDash-Accounts/#{t}"
          file="/Users/lliu/Desktop/#{t}"

@@ -169,9 +169,9 @@ class Api::V2::BaseController <  ActionController::Base
   
   #set the groups join for subgroups
   def add_groups_subgroups 
-    puts "adding groups subgroups for #{model_name}"
-    puts "with params:"
-    puts params
+#    puts "adding groups subgroups for #{model_name}"
+#    puts "with params:"
+#    puts params
       #set the groups join for subgroups
     if model_name == "subgroup" && params[:subgroup] && params[:subgroup_id]
       GroupsSubgroups.where([ "subgroup_id = ?", params[:subgroup_id] ]).delete_all

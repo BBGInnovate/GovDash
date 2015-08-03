@@ -9,8 +9,12 @@
     <!-- Font Awesome -->
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
     <%= csrf_meta_tags %>
+    <style>
+    .message {
+      margin-top: 20px;margin-left: 20%;font-size: 16px;
+    }
+    </style>
 </head>
-
 <body class="overflow-hidden">
 <div class="wrapper preload">
 
@@ -24,7 +28,6 @@
                     <span class="icon-bar"></span>
                 </button>
                 -->
-
                 <ul class="nav-notification pull-right">
                     <li>
                         <a href="" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-bars fa-lg"></i></a>
@@ -141,51 +144,34 @@
             <i class="fa fa-spinner fa-spin loading-indicator"></i>
         </div>
     </header>
-
-
     <div class="container">
-
-
-
+        <div class="sign-in-wrapper">
+           <div class="sign-in-inner message">
+           <span style="color: green;"><%= flash[:notice] %></span>
+           <span style="color: red;"><%= flash[:error] %></span>
+           </div>
+        </div>
         <!--[if lt IE 7]>
         <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
-
-
-
         <div ng-view></div>
-
-
     </div>
-
-
-
-
     <footer class="footer" style="margin-left: 0">
-				<span class="footer-brand">
-					<strong class="text-danger"><img height="16" src="assets/BBGLogo.png" alt="BBG" style="position: relative; top: -2px"></strong> Dash
-				</span>
-
+	<span class="footer-brand">
+	  <strong class="text-danger"><img height="16" src="assets/BBGLogo.png" alt="BBG" style="position: relative; top: -2px"></strong> Dash
+	</span>
     </footer>
 </div><!-- /wrapper -->
 
 <%= javascript_include_tag "application" %>
 
-
-
 <script>
-
     function loadModal () {
         $('#largeModal').modal('show');
-
         $('body').on('click','#closeModal', function() {
             $('#largeModal').modal('hide');
         });
-
     }
-
 </script>
-
 </body>
-
 </html>

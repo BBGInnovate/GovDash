@@ -151,7 +151,7 @@ class TwStat
       result.values.merge! set_engagement_data(rec)
       totals << result.values[:totals]
       if i == 1
-        rate = ((totals[1]-totals[0])*100/totals[0].to_f).round rescue 0 # 'N/A'
+        rate = ((totals[1]-totals[0])*100/totals[0].to_f).round rescue 0 
         rate = "#{rate} %" if rate!='N/A'
         
         result.values[:changes] = {:retweets=>@retweets_change, 
@@ -180,7 +180,7 @@ class TwStat
       totals << result.values[:totals]
       
       if i == 1
-        rate = ((totals[1]-totals[0])*100/totals[0].to_f).round rescue 'N/A'
+        rate = ((totals[1]-totals[0])*100/totals[0].to_f).round rescue 0
         rate = "#{rate} %" if rate!='N/A'
         
         result.values[:changes] = {:retweets=>@retweets_change, 
@@ -225,10 +225,10 @@ class TwStat
   end
   
   def compute_changes rec1,rec2
-    @retweets_change = compute_change(rec2.retweets,rec1.retweets) rescue 'N/A'
-    @mentions_change = compute_change(rec2.mentions,rec1.mentions) rescue 'N/A'
-    @favorites_change = compute_change(rec2.favorites,rec1.favorites) rescue 'N/A'
-    @followers_change = compute_change(rec2.followers,rec1.followers) rescue 'N/A'
+    @retweets_change = compute_change(rec2.retweets,rec1.retweets) rescue 0
+    @mentions_change = compute_change(rec2.mentions,rec1.mentions) rescue 0
+    @favorites_change = compute_change(rec2.favorites,rec1.favorites) rescue 0
+    @followers_change = compute_change(rec2.followers,rec1.followers) rescue 0
   end    
    
   def fake_record date,trend_type
@@ -253,7 +253,7 @@ class TwStat
     result = init_struct
     result.values = {:period=>rec.period}
     result.values.merge! set_engagement_data(rec)
-    ch = 'N/A'
+    ch = 0
     result.values[:changes] = {:retweets=>ch, 
             :mentions=>ch,
             :favorites=>ch, 

@@ -190,7 +190,7 @@ class YtStat
       totals << result.values[:totals]
       
       if i == 1
-        rate = ((totals[1]-totals[0])*100/totals[0].to_f).round rescue 'N/A'
+        rate = ((totals[1]-totals[0])*100/totals[0].to_f).round rescue 0
         rate = "#{rate} %" if rate!='N/A'
         
         result.values[:changes] = {:favorites=>@video_favorites_change, 
@@ -215,7 +215,7 @@ class YtStat
   def set_engagement_data rec
     begin
     if rec.video_subscribers==0
-      subs = 'N/A'
+      subs = 0
     else
       subs = rec.video_subscribers
     end
@@ -244,11 +244,11 @@ class YtStat
   end
   
   def compute_changes rec1,rec2
-    @video_likes_change = compute_change(rec2.video_likes,rec1.video_likes) rescue 'N/A'
-    @video_comments_change = compute_change(rec2.video_comments,rec1.video_comments) rescue 'N/A'
-    @video_favorites_change = compute_change(rec2.video_favorites,rec1.video_favorites) rescue 'N/A'
-    @video_views_change = compute_change(rec2.video_views,rec1.video_views) rescue 'N/A'
-    @video_subscribers_change = compute_change(rec2.video_subscribers,rec1.video_subscribers) rescue 'N/A'
+    @video_likes_change = compute_change(rec2.video_likes,rec1.video_likes) rescue 0
+    @video_comments_change = compute_change(rec2.video_comments,rec1.video_comments) rescue 0
+    @video_favorites_change = compute_change(rec2.video_favorites,rec1.video_favorites) rescue 0
+    @video_views_change = compute_change(rec2.video_views,rec1.video_views) rescue 0
+    @video_subscribers_change = compute_change(rec2.video_subscribers,rec1.video_subscribers) rescue 0
     
   end    
    
@@ -274,7 +274,7 @@ class YtStat
     result = init_struct
     result.values = {:period=>rec.period}
     result.values.merge! set_engagement_data(rec)
-    ch = 'N/A'
+    ch = 0
     result.values[:changes] = {:favorites=>ch, 
             :comments=>ch,
             :likes=>ch, 

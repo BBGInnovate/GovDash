@@ -38,9 +38,7 @@ class User < ActiveRecord::Base
       end
     end
     if self.is_admin
-      subrole = Subrole.find_by name: 'Super Admin'
-      self.subrole_id=subrole.id
-      puts "   self.subrole_id=#{self.subrole_id}"
+      self.subrole_id=Subrole.super_admin_id
     end
   end
 
@@ -129,9 +127,10 @@ class User < ActiveRecord::Base
   end
   
   def is_admin?
-    is_admin || (self.subrole ? self.subrole.name=="Super Admin" : false)
+    is_admin || (self.subrole ? self.subrole_id==Subrole.super_admin_id : false)
   end
   
+=begin
   def is_analyst?
      self.role && self.role.name == 'Analyst'
   end
@@ -139,6 +138,7 @@ class User < ActiveRecord::Base
   def is_service_chief?
      self.role && self.role.name == 'Service Chief'
   end
+=end
 
   def self.roles
     re = []

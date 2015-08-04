@@ -10,6 +10,6 @@ class CreateSubroles < ActiveRecord::Migration
     Subrole.create :name=>'Group Admin',:description=>"Read/Write the group owned assets"
     Subrole.create :name=>'Organization Admin',:description=>"Read/Write the organization owned assets"
     Subrole.create :name=>'Super Admin',:description=>"Read/Write all assets. The same as user.is_admin"
-  
+    User.all.each {|u| u.updated_at=Time.now; u.save}
    end
 end

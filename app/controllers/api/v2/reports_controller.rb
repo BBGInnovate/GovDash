@@ -89,6 +89,7 @@ class Api::V2::ReportsController < Api::V2::BaseController
   end
   
   def get_stat_class media_type
+    logger.debug "  Final @options=#{@options.inspect}" 
     case media_type
     when "FacebookAccount"
       FbStat.new(@options)
@@ -127,24 +128,31 @@ class Api::V2::ReportsController < Api::V2::BaseController
   end
 
   def get_options
-    puts " BBB AAAAA #{params[:options].inspect}"
+    logger.debug " BBB #{params[:options].inspect}"
     @options = params[:options] || {}
     end_date = @options[:end_date]
     start_date = @options[:start_date]
     @options[:end_date] = !!end_date ? end_date : (Time.zone.now-1.days).strftime('%Y-%m-%d') 
-    
+    @options[:start_date] = parse_date(start_date).beginning_of_day
+    @options[:end_date] = parse_date(@options[:end_date]).end_of_day
     # overwrite period parameter is start_date exists
-    if start_date
-      diff = parse_date(@options[:end_date]) - parse_date(start_date)
-      days = diff.to_i/(3600*24) + 1
-      @options[:period] = "#{days}.days"
+    diff = @options[:end_date] - @options[:start_date]
+    @total_days = diff.to_i/(3600*24) + 1 
+    if @total_days > 27
+      if !@options[:start_date].sunday?
+        @options[:start_date] = @options[:start_date].end_of_week.beginning_of_day
+      end
+      if !@options[:end_date].saturday?
+        @options[:end_date]=(@options[:end_date].end_of_week-8.day).end_of_day
+      end
+      net_days = ((@options[:end_date] - @options[:start_date])/(3600*24)).ceil
+      logger.debug "  NNN net_days=#{net_days}"
+      @options[:period] = net_days.days
+      @options[:trend] = 'monthly'
+    else
+      @options[:period] = @total_days.days
+      @options[:trend] = 'daily'
     end
-    period = @options[:period]
-    @options[:period] = !!period ? instance_eval(period) : 1.week
-
-    # source = @options[:source]
-    # @options[:source] = !!source ? source : 'all'
-    @options[:trend] = 'weekly' if !@options[:trend]
     @options[:account_ids] = Account.get_account_ids @options
     @options[:accounts] = accounts
     valid_options = false

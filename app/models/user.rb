@@ -49,7 +49,7 @@ class User < ActiveRecord::Base
     n = $1
     case n
     when 'state.gov','america.gov'
-    when 'voanews.com','bbg.gov','gmail.com'
+    when 'voanews.com','bbg.gov'
       name = 'VOA'
     when 'rferl.org'
       name = 'RFERL'

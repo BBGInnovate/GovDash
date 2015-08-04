@@ -2,13 +2,15 @@
 <html>
   <head>
     <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  <% host = "http://smdata.bbg.gov" %>
+  <% host = "http://localhost:3000" %>
   </head>
   <body>
     <p>
     Thank you for registering with BBG Uberdashboard. Please confirm your
-    email address within 48 hours by clicking the link below:<br />
-    <a href="http://smdata.bbg.gov/api/users/confirm?code=#{@user.confirmation_code}">  
-    http://smdata.bbg.gov/api/users/confirm?code=<%=@user.confirmation_code%>
+    email address within 48 hours by goto the link below:<br />
+    <a href="#{host}/api/users/confirm?code=#{@user.confirmation_code}">  
+    <%= host %>/api/users/confirm?code=<%=@user.confirmation_code%>
     <br/>
     </p>
     <p>BBG ODDI Team

@@ -2,7 +2,7 @@ require 'ostruct'
 class Api::V2::UsersController < Api::V2::BaseController
    before_filter :authenticate_user!, :except => [:create, :show]
    skip_before_filter :is_admin?,:only => [:create, :show]
-   skip_before_filter :is_service_chief?,:only => [:create, :show]
+#   skip_before_filter :is_service_chief?,:only => [:create, :show]
     
   def roles
     render :json => {:roles => User.roles}, :status => 200

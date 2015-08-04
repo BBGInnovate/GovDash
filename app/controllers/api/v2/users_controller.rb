@@ -60,8 +60,8 @@ class Api::V2::UsersController < Api::V2::BaseController
       # @user.send_confirmation_email
       # @user.confirmation_sent_at = Time.zone.now
       # @user.save
-      # sign_in(@user)
-      # respond_with @user, :location => api_users_path
+      ## sign_in(@user)
+      ## respond_with @user, :location => api_users_path
       params[:id] = @user.id
       show
     rescue
@@ -85,9 +85,9 @@ class Api::V2::UsersController < Api::V2::BaseController
 
   def destroy
     if current_user && current_user.is_admin?
-      respond_with :api, User.find(current_user.id).destroy
+      respond_with :api, User.find(params[:id]).destroy
     else
-      respond_with :api, 'Not permiited'
+      respond_with :api, 'Not permitted'
     end
   end
 
@@ -95,7 +95,7 @@ class Api::V2::UsersController < Api::V2::BaseController
     begin
       user = User.find_by :confirmation_code=>params[:code]
       if Time.zone.now <= user.confirmation_sent_at + 48.hours
-        user.subrole_id = Subrole.find_by(name: "Viewer").id
+        user.subrole_id = Subrole.viewer_id
         user.save!
         flash[:notice]="Your email is confirmed"
       else

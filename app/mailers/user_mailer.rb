@@ -12,6 +12,11 @@ class UserMailer < ActionMailer::Base
       mail(to: email, subject: subject)
   end
   
+  def confirm_email(user)
+    @user = user
+    mail(to: @user.email, subject: "BBG Social Media Dashboard Registration Confirmation")
+  end
+
   protected
 
 end

@@ -1,18 +1,18 @@
 require 'ostruct'
 class Api::V2::UsersController < Api::V2::BaseController
-   before_filter :authenticate_user!, :except => [:create, :show]
-   skip_before_filter :is_admin?,:only => [:create, :show]
-   skip_before_filter :is_service_chief?,:only => [:create, :show]
-    
+   before_filter :authenticate_user!, :except => [:confirm,:create, :show]
+   skip_before_filter :is_admin?,:only => [:create, :show]  
     
   def roles
     render :json => {:roles => User.roles}, :status => 200
   end
-  
+
   def index
     arr = []
     model_class.all.each do |s|
-      arr << add_associate_name(s)
+      row = add_associate_name(s)
+      row = modify_row s, row
+      arr << row
     end
     pretty_respond arr
   end
@@ -29,6 +29,7 @@ class Api::V2::UsersController < Api::V2::BaseController
     arr = []
     record = model_class.find(params[:id])
     arr << add_associate_name(record)
+    arr[0] = modify_row record, arr[0]
     pretty_respond arr
   end
   
@@ -47,6 +48,7 @@ class Api::V2::UsersController < Api::V2::BaseController
     @email = pars.delete 'email'
     begin
       @user = User.find_or_create_by email: @email
+      @user.confirmation_code = @user.generate_confirmation_code
       @user.update_attributes pars
       if @user.is_admin?
         Organization.all.each do | org |
@@ -55,7 +57,10 @@ class Api::V2::UsersController < Api::V2::BaseController
       elsif @roles
         reset_roles @user, @roles
       end
-      sign_in(@user)
+      # @user.send_confirmation_email
+      # @user.confirmation_sent_at = Time.zone.now
+      # @user.save
+      # sign_in(@user)
       # respond_with @user, :location => api_users_path
       params[:id] = @user.id
       show
@@ -86,7 +91,51 @@ class Api::V2::UsersController < Api::V2::BaseController
     end
   end
 
+  def confirm
+    begin
+      user = User.find_by :confirmation_code=>params[:code]
+      if Time.zone.now <= user.confirmation_sent_at + 48.hours
+        user.subrole_id = Subrole.find_by(name: "Viewer").id
+        user.save!
+        flash[:notice]="Your email is confirmed"
+      else
+        flash[:error] = "Confirmation expired"
+        logger.error "  UsersController#confirm: Confirmation expired"
+      end
+      redirect_to root_path
+     
+    rescue Exception=>ex
+      flash[:error] = "Confirmation failed"
+      logger.error "  UsersController#confirm: #{ex.message}"
+      redirect_to root_path
+    end
+  end
+
   protected
+ 
+  def modify_row user, row
+    row.delete 'confirmation_code'
+    row.delete 'confirmation_sent_at'
+    if user.group
+      row.delete 'group_id'
+      row['group_id']=user.group.id
+      row['group_name']=user.group.name
+    end
+    if user.subrole
+      row.delete 'subrole_id'
+      row['subrole_id']=user.subrole.id
+      row['subrole_name']=user.subrole.name
+    end
+    return row
+
+    perm = user.get_permissions
+    row[:full_access] = {:organizations=>perm[:organization],
+     :groups=>perm[:group],
+     :subgroups=>perm[:subgroup],
+     :accounts =>  perm[:account]}
+    
+  end
+
   def reset_roles user, roles=nil
     if roles && !roles.empty?
       user.roles.clear
@@ -131,7 +180,6 @@ class Api::V2::UsersController < Api::V2::BaseController
   def _params_
     cols = model_class.columns.map{|a| a.name.to_sym}
     cols = cols | [:roles, :password, :password_confirmation]
-    puts "    CCCC #{cols.inspect}"
     ret = params.require(model_name.to_sym).permit(cols)
     ret
   end

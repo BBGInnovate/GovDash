@@ -51,7 +51,7 @@ class ScStat
     sql += select_summary_sql
     
     records = ScReferralTraffic.select(sql).where(cond).
-      where(["segment_id in (?)", segment_ids]).
+      where(["sc_segment_id in (?)", segment_ids]).
       group("week_number")
     records
   end

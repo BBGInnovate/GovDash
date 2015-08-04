@@ -161,5 +161,13 @@ class ActiveRecord::Base
     end
   end
   
+  def destroy
+    if self.respond_to? :is_active
+      self.update_column :is_active, false
+    else
+      super
+    end
+  end
+
 end
 

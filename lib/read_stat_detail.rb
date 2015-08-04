@@ -381,7 +381,7 @@ module ReadStatDetail
   
   # # week by week trend in one month
   def select_trend_by_week
-    self.trend_period  = 'day'
+    self.trend_period  = 'week'
     records = []
     records = get_select_trend_by_week( week_from_date, end_date, accounts)
     records = fill_missing_rows(records, week_from_date, end_date)      

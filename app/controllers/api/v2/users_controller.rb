@@ -116,6 +116,11 @@ class Api::V2::UsersController < Api::V2::BaseController
   def modify_row user, row
     row.delete 'confirmation_code'
     row.delete 'confirmation_sent_at'
+    if user.organization
+      row.delete 'organization_id'
+      row['organization_id']=user.organization.id
+      row['organization_name']=user.organization.name
+    end
     if user.group
       row.delete 'group_id'
       row['group_id']=user.group.id
@@ -133,7 +138,7 @@ class Api::V2::UsersController < Api::V2::BaseController
      :groups=>perm[:group],
      :subgroups=>perm[:subgroup],
      :accounts =>  perm[:account]}
-    
+    row
   end
 
   def reset_roles user, roles=nil

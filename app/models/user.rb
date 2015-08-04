@@ -13,8 +13,9 @@ class User < ActiveRecord::Base
   belongs_to :subrole
   has_and_belongs_to_many :accounts
   belongs_to :group
+  belongs_to :organization
 
-  after_save :update_organization
+  before_save :update_organization
   before_save :update_group
 
   def update_group
@@ -30,16 +31,16 @@ class User < ActiveRecord::Base
       self.roles.find_or_create_by organization_id: og.id
       self.roles.update_all :name => self.email
       if self.roles.count == Organization.count
-        self.update_column :is_admin,true
+        self.is_admin=true
+      end
+      if self.respond_to? :organization_id
+        self.organization_id=og.id
       end
     end
-  end
-  
-  def organization
-    if self.group
-      self.group.organization
-    else
-      og = find_defaul_organization
+    if self.is_admin
+      subrole = Subrole.find_by name: 'Super Admin'
+      self.subrole_id=subrole.id
+      puts "   self.subrole_id=#{self.subrole_id}"
     end
   end
 
@@ -157,14 +158,14 @@ class User < ActiveRecord::Base
       @hash[:account] = group.accounts.map(&:id)
       @hash[:subgroup]  = GroupsSubgroups.where("group_id = #{self.group_id}").
                     map(&:subgroup_id)
-    elsif self.subrole && current_user.subrole.name == 'Organization Admin' &&
-       current_user.organization &&
-       current_user.organization.groups.size > 1
-       @hash[:account] = current_user.organization.accounts.map(&:id)
-       @hash[:group] = current_user.organization.groups.map(&:id)
+    elsif self.subrole && self.subrole.name == 'Organization Admin' &&
+       self.organization &&
+       self.organization.groups.size > 1
+       @hash[:account] = self.organization.accounts.map(&:id)
+       @hash[:group] = self.organization.groups.map(&:id)
        @hash[:subgroup] = GroupsSubgroups.where("group_id in (#{hash[:group_ids].join(',')})").
                       map(&:subgroup_id)
-       @hash[:organization] = [current_user.organization.id]
+       @hash[:organization] = [self.organization.id]
     end
     @hash
   end

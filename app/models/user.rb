@@ -158,6 +158,7 @@ class User < ActiveRecord::Base
       @hash[:account] = group.accounts.map(&:id)
       @hash[:subgroup]  = GroupsSubgroups.where("group_id = #{self.group_id}").
                     map(&:subgroup_id)
+      @hash[:organization] = [self.organization.id]
     elsif self.subrole && self.subrole.name == 'Organization Admin' &&
        self.organization &&
        self.organization.groups.size > 1

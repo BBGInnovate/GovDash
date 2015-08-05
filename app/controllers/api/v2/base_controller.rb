@@ -15,17 +15,28 @@ class Api::V2::BaseController <  ActionController::Base
   
   # params[:lang] to return shortened languages list
   def lookups
+    logger.debug "  AAA lookups"
     # respond_with(model_class.all)  Country,Language
     names = Language.common_names
-    
+    params[:admin] = '1'
+    request_admin = params[:admin].to_i
+    if request_admin == 1
+      allowed = current_user.get_permissions
+    end
     arrs = []
     [Organization, Group, Subgroup, Region, AccountType, MediaType, Country, Language, ScSegment].each do | p |
       arr = [{'lookup'=> p.name}]
       hsh = {}
+      cond = []
       if p.respond_to? :is_active
-        cond = {:is_active=>true}
-      else
-        cond = {}
+        cond << "is_active=1"
+      end
+      if request_admin == 1
+        klass = p.name.downcase.to_sym
+        case klass
+        when :group,:subgroup,:organization
+          cond <<  "id in (#{allowed[klass].join(',')})"
+        end
       end
       p.where(cond).order("name").each do |s|
         attributes = s.attributes.slice('id','name')
@@ -36,11 +47,13 @@ class Api::V2::BaseController <  ActionController::Base
           end
         elsif Group == p
           hsh = attributes
-          hsh[:organization_id] = s.organization_id
+          hsh[:organization_id] = s.organization_id 
           unless s.subgroups.empty?
             hsh[:subgroup_ids] = s.subgroups.map(&:id)
           end
-          arr = arr + [hsh]
+          unless hsh.blank?
+            arr = arr + [hsh]
+          end
         else
           hsh = attributes
           arr = arr + [hsh]

@@ -152,21 +152,22 @@ class User < ActiveRecord::Base
     return @hash if !@hash.blank?
     @hash = {:group=>[],:subgroup=>[],:account=>[],
       :organization=>[]}
-    if self.subrole && self.subrole.name == 'Group Admin' 
-      @hash[:group] = [self.group_id]
-      group = Group.find self.group_id
-      @hash[:account] = group.accounts.map(&:id)
-      @hash[:subgroup]  = GroupsSubgroups.where("group_id = #{self.group_id}").
+    if self.subrole_id && self.subrole_id > 2
+      if self.subrole.name == 'Group Admin' 
+        @hash[:group] = [self.group_id]
+        group = Group.find self.group_id
+        @hash[:account] = group.accounts.map(&:id)
+        @hash[:subgroup]  = GroupsSubgroups.where("group_id = #{self.group_id}").
                     map(&:subgroup_id)
-      @hash[:organization] = [self.organization.id]
-    elsif self.subrole && self.subrole.name == 'Organization Admin' &&
-       self.organization &&
-       self.organization.groups.size > 1
-       @hash[:account] = self.organization.accounts.map(&:id)
-       @hash[:group] = self.organization.groups.map(&:id)
-       @hash[:subgroup] = GroupsSubgroups.where("group_id in (#{hash[:group_ids].join(',')})").
+        @hash[:organization] = [self.organization.id]
+      elsif self.subrole.name == 'Organization Admin' &&
+        self.organization && self.organization.groups.size > 1
+        @hash[:account] = self.organization.accounts.map(&:id)
+        @hash[:group] = self.organization.groups.map(&:id)
+        @hash[:subgroup] = GroupsSubgroups.where("group_id in (#{hash[:group_ids].join(',')})").
                       map(&:subgroup_id)
-       @hash[:organization] = [self.organization.id]
+        @hash[:organization] = [self.organization.id]
+      end
     end
     @hash
   end

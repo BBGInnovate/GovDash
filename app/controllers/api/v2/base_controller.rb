@@ -18,9 +18,9 @@ class Api::V2::BaseController <  ActionController::Base
     logger.debug "  AAA lookups"
     # respond_with(model_class.all)  Country,Language
     names = Language.common_names
-    params[:admin] = '1'
+    # params[:admin] = '1'
     request_admin = params[:admin].to_i
-    if request_admin == 1
+    if request_admin == 1 && !current_user.is_admin?
       allowed = current_user.get_permissions
     end
     arrs = []
@@ -31,7 +31,7 @@ class Api::V2::BaseController <  ActionController::Base
       if p.respond_to? :is_active
         cond << "is_active=1"
       end
-      if request_admin == 1
+      if request_admin == 1 && !current_user.is_admin?
         klass = p.name.downcase.to_sym
         case klass
         when :group,:subgroup,:organization

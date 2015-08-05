@@ -47,6 +47,7 @@ module ReadStatDetail
   end
     
   def select_accounts
+    # Rails.logger.debug "   AAA select_accounts"
     records = []
     trend_records = []
     data = []
@@ -86,6 +87,7 @@ module ReadStatDetail
   end
   
   def select_by
+    # Rails.logger.debug "   AAA select_by"
     records = []
     hash = {}
     dates = calculated_dates
@@ -182,6 +184,7 @@ module ReadStatDetail
     [trend, name]
   end
   def date_value rec 
+    # Rails.logger.debug "   AAA date_value #{rec.trend_type} - #{rec.trend_date}"
     date = parse_date rec.trend_date
     case rec.trend_type
       when 'week'
@@ -257,7 +260,7 @@ module ReadStatDetail
           return response
        when Net::HTTPRedirection
           new_url = redirect_url(response)
-          logger.debug "Redirect to " + new_url
+          Rails.logger.debug "Redirect to " + new_url
           return fetch(new_url, limit - 1)
        else
          response.error!
@@ -324,7 +327,9 @@ module ReadStatDetail
     trend, name = get_trend_name records[0]
     records.each do |rec|
       value = date_value(rec)
-      rec.trend_date
+      # this for trend period
+      # value=value.split(' - ').last
+      # Rails.logger.debug "  QAAA #{value}"
       result = init_struct
       result.name = rec.name if (rec.name != 'All')
       result.data_type = 'trend'

@@ -1,5 +1,5 @@
 class Api::V2::AccountsController < Api::V2::BaseController
-  before_filter :authenticate_user!, :is_analyst?, only: [:new, :create, :edit, :update, :destroy]
+  before_filter :authenticate_user!, only: [:lookups,:new, :create, :edit, :update, :destroy]
 
   def index 
   

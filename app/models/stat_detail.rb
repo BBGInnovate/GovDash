@@ -301,14 +301,16 @@ class StatDetail
     end
   end
 
-  def set_engagement_data rec
+  def set_engagement_data rec, remove = ''
     hash = {}
     begin
       totals = 0
       self.class.data_columns.each_pair do |col, _as|
-        val = rec.send(_as)
-        totals += val
-        hash[_as.to_sym] = val
+        if _as != remove
+          val = rec.send(_as)
+          totals += val
+          hash[_as.to_sym] = val
+        end
       end
       hash[:totals]=totals
     rescue
@@ -494,7 +496,13 @@ class StatDetail
       value = date_value rec
       result = init_struct
       result.values = {name=>value}
-      result.values.merge! set_engagement_data(rec)
+      if FbPage === rec
+        # page_likes not considered as engagement data
+        remove = 'page_likes'
+      else
+        remove = ''
+      end
+      result.values.merge! set_engagement_data(rec,remove)
       # leave only :totals
       filter_attributes result.values
       results << result.values
@@ -519,7 +527,13 @@ class StatDetail
       result.data_type = 'trend'
       result.date = rec.trend_date
       result.values = {name=>value}
-      result.values.merge! set_engagement_data(rec)
+      if FbPage === rec
+        # page_likes not considered as engagement data
+        remove = 'page_likes'
+      else
+        remove = ''
+      end
+      result.values.merge! set_engagement_data(rec,remove)
       # leave only :totals
       filter_attributes result.values
       data << result.values

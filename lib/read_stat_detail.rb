@@ -65,16 +65,11 @@ module ReadStatDetail
       hash[:values] = value
       # TO replace above line
       # hash[:engagement] = value.first
-      
       records << rec5
       records << rec6
       # dynamic method name
-      method = self.method(trend_select_method)
+      method = self.method(trend_summarize_method)
       trend_records = method.call(trend_from_date, end_date,[account])
-      # liu trend_records = fill_missing_rows(trend_records,trend_from_date, end_date)      
-      
-      # trend_records = select_trend_by([account])
-      # account level trend parallel to values
       hash[:trend] = get_accounts_trend_result(trend_records)
       data << hash
     end
@@ -96,15 +91,8 @@ module ReadStatDetail
     rec1 = get_select_by(dates[0], dates[1], accounts)
     # summary with dates[2], dates[3]
     rec2 = get_select_by(dates[2], dates[3], accounts)
-=begin
-    puts "  1 #{dates[0]}, #{dates[1]}"
-    puts "  2 #{dates[2]}, #{dates[3]}"
-    puts "   select_by  #{rec1.period rescue 'rec1 null'} "
-    puts "   select_by  #{rec2.period rescue 'rec2 null'} "
-=end
-    records << rec1 # if rec1
-    records << rec2 # if rec2
-    
+    records << rec1
+    records << rec2
     unless current_exist?(rec2)
       return nil
     end
@@ -112,23 +100,20 @@ module ReadStatDetail
 
     value = get_period_result records[0], records[1]
     hash[:period] = value
-    # TO replace abour line
-    # hash[:engagement] = value.first
-    
-    method = self.method(trend_select_method)
+    # select aggregate method - by_week or by_day 
+    method = self.method(trend_summarize_method)
     trend_records = method.call(trend_from_date, end_date,accounts).to_a
     rec = get_trend_result(trend_records)
     hash[:trend] = rec unless rec.empty?
     final_results  << hash
-    # records
     hash
   end
 
-  def trend_select_method
+  def trend_summarize_method
     @trend_method ||=
-      if options[:trend].match(/year/i)
+      if options[:trend].match(/month/i)
         @trend_method = :get_select_trend_by_month
-      elsif options[:trend].match(/month/i)
+      elsif options[:trend].match(/week/i)
         @trend_method = :get_select_trend_by_week
       else
         @trend_method = :get_select_trend_by_day
@@ -143,13 +128,12 @@ module ReadStatDetail
     end
   end
   
-    def parse_date date
-      # date = Time.zone.now if !date
-      if String === date
-        date = Time.zone.parse(date)
-      end
-      date
+  def parse_date date
+    if String === date
+      date = Time.zone.parse(date)
     end
+    date
+  end
 
   module ClassMethods
   
@@ -169,18 +153,14 @@ module ReadStatDetail
   
   def get_trend_name record
     case (record.trend_type rescue 'week')
-      when 'week'
-        # trend = :monthly_trend
-        name = :period
-      when 'month'
-        # trend = :yearly_trend
-        name = :period
-      else
-        # trend = :weekly_trend
-        # day by day data
-        name = :date
+    when 'week','month'
+      # from_date - to_date
+      name = :period
+    else
+      # day by day data
+      name = :date
     end
-    trend = :trend  # overwrite
+    trend = :trend
     [trend, name]
   end
   def date_value rec 
@@ -249,7 +229,7 @@ module ReadStatDetail
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
     http.read_timeout = 180
-       # http.set_debug_output($stdout)
+    # http.set_debug_output($stdout)
     if uri.scheme == 'https'
       http.use_ssl = true
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
@@ -314,8 +294,6 @@ module ReadStatDetail
       results << result.values
     end
     results
-    #hash[trend] = results
-    #hash
   end
   
   def get_trend_result records
@@ -327,7 +305,7 @@ module ReadStatDetail
     trend, name = get_trend_name records[0]
     records.each do |rec|
       value = date_value(rec)
-      # this for trend period
+      # value is for trend period
       # value=value.split(' - ').last
       # Rails.logger.debug "  QAAA #{value}"
       result = init_struct
@@ -341,8 +319,6 @@ module ReadStatDetail
       data << result.values
     end
     data
-    #hash[trend]=data
-    #hash
   end
   
   def trend_from_date
@@ -373,9 +349,8 @@ module ReadStatDetail
   end
   
   private
-  
-    
-  # # month by month trend in one year
+   
+  # month by month trend in one year
   def select_trend_by_month
     self.trend_period  = 'month'
     records = []
@@ -384,7 +359,7 @@ module ReadStatDetail
     records.flatten
   end
   
-  # # week by week trend in one month
+  # week by week trend in one month
   def select_trend_by_week
     self.trend_period  = 'week'
     records = []
@@ -402,7 +377,7 @@ module ReadStatDetail
     records.flatten
   end
   
-    def select_lifetime
+  def select_lifetime
     records = []
     dates = calculated_dates
     dates.each_with_index do | date, i |

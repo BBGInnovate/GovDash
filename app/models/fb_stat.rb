@@ -11,6 +11,8 @@ class FbStat < StatDetail
     "post_created_time"
   end
   def self.data_columns
+    # in database select query:
+    # select fan_adds_day AS page_likes
     {'fan_adds_day' => 'page_likes',
      'likes' => 'story_likes',
      'replies_to_comment+comments'=>'comments',

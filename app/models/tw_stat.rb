@@ -10,6 +10,8 @@ class TwStat < StatDetail
     'tweet_created_at'
   end
   def self.data_columns
+    # in database select query:
+    # select retweets AS retweets
     {'retweets'=>'retweets','mentions'=>'mentions',
      'favorites'=>'favorites','followers'=>'followers'}
   end

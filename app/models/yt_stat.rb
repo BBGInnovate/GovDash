@@ -10,6 +10,8 @@ class YtStat < StatDetail
     'published_at'
   end
   def self.data_columns
+    # in database select query:
+    # select video_subscribers AS subscribers
     {'video_subscribers'=>'subscribers',
      'video_likes'=>'likes',
      'video_comments'=>'comments',

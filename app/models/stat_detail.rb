@@ -36,6 +36,10 @@ class StatDetail
      
   end
  
+  def self.select_option account_ids
+    ["account_id in (?)",account_ids]
+  end
+
   def init_struct
     result = OpenStruct.new
     # result.data_type = 'lifetime'
@@ -158,7 +162,7 @@ class StatDetail
     sql += select_summary_sql
     
     records = self.class.table_class.select(sql).where(cond).
-      where(["account_id in (?)",account_ids]).
+      where(self.class.select_option account_ids).
       group("month_number")
 
     records
@@ -178,7 +182,7 @@ class StatDetail
     sql += select_account_name myaccounts
     sql += select_summary_sql
     records = self.class.table_class.select(sql).where(cond).
-      where(["account_id in (?)",account_ids]).
+      where(self.class.select_option account_ids).
       group("week_number")
     records
   end
@@ -192,7 +196,7 @@ class StatDetail
     sql += select_account_name myaccounts   
     sql += select_summary_sql
     records = self.class.table_class.select(sql).where(cond).
-      where(["account_id in (?)",account_ids]).
+      where(self.class.select_option account_ids).
       group("trend_date").to_a
     records = fill_missing_rows records,start_date,end_date
     records
@@ -208,7 +212,8 @@ class StatDetail
     sql += select_account_name myaccounts
     sql += " 'placeholder' as changes,"
     sql += select_summary_sql
-    record = self.class.table_class.select(sql).where(cond).where(["account_id in (?)",account_ids]).first
+    record = self.class.table_class.select(sql).where(cond).
+      where(self.class.select_option account_ids).first
     record = filter_zero record
   end
 

@@ -336,14 +336,15 @@ class StatDetail
   def fake_record date,trend_type
     max = parse_date date
     min = max - 6.days
-    rec = OpenStruct.new
+    hash = {}
+    self.class.data_columns.each_pair do |col,_as|
+      hash[_as.to_sym] = 0
+    end
+    rec = OpenStruct.new hash
     rec.week_start_date = min
     rec.id = nil
     rec.trend_date = date
     rec.trend_type = trend_type
-    self.class.data_columns.each_pair do |col,_as|
-      rec.send(_as,0)
-    end
     rec.totals = 0
     rec
   end

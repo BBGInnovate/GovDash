@@ -131,7 +131,7 @@ Radd::Application.routes.draw do
       resources :accounts_users
       resources :accounts_groups
       resources :accounts_subgroups
-      resources :subroles, :only=>:index
+      resources :subroles  # , :only=>:index
       resources :users do
         collection do
           get 'roles'

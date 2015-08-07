@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150424132000) do
+ActiveRecord::Schema.define(version: 20150804125014) do
 
   create_table "account_profiles", force: :cascade do |t|
     t.integer  "account_id",      limit: 4
@@ -126,11 +126,13 @@ ActiveRecord::Schema.define(version: 20150424132000) do
   end
 
   create_table "app_tokens", force: :cascade do |t|
-    t.string   "platform",       limit: 20
-    t.string   "canvas_url",     limit: 255
-    t.string   "api_user_email", limit: 40
-    t.string   "client_id",      limit: 255
-    t.string   "client_secret",  limit: 255
+    t.string   "platform",          limit: 20
+    t.string   "canvas_url",        limit: 255
+    t.string   "api_user_email",    limit: 40
+    t.string   "client_id",         limit: 255
+    t.string   "client_secret",     limit: 255
+    t.string   "page_access_token", limit: 255
+    t.string   "user_access_token", limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -226,13 +228,14 @@ ActiveRecord::Schema.define(version: 20150424132000) do
   add_index "contents_opencalais_geographies", ["opencalais_geography_id"], name: "index_contents_opencalais_geographies_on_opencalais_geography_id", using: :btree
 
   create_table "countries", force: :cascade do |t|
-    t.string "name", limit: 60
-    t.string "code", limit: 4
-    t.binary "uuid", limit: 16
+    t.string  "name",      limit: 60
+    t.string  "code",      limit: 10
+    t.boolean "is_active", limit: 1,  default: true
+    t.integer "region_id", limit: 4
   end
 
-  add_index "countries", ["code"], name: "index_countries_on_code", using: :btree
-  add_index "countries", ["uuid"], name: "index_countries_on_uuid", unique: true, using: :btree
+  add_index "countries", ["name"], name: "index_countries_on_name", using: :btree
+  add_index "countries", ["region_id"], name: "index_countries_on_region_id", using: :btree
 
   create_table "delayed_jobs", force: :cascade do |t|
     t.integer  "priority",   limit: 4,     default: 0, null: false
@@ -411,14 +414,10 @@ ActiveRecord::Schema.define(version: 20150424132000) do
   add_index "ingressed_items", ["type"], name: "index_ingressed_items_on_type", using: :btree
 
   create_table "languages", force: :cascade do |t|
-    t.string   "name",       limit: 100
-    t.string   "lang_code",  limit: 20
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.binary   "uuid",       limit: 16
+    t.string  "name",      limit: 30
+    t.string  "iso_639_1", limit: 6
+    t.boolean "is_active", limit: 1,  default: true
   end
-
-  add_index "languages", ["uuid"], name: "index_languages_on_uuid", unique: true, using: :btree
 
   create_table "media_types", force: :cascade do |t|
     t.string   "name",       limit: 20
@@ -428,18 +427,12 @@ ActiveRecord::Schema.define(version: 20150424132000) do
   end
 
   create_table "networks", force: :cascade do |t|
-    t.string   "name",            limit: 255
-    t.string   "object_name",     limit: 255
+    t.string   "name",        limit: 10
+    t.string   "description", limit: 255
+    t.boolean  "is_active",   limit: 1,   default: true
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "url",             limit: 255
-    t.text     "description",     limit: 65535
-    t.integer  "organization_id", limit: 4
-    t.binary   "uuid",            limit: 16
   end
-
-  add_index "networks", ["organization_id"], name: "index_networks_on_organization_id", using: :btree
-  add_index "networks", ["uuid"], name: "index_networks_on_uuid", unique: true, using: :btree
 
   create_table "networks_countries", id: false, force: :cascade do |t|
     t.integer  "country_id", limit: 4
@@ -473,16 +466,10 @@ ActiveRecord::Schema.define(version: 20150424132000) do
   end
 
   create_table "organizations", force: :cascade do |t|
-    t.string   "name",        limit: 255
-    t.string   "object_name", limit: 255
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.string   "url",         limit: 255
-    t.text     "description", limit: 65535
-    t.binary   "uuid",        limit: 16
+    t.string   "name",       limit: 255
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
   end
-
-  add_index "organizations", ["uuid"], name: "index_organizations_on_uuid", unique: true, using: :btree
 
   create_table "photo_galleries", force: :cascade do |t|
     t.string   "title",      limit: 255
@@ -532,11 +519,14 @@ ActiveRecord::Schema.define(version: 20150424132000) do
   add_index "regions_countries", ["region_id"], name: "index_regions_countries_on_region_id", using: :btree
 
   create_table "roles", force: :cascade do |t|
-    t.string   "name",        limit: 20
-    t.string   "description", limit: 255
-    t.boolean  "disabled",    limit: 1,   default: false
+    t.string   "name",            limit: 255
+    t.string   "description",     limit: 255
+    t.boolean  "is_active",       limit: 1,   default: true
+    t.integer  "weight",          limit: 4
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "user_id",         limit: 4
+    t.integer  "organization_id", limit: 4
   end
 
   create_table "rss_sources", force: :cascade do |t|
@@ -631,6 +621,22 @@ ActiveRecord::Schema.define(version: 20150424132000) do
   add_index "subgroups_regions", ["region_id"], name: "index_subgroups_regions_on_region_id", using: :btree
   add_index "subgroups_regions", ["subgroup_id"], name: "index_subgroups_regions_on_subgroup_id", using: :btree
 
+  create_table "subroles", force: :cascade do |t|
+    t.string "name",        limit: 255
+    t.string "description", limit: 255
+  end
+
+  create_table "sync", force: :cascade do |t|
+    t.integer  "status",                 limit: 4,  default: 0, null: false
+    t.integer  "user_id",                limit: 4
+    t.string   "youtube_id",             limit: 50
+    t.string   "youtube_playlist_id",    limit: 50
+    t.string   "soundcloud_id",          limit: 50
+    t.string   "soundcloud_playlist_id", limit: 50
+    t.datetime "date_created",                                  null: false
+    t.datetime "date_updated"
+  end
+
   create_table "system_infos", force: :cascade do |t|
     t.string   "property_name",   limit: 40
     t.integer  "last_content_id", limit: 4
@@ -705,25 +711,51 @@ ActiveRecord::Schema.define(version: 20150424132000) do
     t.datetime "updated_at"
   end
 
-  create_table "users", force: :cascade do |t|
-    t.string   "username",            limit: 20,    null: false
-    t.string   "crypted_password",    limit: 100,   null: false
-    t.string   "password_salt",       limit: 40,    null: false
-    t.string   "persistence_token",   limit: 255,   null: false
-    t.string   "single_access_token", limit: 255,   null: false
-    t.text     "settings",            limit: 65535
-    t.string   "email",               limit: 40
-    t.boolean  "admin",               limit: 1
-    t.integer  "role_id",             limit: 4
-    t.boolean  "disabled",            limit: 1
-    t.string   "full_name",           limit: 255
-    t.string   "organization",        limit: 20
-    t.datetime "created_at"
-    t.datetime "updated_at"
+  create_table "user", force: :cascade do |t|
+    t.integer  "status",                   limit: 4,   default: 1, null: false
+    t.string   "first_name",               limit: 50
+    t.string   "last_name",                limit: 50
+    t.string   "email",                    limit: 150
+    t.string   "profile_pic",              limit: 150
+    t.string   "gender",                   limit: 20
+    t.string   "gplus_id",                 limit: 100
+    t.string   "access_token",             limit: 100
+    t.string   "refresh_token",            limit: 100
+    t.string   "soundcloud_access_token",  limit: 100
+    t.string   "soundcloud_refresh_token", limit: 100
+    t.datetime "date_created"
+    t.datetime "date_updated"
   end
 
-  add_index "users", ["single_access_token"], name: "index_users_on_single_access_token", unique: true, using: :btree
-  add_index "users", ["username"], name: "index_users_on_username", unique: true, using: :btree
+  add_index "user", ["email"], name: "email", unique: true, using: :btree
+
+  create_table "users", force: :cascade do |t|
+    t.string   "email",                  limit: 255, default: "",    null: false
+    t.string   "encrypted_password",     limit: 255, default: "",    null: false
+    t.string   "reset_password_token",   limit: 255
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.integer  "sign_in_count",          limit: 4,   default: 0
+    t.datetime "current_sign_in_at"
+    t.datetime "last_sign_in_at"
+    t.string   "current_sign_in_ip",     limit: 255
+    t.string   "last_sign_in_ip",        limit: 255
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "role_id",                limit: 4
+    t.string   "firstname",              limit: 40
+    t.string   "lastname",               limit: 60
+    t.boolean  "is_active",              limit: 1,   default: true
+    t.boolean  "is_admin",               limit: 1,   default: false
+    t.string   "confirmation_code",      limit: 40
+    t.datetime "confirmation_sent_at"
+    t.integer  "group_id",               limit: 4
+    t.integer  "subrole_id",             limit: 4
+    t.integer  "organization_id",        limit: 4
+  end
+
+  add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
+  add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
 
   create_table "versions", force: :cascade do |t|
     t.string   "item_type",  limit: 255,   null: false
@@ -803,9 +835,11 @@ ActiveRecord::Schema.define(version: 20150424132000) do
     t.integer  "likes",        limit: 4
     t.integer  "comments",     limit: 4
     t.integer  "favorites",    limit: 4
+    t.integer  "views",        limit: 4,  default: 0
     t.datetime "published_at"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "dislikes",     limit: 4,  default: 0
   end
 
   add_index "yt_videos", ["account_id"], name: "index_yt_videos_on_account_id", using: :btree

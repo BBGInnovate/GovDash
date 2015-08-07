@@ -16,6 +16,7 @@ angular.module('sessionService', [])
                         $rootScope.email = response.data.user['email'];
                         $rootScope.userRole = response.data.user['role']['name'];
 						$rootScope.isAdmin = response.data.user['is_admin'];
+						$rootScope.user = response.data.user;
 
                         if (service.isAuthenticated()) {
                             //$location.path(response.data.redirect);

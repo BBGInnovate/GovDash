@@ -13,7 +13,7 @@
 }
 
 .sign-in-wrapper {
-    padding-top: 40px !important;
+    padding-top: 0px !important;
 }
 
 .teal-button {
@@ -224,3 +224,13 @@ div.xAxis div.tickLabel
     font-size: 35px ! important;
     color: #A6AAB8 !important;
 }
+
+.count{
+    position:absolute;
+    width:10px;
+    height:20px;
+    line-height:20px;
+    color:red;
+    font-weight:bold;
+}
+

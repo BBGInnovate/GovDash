@@ -223,6 +223,8 @@ angular.module('directives', []).
 								labels = ['Facebook', 'Twitter', 'YouTube'];
 								barColors = ['#3278B3', '#23B7E5', '#E36159'];
 
+								isMainChart = true;
+
 							// chart without youtube
 							} else {
 								dataArr = [{
@@ -270,7 +272,6 @@ angular.module('directives', []).
 						addLabels(dataArr);
 
 
-
 					} else {
 						element.html('<p class="no-data-found">No data found</p>');
 					}
@@ -278,7 +279,11 @@ angular.module('directives', []).
 				});
 
 				function addLabels(dataArr) {
+
 					if (dataArr[0].a && dataArr[0].b && dataArr[0].c) {
+						// if labels exist, empty those first
+						$('.morris-bars-custom-labels').empty();
+
 						var totalInteractions = dataArr[0].a + dataArr[0].b + dataArr[0].c;
 						var fbPercentage = Math.round((dataArr[0].a / totalInteractions) * 100) + '%';
 						var twPercentage = Math.round((dataArr[0].b / totalInteractions) * 100) + '%';
@@ -290,10 +295,13 @@ angular.module('directives', []).
 						var fbValue = dataArr[0].a.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' (' + fbPercentage + ')';
 						var twValue = dataArr[0].b.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' (' + twPercentage + ')';
 						var ytValue = dataArr[0].c.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' (' + ytPercentage + ')';
-						$('rect')[0].outerHTML += '<svg x="' + xPosOne + '" y="55.375" height="30" width="200"><text x="0" y="15" fill="#3278B3">' + fbValue + '</text></svg>';
-						$('rect')[1].outerHTML += '<svg x="' + xPosTwo + '" y="97.375" height="30" width="200"><text x="0" y="15" fill="#23B7E5">' + twValue + '</text></svg>';
-						$('rect')[2].outerHTML += '<svg x="' + xPosThree + '" y="141.375" height="30" width="200"><text x="0" y="15" fill="#E36159">' + ytValue + '</text></svg>';
+						$('rect')[0].outerHTML += '<svg class="morris-bars-custom-labels" x="' + xPosOne + '" y="55.375" height="30" width="200"><text x="0" y="15" fill="#3278B3">' + fbValue + '</text></svg>';
+						$('rect')[1].outerHTML += '<svg class="morris-bars-custom-labels" x="' + xPosTwo + '" y="97.375" height="30" width="200"><text x="0" y="15" fill="#23B7E5">' + twValue + '</text></svg>';
+						$('rect')[2].outerHTML += '<svg class="morris-bars-custom-labels" x="' + xPosThree + '" y="141.375" height="30" width="200"><text x="0" y="15" fill="#E36159">' + ytValue + '</text></svg>';
 					}
+
+
+
 				}
 
 			}
@@ -534,5 +542,117 @@ angular.module('directives', []).
 
 
 		};
+	}])
+	// Show the filter selection modal
+		.directive('exportCsv', [function () {
+			return {
+				link: function ($scope, element, attrs) {
+					element.bind('click', function () {
+					//	console.log(attrs);
+					//	var data = [["Name Actions Followers Favorites Retweets Mentions"], ["voalearningenglish 434 434 0 0 0"]];
+					//	console.log(data);
+
+						// this is a special javascript function to mimic a space character
+						// this is needed because this CSV breaks on traditional space characters
+						var spaceChar = String.fromCharCode(160);
+
+						var filterCriteria = '';
+						$('.page-sub-header span').each(function() {
+							filterCriteria += $(this).text() + ',' + spaceChar;
+						});
+
+						// remove extra comma
+						filterCriteria = filterCriteria.substring(0, filterCriteria.length - 2);
+						
+
+						var i = 0;
+						var dataArr = [];
+						var dataString = '';
+						var csvContent = "data:text/csv;charset=utf-8,";
+
+						csvContent += 'Included' + spaceChar + 'filters:'+ spaceChar + filterCriteria;
+
+						// Loop through each table and structure the stringified row
+						// into an array
+						$('.table tr').each(function() {
+							var text = $(this).text().trim().replace('Data Since:', '');
+
+							// replace spaces with special space character to work in CSV
+							text = text.replace(/ /g, spaceChar);
+
+							text = text.replace('Name', 'Name Data' + spaceChar + 'Since');
+
+							// Replace header characters
+							if (i === 0) {
+								//text = text.replace('Name', 'Name Data' + spaceChar + 'Since');
+								text = text.replace('New Fans', 'New' + spaceChar + 'Fans');
+								text = text.replace('Story Likes', 'Story' + spaceChar + 'Likes');
+
+								text = text.replace('New Followers', 'New' + spaceChar + 'Followers');
+
+								text = text.replace('Video Likes', 'Video' + spaceChar + 'Likes');
+								text = text.replace('New Subscribers', 'New' + spaceChar + 'Subscribers');
+							}
+
+
+
+							var rowData = text.replace(/\s\s+/g, ' ');
+							var rowDataArr = [rowData];
+						//	console.log(i+ ' | ' + rowData);
+							dataArr.push(rowDataArr);
+
+							i++;
+						});
+
+						dataArr.forEach(function(infoArray, index){
+
+							dataString = infoArray.join(",");
+
+							// start of a new social media platform account list
+							if (infoArray[0].indexOf('Name') > -1) {
+
+								var socialMediaPlatform = '';
+								if (infoArray[0].indexOf('Fans') > -1) {
+									socialMediaPlatform = 'Facebook';
+								} else if (infoArray[0].indexOf('Followers') > -1) {
+									socialMediaPlatform = 'Twitter';
+								} else if (infoArray[0].indexOf('Video') > -1) {
+										socialMediaPlatform = 'YouTube';
+								}
+
+								csvContent += "\n" + "\n" + [socialMediaPlatform] + "\n" + "\n";
+							}
+
+							csvContent += index <= i ? dataString+ "\n" : dataString;
+
+
+
+						});
+
+
+
+						//Then you can use JavaScript's window.open and encodeURI functions to download the CSV file like so:
+
+					//	var encodedUri = encodeURI(csvContent);
+					//	window.open(encodedUri);
+
+						//Edit:
+						//	If you want to give your file a specific name, you have to do things a little differently
+						// since this is not supported accessing a data URI using the window.open method.
+						// In order to achieve this, you can create a hidden <a> DOM node and set its download
+						// attribute as follows:
+
+						var d = new Date();
+						var todayDate = d.getMonth()+1 + '-' + d.getDate() + '-' + (d.getYear() + 1900);
+
+						var encodedUri = encodeURI(csvContent);
+						var link = document.getElementById('export-data');
+						link.setAttribute("href", encodedUri);
+						link.setAttribute("download", "BBGDashReport_"+todayDate+".csv");
+
+						//link.click(); // This will download the data file named "my_data.csv".
+					});
+				}
+			};
 	}]);
 

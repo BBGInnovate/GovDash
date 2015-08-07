@@ -37,7 +37,10 @@ angular.module('accountService', [])
             },
             
             getAllDataForAccounts: function() {
-            	return $http.get('/api/accounts/lookups').then(function(response) {
+            //	return $http.get('/api/accounts/lookups').then(function(response) {
+
+				// this is the new function that gets all data for accounts by the account subrole
+				return $http.get('/api/accounts/lookups?admin=1').then(function(response) {
 					account = response;
 					return account;
 				});

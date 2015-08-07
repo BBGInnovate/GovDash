@@ -144,11 +144,20 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 					$location.path("/users/login");
 					$rootScope.loggedInUser = false;
 					$rootScope.email = null;
+					$rootScope.user = null;
 				} else if (response.info == 'Logged in') {
 					$rootScope.loggedInUser = true;
 					$rootScope.email = response.user.email;
 					$rootScope.isAdmin = response.user['is_admin'];
+					$rootScope.user = response.user;
 				}
+
+				// if a user with subrole_id 2 (viewer) is trying to go to config page, redirect
+				// them to home
+				if ($location.path().indexOf('config') > -1 && $rootScope.user.subrole_id === 2) {
+					$location.path("/");
+				}
+
 
 
 				// this event will fire every time the route changes
@@ -170,6 +179,13 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 						if (next.templateUrl.indexOf('/users/') > -1 &&
 							next.templateUrl != "/users/login.html" && next.templateUrl != "/users/register.html" && $rootScope.isAdmin === false) {
 							$location.path("/config");
+
+							// if a subrole_id of 2 (viewer only) tries to access any page other than home, redirect them
+							// to home page
+
+						} else if (next.templateUrl !== '/home/index.html' && next.templateUrl !== '/home/faq.html' && $rootScope.user && $rootScope.user.subrole_id === 2) {
+							$location.path('/');
+
 						}
 					}
 

@@ -6,6 +6,9 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 	$scope.endDate = moment().format('L');
 	$scope.startDate =  moment($scope.endDate,"MM/DD/YYYY").subtract(6,'day').format('MM/DD/YYYY');
 
+	// this variable is used for determining whether or not data was returned
+	$scope.noDataFound = false;
+
 	// get all data on page load
 	APIData.getInitialData($rootScope.userRole).then(function(response) {
 
@@ -260,6 +263,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 	// Function that makes the API call and returns data / assigns it
 	// 'period' is the date period (current, last week, last month, etc.)
 	$scope.finish = function (period) {
+		$scope.noDataFound = false;
 		// Used for loading indicator at the top
 		$rootScope.isLoading = true;
 
@@ -296,6 +300,8 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 					layout: 'topCenter',
 					timeout: '5000'
 				});
+
+				$scope.noDataFound = true;
 
 			} else {
 				$scope.startDate = response.startDate;

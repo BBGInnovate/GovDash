@@ -306,7 +306,7 @@
 <div class="main-container m-left-xs">
     <div class="padding-md">
         <div class="row">
-            <div class="col-sm-6">
+            <div class="col-sm-4">
                 <div class="page-title">
                     Social Media Dashboard
                 </div>
@@ -320,7 +320,7 @@
                     <span class="tag teal-tag" ng-repeat="subgroup in selectedSubgroups">{{ subgroup.name }}</span>
                 </div>
             </div>
-            <div class="col-sm-6 text-right text-right-sm p-top-sm">
+            <div class="col-sm-8 text-right text-right-sm p-top-sm">
                 <div class="btn-group">
                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                         <i class="fa fa-calendar"></i>&nbsp;&nbsp;&nbsp; {{ startDate }} - {{ endDate }} &nbsp;&nbsp;&nbsp;<span class="caret"></span>
@@ -338,6 +338,10 @@
                 <a show-modal class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Show Filters" style="margin-left: 20px">
                     <i class="ion-ios7-settings-strong"></i>
                     &nbsp;&nbsp;&nbsp;Show Filters
+                </a>
+                <a id="export-data" ng-if="isLoading === false" ng-hide="noDataFound === true" export-csv class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Export to CSV" style="margin-left: 20px">
+                    <i class="ion-ios7-download-outline"></i>
+                    &nbsp;&nbsp;&nbsp;Export to CSV
                 </a>
             </div>
         </div>

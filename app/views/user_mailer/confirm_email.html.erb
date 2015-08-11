@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
-  <% host = "http://smdata.bbg.gov" %>
-  <% host = "http://localhost:3000" %>
+  <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  <% host = @user.request_host || "http://localhost:3001" %>
+  <% link = "#{host}/api/users/confirm?code=#{@user.confirmation_code}" %>
   </head>
   <body>
     <p>
-    Thank you for registering with BBG Uberdashboard. Please confirm your
-    email address within 48 hours by goto the link below:<br />
-    <a href="#{host}/api/users/confirm?code=#{@user.confirmation_code}">  
-    <%= host %>/api/users/confirm?code=<%=@user.confirmation_code%>
-    <br/>
+    Thanks for registering for the BBG Social Media Dashboard. 
+    Please click or paste the link below in a Web browser to verify 
+    your email.
+    <br />
+    <a href="<%= link %>"><%= link %></a>
     </p>
-    <p>BBG ODDI Team
+    <p>
+    Please note that this confirmation link will expire in 48 hours.
     </p>
   </body>
 </html>

@@ -6,6 +6,7 @@ class User < ActiveRecord::Base
   
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable
+  attr_accessor :request_host
 
   has_many :roles
   belongs_to :subrole
@@ -191,7 +192,11 @@ class User < ActiveRecord::Base
   end
 
   def send_confirmation_email
-    UserMailer.confirm_email(self).deliver_now!
+    begin
+      UserMailer.confirm_email(self).deliver_now!
+    rescue Net::SMTPFatalError=>ex
+      "Error: #{ex.message}"
+    end
   end
 
   def generate_confirmation_code

@@ -129,6 +129,16 @@ class Api::V2::ReportsController < Api::V2::BaseController
     get_options
   end
 
+  def find_saturday end_date
+    day = end_date
+    (1..6).each do | i |
+       day -= 1.day
+       if day.wday == 6
+          break
+        end
+    end
+    day.end_of_day
+  end
   def adjust_start_end_dates
     end_date = @options[:end_date] ? @options[:end_date] : (Time.zone.now-1.days).strftime('%Y-%m-%d') 
     @options[:end_date] = parse_date(end_date).end_of_day
@@ -137,7 +147,7 @@ class Api::V2::ReportsController < Api::V2::BaseController
       begin
         start_date = @options[:end_date] - instance_eval(@options[:period]) 
       rescue
-        start_date = @options[:end_date] - 1.week
+        start_date = @options[:end_date] - 6.days
       end
     end
     @options[:start_date] = parse_date(start_date).beginning_of_day
@@ -147,15 +157,12 @@ class Api::V2::ReportsController < Api::V2::BaseController
         @options[:start_date] = @options[:start_date].end_of_week.beginning_of_day
       end
       if !@options[:end_date].saturday?
-        day = @options[:end_date]
-        (1..6).each do | i |
-          day -= 1.day
-          if day.wday == 6
-            break
-          end
-        end
-        @options[:end_date]=day.end_of_day
-        # logger.debug "  AAA3 #{@options[:start_date]} - #{@options[:end_date]} " 
+        @options[:end_date] = find_saturday(@options[:end_date])
+      end
+    elsif @options[:period] == '1.week'
+      if !@options[:end_date].saturday?
+        @options[:end_date] = find_saturday(@options[:end_date])
+        @options[:start_date] = (@options[:end_date]-6.days).beginning_of_day+1.second
       end
     end
     total_days

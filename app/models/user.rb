@@ -3,19 +3,17 @@ class User < ActiveRecord::Base
   # Include default devise modules. Others available are:
   # :token_authenticatable, :confirmable,
   # :lockable, :timeoutable and :omniauthable
+  
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable
 
-  validates :password, length: { in: 6..128 }, on: :create
-  validates :password, length: { in: 6..128 }, on: :update, allow_blank: true
-  
   has_many :roles
   belongs_to :subrole
   has_and_belongs_to_many :accounts
   belongs_to :group
   belongs_to :organization
 
-  before_save :update_organization
+  after_save :update_organization
   before_save :update_group
 
   def update_group
@@ -27,19 +25,21 @@ class User < ActiveRecord::Base
   
   def update_organization
     og = find_defaul_organization
+    hsh = {}
     if og
       self.roles.find_or_create_by organization_id: og.id
       self.roles.update_all :name => self.email
       if self.roles.count == Organization.count
-        self.is_admin=true
+        hsh['is_admin'] = true
       end
       if self.respond_to? :organization_id
-        self.organization_id=og.id
+        hsh['organization_id'] = og.id
       end
     end
     if self.is_admin
-      self.subrole_id=Subrole.super_admin_id
+      hsh['subrole_id'] = Subrole.super_admin_id
     end
+    self.update_columns hsh
   end
 
   def find_default_group

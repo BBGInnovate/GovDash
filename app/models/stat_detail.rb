@@ -2,9 +2,10 @@ require 'ostruct'
 
 class StatDetail
   
-  attr_accessor :options,:account_hash,:accounts,:account_name_hash, 
+  attr_accessor :options,:account_hash,:accounts,
+    # :account_name_hash, :page_likes,
     :fb_accounts, :tw_accounts, :sc_accounts, :yt_accounts, 
-    :fb_accounts,:end_date, :start_date,:page_likes,:trend_period,
+    :end_date, :start_date, :trend_period,
     :final_results
 
   def applicatio_name
@@ -12,7 +13,7 @@ class StatDetail
   end
   
   def initialize options
-     Rails.logger.debug "  StatDetail#initialize  #{options.inspect}"
+     # Rails.logger.debug "  StatDetail#initialize  #{options.inspect}"
      self.options = options
      self.fb_accounts = options[:accounts].select{|a| a.media_type_name=='FacebookAccount'}
      self.tw_accounts = options[:accounts].select{|a| a.media_type_name=='TwitterAccount'}
@@ -29,11 +30,8 @@ class StatDetail
      if options[:start_date]
        self.start_date = parse_date(options[:start_date])
      end
-     # self.page_likes = hash_tree
      self.final_results = []
-     self.accounts = account_hash[self.class.name]
-     # self.account_name_hash = Hash[accounts.collect { |a| [a.id, a.name] }]
-     
+     self.accounts = account_hash[self.class.name] 
   end
  
   def self.select_option account_ids
@@ -42,7 +40,6 @@ class StatDetail
 
   def init_struct
     result = OpenStruct.new
-    # result.data_type = 'lifetime'
     result.values = Hash.new {|h,k| h[k] = {} }
     result
   end
@@ -147,7 +144,7 @@ class StatDetail
   # sum over month
   def get_select_trend_by_month start_date,myend_date, myaccounts
     if myend_date.day != myend_date.end_of_month.day
-       myend_date = (myend_date - 1.month)
+    #   myend_date = (myend_date - 1.month)
     end
     account_ids = myaccounts.map{|a| a.id}
     min = "DATE_FORMAT(min(#{self.class.created_at}),'%Y-%m-%d')"
@@ -245,7 +242,6 @@ class StatDetail
         self.class.data_columns.each_pair do |col,_as|
           hash[_as.to_sym] = instance_variable_get("@#{_as}_change")
         end
-         Rails.logger.debug "   StatDetail #{hash.inspect}"
         result.values[:changes] = hash
         results << result.values
       end  
@@ -393,6 +389,7 @@ class StatDetail
     value
   end
   
+=begin
   def current_from_date
     end_date.change_to(options[:period],"ago")
   end
@@ -409,7 +406,25 @@ class StatDetail
   def period2_end_date
     end_date
   end
+=end
+  def current_from_date
+    options[:start_date]
+  end
   
+  def period1_from_date
+    n = (period2_end_date.beginning_of_day - period2_from_date.beginning_of_day).to_i/3600/24
+    period1_end_date - n.days
+  end
+  def period1_end_date 
+    period2_from_date.end_of_day - 1.day
+  end
+  def period2_from_date
+    current_from_date
+  end
+  def period2_end_date
+    options[:end_date]
+  end
+
   
   # for two end dates in current period and
   # two end dates in previous period
@@ -448,7 +463,7 @@ class StatDetail
           return response
        when Net::HTTPRedirection
           new_url = redirect_url(response)
-          Rails.logger.debug "Redirect to " + new_url
+          # Rails.logger.debug "Redirect to " + new_url
           return fetch(new_url, limit - 1)
        else
          response.error!

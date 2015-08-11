@@ -156,6 +156,8 @@ class Account < ActiveRecord::Base
   #           :account_ids=>[1]   # this override all 
   #          }
   def self.get_account_ids options
+    logger.debug "  1AAAAA #{options[:start_date]} #{options[:end_date]}"
+    
     social_network_ids = options[:social_network_ids] || []
     options[:media_type_names] = MediaType.where(["id in (?)", social_network_ids ]).map{|m| "'#{m.name}'"}
     

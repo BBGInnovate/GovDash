@@ -86,7 +86,18 @@ angular.module('directives', []).
 
 						// Process Spark Chart Data
 						for (var i = 0; i < d1.length; i++) {
-							var dateFormatted = d1[i].date.substring(5, 10).replace('-', '/');
+							var dateFormatted = '';
+
+							// if there is a date present, format it as a single date
+							if (d1[i].date) {
+								dateFormatted = d1[i].date.substring(5, 10).replace('-', '/');
+
+							// this condition is met when there is a period of dates (03-01-2015 - 03-30-2015)
+							// this only happens when the user requests a date range greater than 27 days
+							} else {
+								dateFormatted = d1[i].period.substring(5,10).replace('-', '/') + ' - ' + '<br>' + d1[i].period.substring(18,23).replace('-', '/');
+							}
+
 							var num = d1[i].totals;
 
 							// if the data number is less than 0, set it to 0
@@ -202,7 +213,18 @@ angular.module('directives', []).
 						// If it's an array being passed through (SiteCatalyst Trend Data)
 						if (data.length !== undefined) {
 							for (var i = 0; i < data.length; i++) {
-								dataArr.push({ y: moment(data[i].date, 'YYYY-MM-DD').format('MM/DD/YYYY').slice(0,-5), a: data[i].facebook_count, b: data[i].twitter_count });
+								var dateString = '';
+
+								// if this is a period based date (03-01-2015 - 03-30-2015)
+								if (data[i].period) {
+									dateString = data[i].period.substring(5,10).replace('-', '/') + ' - ' + data[i].period.substring(18,23).replace('-', '/');
+
+								// standard date (03-25-2015)
+								} else {
+									dateString = moment(data[i].date, 'YYYY-MM-DD').format('MM/DD/YYYY').slice(0,-5)
+								}
+
+								dataArr.push({ y: dateString, a: data[i].facebook_count, b: data[i].twitter_count });
 							}
 							yKeys = ['a', 'b'];
 							labels = ['Facebook', 'Twitter'];
@@ -554,11 +576,11 @@ angular.module('directives', []).
 
 						// this is a special javascript function to mimic a space character
 						// this is needed because this CSV breaks on traditional space characters
-						var spaceChar = String.fromCharCode(160);
+						var spaceChar = ' ';
 
 						var filterCriteria = '';
 						$('.page-sub-header span').each(function() {
-							filterCriteria += $(this).text() + ',' + spaceChar;
+							filterCriteria += $(this).text() + ' | ' + spaceChar;
 						});
 
 						// remove extra comma
@@ -570,7 +592,7 @@ angular.module('directives', []).
 						var dataString = '';
 						var csvContent = "data:text/csv;charset=utf-8,";
 
-						csvContent += 'Included' + spaceChar + 'filters:'+ spaceChar + filterCriteria;
+						csvContent += 'Included' + spaceChar + 'filters: | ' + filterCriteria;
 
 						// Loop through each table and structure the stringified row
 						// into an array
@@ -578,9 +600,10 @@ angular.module('directives', []).
 							var text = $(this).text().trim().replace('Data Since:', '');
 
 							// replace spaces with special space character to work in CSV
-							text = text.replace(/ /g, spaceChar);
+							text = text.replace(/ /g, spaceChar).replace(/,/g , '');
 
-							text = text.replace('Name', 'Name Data' + spaceChar + 'Since');
+
+							text = text.replace('Name', 'Name,Data' + spaceChar + 'Since');
 
 							// Replace header characters
 							if (i === 0) {
@@ -595,8 +618,9 @@ angular.module('directives', []).
 							}
 
 
+							// insert commas to separate values
+							var rowData = text.replace(/\s\s+/g, ',');
 
-							var rowData = text.replace(/\s\s+/g, ' ');
 							var rowDataArr = [rowData];
 						//	console.log(i+ ' | ' + rowData);
 							dataArr.push(rowDataArr);

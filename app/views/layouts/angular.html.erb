@@ -50,13 +50,13 @@
                                     <span class="fa fa-file-text-o sm-accounts-icon" style=""></span>
                                 </a>
                             </li>
-                            <li>
+                            <li ng-hide="user.subrole_id === 2">
                                 <a href="#/accounts">
                                     Social Media Accounts
                                     <span class="fa fa-users sm-accounts-icon" style=""></span>
                                 </a>
                             </li>
-                            <li>
+                            <li ng-hide="user.subrole_id === 2">
                                 <a href="#/config">
                                     My Configuration
                                     <span class="fa fa-gear settings-icon" style="float:right"></span>
@@ -97,8 +97,8 @@
                         <div class="panel border dropdown-menu user-panel">
                             <div class="panel-body paddingTB-sm">
                                 <ul>
-                                    <li><a href="#/accounts">Social Media Accounts</a></li>
-                                    <li><a href="#/config">My Configuration</a></li>
+                                    <li ng-hide="user.subrole_id === 2"><a href="#/accounts">Social Media Accounts</a></li>
+                                    <li ng-hide="user.subrole_id === 2"><a href="#/config">My Configuration</a></li>
                                 </ul>
                             </div>
                         </div>

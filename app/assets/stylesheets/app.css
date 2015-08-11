@@ -234,3 +234,16 @@ div.xAxis div.tickLabel
     font-weight:bold;
 }
 
+.sub-date {
+    color: gray;
+    float: right;
+    height: 10px;
+    margin-left: 21px;
+    position: relative;
+    top: -17px;
+}
+
+.top-filters {
+    margin-left: 20px;
+    margin: 5px;
+}

@@ -322,12 +322,12 @@
             </div>
             <div class="col-sm-8 text-right text-right-sm p-top-sm">
                 <div class="btn-group">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <button type="button" class="btn btn-default dropdown-toggle top-filters" data-toggle="dropdown">
                         <i class="fa fa-calendar"></i>&nbsp;&nbsp;&nbsp; {{ startDate }} - {{ endDate }} &nbsp;&nbsp;&nbsp;<span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu pull-right" role="menu">
-                        <li><a href="" ng-click="finish('1.week')">Last 7 Days</a></li>
-                        <li><a href="" ng-click="finish('1.month')">Last 30 Days</a></li>
+                        <li><a href="" ng-click="finish('1.week')">Last Week <span class="sub-date">(Sun - Sat)</span></a></li>
+                        <li><a href="" ng-click="finish('1.month')">Last 4 Weeks <span class="sub-date">(Sun - Sat)</span></a></li>
                         <!--
                         <li><a href="">Last Quarter</a></li>
                         -->
@@ -335,11 +335,11 @@
                         <li><a href="" data-toggle="modal" data-target="#datePickerModal">Custom Date Range</a></li>
                     </ul>
                 </div>
-                <a show-modal class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Show Filters" style="margin-left: 20px">
+                <a show-modal class="btn btn-default top-filters" data-toggle="tooltip" data-placement="top" title="Show Filters">
                     <i class="ion-ios7-settings-strong"></i>
                     &nbsp;&nbsp;&nbsp;Show Filters
                 </a>
-                <a id="export-data" ng-if="isLoading === false" ng-hide="noDataFound === true" export-csv class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Export to CSV" style="margin-left: 20px">
+                <a id="export-data" ng-if="isLoading === false" ng-hide="noDataFound === true" export-csv class="btn btn-default top-filters" data-toggle="tooltip" data-placement="top" title="Export to CSV">
                     <i class="ion-ios7-download-outline"></i>
                     &nbsp;&nbsp;&nbsp;Export to CSV
                 </a>

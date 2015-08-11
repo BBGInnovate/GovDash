@@ -138,60 +138,69 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 			}
 		});
 
-		Session.checkUserLoggedIn()
-			.then(function(response) {
-				if (response.info == null) {
-					$location.path("/users/login");
-					$rootScope.loggedInUser = false;
-					$rootScope.email = null;
-					$rootScope.user = null;
-				} else if (response.info == 'Logged in') {
-					$rootScope.loggedInUser = true;
-					$rootScope.email = response.user.email;
-					$rootScope.isAdmin = response.user['is_admin'];
-					$rootScope.user = response.user;
-				}
+		// if they are trying to access a page other than register page, check authentication
+		if ($location.$$path.indexOf('register') === -1 && $location.$$path.indexOf('login') === -1) {
 
-				// if a user with subrole_id 2 (viewer) is trying to go to config page, redirect
-				// them to home
-				if ($location.path().indexOf('config') > -1 && $rootScope.user.subrole_id === 2) {
-					$location.path("/");
-				}
+			// call back-end to check session
+			Session.checkUserLoggedIn()
+				.then(function (response) {
+					// if no session was found, redirect user to login screen and reset all
+					// $rootScope angular parameters related to an authenticated user
+					if (response.info == null) {
+						$location.path("/users/login");
+						$rootScope.loggedInUser = false;
+						$rootScope.email = null;
+						$rootScope.user = null;
 
-
-
-				// this event will fire every time the route changes
-				$rootScope.$on("$routeChangeStart", function (event, next, current) {
-
-					if (!$rootScope.loggedInUser) {
-						// no logged user, we should be going to the login route
-						if (next.templateUrl === "/users/login.html" || next.templateUrl === "/users/register.html") {
-							// don't redirect anon users on the login or register routes
-						} else {
-							// redirect all dashboard routes to login
-							$location.path("/users/login");
-						}
-
+					// if the user was found, set the $rootScope parameters for the views
+					// to accomodate accordingly
+					} else if (response.info == 'Logged in') {
+						$rootScope.loggedInUser = true;
+						$rootScope.email = response.user.email;
+						$rootScope.isAdmin = response.user['is_admin'];
+						$rootScope.user = response.user;
 					}
 
-					// Only ADMIN users can access user based pages
-					if (next.templateUrl) {
-						if (next.templateUrl.indexOf('/users/') > -1 &&
-							next.templateUrl != "/users/login.html" && next.templateUrl != "/users/register.html" && $rootScope.isAdmin === false) {
-							$location.path("/config");
+					// if a user with subrole_id 2 (viewer) is trying to go to config page, redirect
+					// them to home
+					if ($location.path().indexOf('config') > -1 && $rootScope.user.subrole_id === 2) {
+						$location.path("/");
+					}
+
+
+					// this event will fire every time the route changes
+					$rootScope.$on("$routeChangeStart", function (event, next, current) {
+
+						if (!$rootScope.loggedInUser) {
+							// no logged user, we should be going to the login route
+							if (next.templateUrl === "/users/login.html" || next.templateUrl === "/users/register.html") {
+								// don't redirect anon users on the login or register routes
+							} else {
+								// redirect all dashboard routes to login
+								$location.path("/users/login");
+							}
+
+						}
+
+						// Only ADMIN users can access user based pages
+						if (next.templateUrl) {
+							if (next.templateUrl.indexOf('/users/') > -1 &&
+								next.templateUrl != "/users/login.html" && next.templateUrl != "/users/register.html" && $rootScope.isAdmin === false) {
+								$location.path("/config");
+
 
 							// if a subrole_id of 2 (viewer only) tries to access any page other than home, redirect them
 							// to home page
+							} else if (next.templateUrl !== '/home/index.html' && next.templateUrl !== '/home/faq.html' && $rootScope.user && $rootScope.user.subrole_id === 2) {
+								$location.path('/');
 
-						} else if (next.templateUrl !== '/home/index.html' && next.templateUrl !== '/home/faq.html' && $rootScope.user && $rootScope.user.subrole_id === 2) {
-							$location.path('/');
-
+							}
 						}
-					}
 
-				});
+					});
 
 			});
+		}
 
 
 	});

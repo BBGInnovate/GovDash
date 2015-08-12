@@ -12,3 +12,4 @@ bower.json
 
 tmp
 log
+config/email.yml

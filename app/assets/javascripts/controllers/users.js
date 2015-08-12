@@ -27,7 +27,12 @@ function UsersCtrl($scope, Session, $rootScope, Users, $routeParams, $location, 
 
         Session.register(user.firstname, user.lastname, user.email, user.password, user.confirm_password)
             .then(function(response) {
-               console.log(response);
+                console.log(response);
+
+				// if no response was found, user was not created in backend
+				if (!response) {
+					$scope.authError = 'Could not create user';
+				}
             }, function(response) {
                 var errors = '';
                 $.each(response.data.errors, function(index, value) {

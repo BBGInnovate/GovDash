@@ -6,6 +6,29 @@ GIT
       activerecord (>= 4.0.0)
       pg
 
+GIT
+  remote: https://github.com/elasticsearch/elasticsearch-rails.git
+  revision: ded20356920802c35d258756113acfd95b25ade6
+  specs:
+    elasticsearch-model (0.1.7)
+      activesupport (> 3)
+      elasticsearch (> 0.4)
+      hashie
+    elasticsearch-rails (0.1.7)
+
+GIT
+  remote: https://github.com/elasticsearch/elasticsearch-ruby.git
+  revision: 692e55d86cb46944019f68e2e4f57db6074f6f9c
+  specs:
+    elasticsearch (1.0.12)
+      elasticsearch-api (= 1.0.12)
+      elasticsearch-transport (= 1.0.12)
+    elasticsearch-api (1.0.12)
+      multi_json
+    elasticsearch-transport (1.0.12)
+      faraday
+      multi_json
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -92,6 +115,10 @@ GEM
       thread_safe (~> 0.1)
       warden (~> 1.2.3)
     diff-lcs (1.2.5)
+    dnsruby (1.58.0)
+    email_verifier (0.0.9)
+      dnsruby (>= 1.5)
+      rails (>= 3.0.0)
     equalizer (0.0.9)
     erubis (2.7.0)
     eventmachine (1.0.7)
@@ -114,6 +141,7 @@ GEM
       activesupport (>= 4.1.0)
     haml (4.0.6)
       tilt
+    hashie (3.4.2)
     hike (1.2.3)
     http (0.6.3)
       http_parser.rb (~> 0.6.0)
@@ -318,6 +346,10 @@ DEPENDENCIES
   database_cleaner
   delayed_job_active_record
   devise (~> 3.2)
+  elasticsearch!
+  elasticsearch-model!
+  elasticsearch-rails!
+  email_verifier
   factory_girl_rails (= 4.2.1)
   faker
   fb_graph

@@ -1,6 +1,9 @@
 class Account < ActiveRecord::Base
   self.inheritance_column = 'media_type_name'
   
+  cattr_accessor :all_countries, :all_regions
+  cattr_accessor :all_groups, :all_subgroups
+
   before_create :record_new
   
   has_one :account_profile, foreign_key: :account_id, 
@@ -84,6 +87,56 @@ class Account < ActiveRecord::Base
   end
 
   def info
+    begin
+     profile_attr = {data_collect_started: self.collect_started}
+     begin
+       profile_attr.merge! self.account_profile.attributes
+     rescue
+     end
+     ['id','account_id','location','created_at','updated_at'].each do |rm|
+        profile_attr.delete(rm)
+     end
+     the_groups = []
+     Account.all_groups.each do | ac |
+       if ac.account_id == self.id
+         the_groups << ac.group
+       end
+     end
+     the_subgroups = []
+     Account.all_subgroups.each do | ac |
+       if ac.account_id == self.id
+         the_subgroups << ac.subgroup
+       end
+     end
+
+     the_countries = []
+     Account.all_countries.each do | ac |
+       if ac.account_id == self.id
+         the_countries << ac.country
+       end
+     end
+     the_regions = []
+     Account.all_regions.each do | ac |
+       if ac.account_id == self.id
+         the_regions << ac.region
+       end
+     end
+     {:name=>self.name,:id=>self.id,
+      :profile=>profile_attr,
+      :groups=>the_groups.map(&:name),
+      :subgroups=>the_subgroups.map(&:name),
+      :countries=>the_countries.map{|c| [c.id, c.name]}.to_h,
+      :regions=> the_regions.map{|c| [c.id, c.name]}.to_h, 
+      :contact=>(self.contact || 'N/A')}
+    rescue Exception=>e
+      logger.error "Error: #{e.message}"
+      e.backtrace[0..10].each do |m|
+        logger.error "#{m}"
+      end
+      {}
+    end
+  end
+  def info_old
     begin
      profile_attr = {data_collect_started: self.collect_started}
      begin

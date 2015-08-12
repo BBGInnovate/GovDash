@@ -71,6 +71,9 @@ class Api::V2::ReportsController < Api::V2::BaseController
         if stat
           sel = stat.select_by
           if sel
+            # these two are for Account#info method
+            involved_groups
+            involved_subgroups
             rep_name=media_type_name.match('(\w+)Account')[1].downcase.to_sym
             @report[rep_name] = {
               :accounts=> accounts_for(media_type_name).to_h,

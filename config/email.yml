@@ -3,8 +3,8 @@ development: &defaults
   :address: email-smtp.us-east-1.amazonaws.com
   :port: 587
   :authentication: :login
-  :user_name: AKIAIFRLAGJKSQ6L54IQ
-  :password: AvlQHwRTp3qoPCs2URH5AesJ5WyB4RztMxvjF7dRvqh4
+  :user_name: 
+  :password: 
   :enable_starttls_auto: true
   :receivers: "hnoor@bbg.gov"
 staging:

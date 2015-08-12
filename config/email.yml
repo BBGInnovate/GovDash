@@ -1,12 +1,13 @@
 # is overriden by OpsWorks
 development: &defaults
-  :address: email-smtp.us-east-1.amazonaws.com
+  :address: smtp.gmail.com
   :port: 587
-  :authentication: :login
-  :user_name: AKIAIFRLAGJKSQ6L54IQ
-  :password: AvlQHwRTp3qoPCs2URH5AesJ5WyB4RztMxvjF7dRvqh4
+  :domain: gmail.com
+  :authentication: plain
+  :user_name:
+  :password:
   :enable_starttls_auto: true
-  :receivers: "hnoor@bbg.gov"
+  :receivers:
 staging:
   <<: *defaults
   

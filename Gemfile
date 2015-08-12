@@ -33,6 +33,8 @@ gem 'therubyracer'
 gem 'bunny'
 gem 'amqp'
 gem 'rails-observers'
+gem 'email_verifier'
+# gem 'valid_email'
 
 gem 'daemons'
 gem 'delayed_job_active_record'
@@ -60,6 +62,10 @@ gem 'romniture'
 # group :production do
 #  gem 'rails_12factor'
 # end
+
+gem 'elasticsearch', git: 'https://github.com/elasticsearch/elasticsearch-ruby.git'
+gem 'elasticsearch-model', git: 'https://github.com/elasticsearch/elasticsearch-rails.git'
+gem 'elasticsearch-rails', git: 'https://github.com/elasticsearch/elasticsearch-rails.git'
 
 group :assets do
   gem 'uglifier', '>= 1.3.0'

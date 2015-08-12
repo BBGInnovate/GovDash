@@ -43,29 +43,51 @@ class Api::V2::UsersController < Api::V2::BaseController
 =end
 
   def create
-    pars = _params_
-    @roles = pars.delete 'roles'
-    @email = pars.delete 'email'
     begin
-      @user = User.find_or_create_by email: @email
-      @user.confirmation_code = @user.generate_confirmation_code
-      @user.update_attributes pars
-      if @user.is_admin?
-        Organization.all.each do | org |
-          @user.roles.find_or_create_by organization_id: org.id
+      uri = URI.parse request.original_url
+      port =  uri.port == 80 ? "" : ":#{uri.port}"  
+      host = "#{uri.scheme}://#{uri.host}#{port}"
+      production = uri.host.match(/bbg\.gov/)
+      pars = _params_
+      @roles = pars.delete 'roles'
+      @email = pars[:email]
+      @user = User.find_by email: @email
+      @user = User.new if !@user
+      pars.each_pair do | key, val |
+        if @user.respond_to?(key) && val
+          @user.send("#{key}=", val)
         end
-      elsif @roles
-        reset_roles @user, @roles
       end
-      # @user.send_confirmation_email
-      # @user.confirmation_sent_at = Time.zone.now
-      # @user.save
-      ## sign_in(@user)
-      ## respond_with @user, :location => api_users_path
-      params[:id] = @user.id
-      show
-    rescue
-      respond_with @user.errors, :location => new_user_registration_path
+      if @user.valid?
+        if production && !EmailVerifier.check(@email)
+          logger.debug "Email not valid"
+          raise "Email is not valid"
+        end
+        @user.confirmation_code = @user.generate_confirmation_code
+        @user.request_host = host
+        msg = @user.send_confirmation_email
+        if msg.to_s.match(/^Error:/)
+          raise msg
+        end
+        @user.confirmation_sent_at = Time.zone.now
+        @user.save
+        if @roles
+          reset_roles @user, @roles
+        end
+        ## sign_in(@user)
+        ## respond_with @user, :location => api_users_path
+        # params[:id] = @user.id
+        # show
+        logger.info "Email confirmation sent"
+        render json: {:status => 'OK', :message => "Email confirmation sent"}
+      else
+        logger.info @user.errors.full_messages.join(', ')
+        render json: {:status => 'failed', :message => @user.errors.full_messages}
+      end
+    rescue Exception=>ex
+      logger.info ex.message
+      render json: {:status => 'failed', :message => ex.message}
+      # respond_with @user.errors, :location => new_user_registration_path
     end
   end
 
@@ -99,7 +121,7 @@ class Api::V2::UsersController < Api::V2::BaseController
         user.save!
         flash[:notice]="Your email is confirmed"
       else
-        flash[:error] = "Confirmation expired"
+        flash[:error] = "Confirmation link expired"
         logger.error "  UsersController#confirm: Confirmation expired"
       end
       redirect_to root_path

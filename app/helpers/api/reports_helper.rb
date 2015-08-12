@@ -56,12 +56,13 @@ module Api::ReportsHelper
   def accounts
     @accounts ||=
     begin
-      Account.where("is_active=1").select("id, name, object_name, media_type_name, contact").where(["id in (?)", @options[:account_ids]])
+      Account.where("is_active=1").select("id, name, object_name, media_type_name, contact").
+        where(["id in (?)", @options[:account_ids]]).to_a
     rescue 
       []
     end
   end 
-  # for countries
+  # # remove this method?
   def input_countries
     @input_countries ||= 
     begin
@@ -70,21 +71,42 @@ module Api::ReportsHelper
       []
     end
   end
+
+  def involved_groups
+    @involved_groups ||= 
+      AccountsGroup.includes([:account,:group]).
+          where(["account_id in (?)", @options[:account_ids]]).to_a
+    Account.all_groups = @involved_groups
+  end
+
+  def involved_subgroups
+    @involved_subgroups ||=
+    begin
+       AccountsSubgroup.includes([:account,:subgroup]).
+          where(["account_id in (?)", @options[:account_ids]]).to_a
+    rescue 
+      []
+    end
+    Account.all_subgroups = @involved_subgroups
+  end
+
   def involved_countries 
     @involved_countries  ||=
     begin
        AccountsCountry.includes([:account,:country]).
-            where(["account_id in (?)", @options[:account_ids] ])
+            where(["account_id in (?)", @options[:account_ids] ]).to_a
     rescue 
       []
     end
+    Account.all_countries = @involved_countries
+    @involved_countries
   end
   
-  # for regions
+  # remove this method?
   def input_regions
     @input_regions ||= 
     begin
-      Region.where(["id in (?)", @options[:region_ids]]).map{|c| [c.id,c.name]} 
+      Region.where(["id in (?)", @options[:region_ids]]).to_a.map{|c| [c.id,c.name]} 
     rescue 
       []
     end
@@ -92,31 +114,35 @@ module Api::ReportsHelper
   def involved_regions
     @involved_regions  ||=
     begin
-         AccountsRegion.includes([:account,:region]).
+      AccountsRegion.includes([:account,:region]).
             where(["account_id in (?)", @options[:account_ids] ])
     rescue 
       []
     end
+    Account.all_regions = @involved_regions
+    @involved_regions
   end
-  
+
+  # called by v2/regions_controller.rb
   def get_related_region_array region_id
     if !@_ac1
-      @_ac1 = AccountsRegion.all
+      @_ac1 = AccountsRegion.all.to_a
     end
     if !@_regions
-      @_regions  = Region.select("id, name").all
+      @_regions  = Region.select("id, name").all.to_a
     end
     account_ids = @_ac1.select{|a| a.region_id == region_id}.map(&:account_id).uniq
     region_ids = @_ac1.select{|a| account_ids.include? a.account_id}.map(&:region_id).uniq
     @_regions.select{|c| region_ids.include? c.id }
   end
   
+  # called by v2/countries_controller.rb
   def get_related_country_array country_id
     if !@_ac1
       @_ac1 = AccountsCountry.all
     end
     if !@_countries
-      @_countries  = Country.select("id, name").all
+      @_countries  = Country.select("id, name").all.to_a
     end
     account_ids = @_ac1.select{|a| a.country_id == country_id}.map(&:account_id).uniq
     country_ids = @_ac1.select{|a| account_ids.include? a.account_id}.map(&:country_id).uniq
@@ -172,107 +198,32 @@ module Api::ReportsHelper
   end
   
   def get_region_subgroup_hash 
-    hash_array = Hash.new {|h,k| h[k] = Array.new }
-    res = Subgroup.select("subgroups.*, subgroups_regions.region_id").
+    return @hash_array if @hash_array
+
+    @hash_array = Hash.new {|h,k| h[k] = Array.new }
+    if !@_res
+      @_res = Subgroup.select("subgroups.*, subgroups_regions.region_id").
            joins("JOIN subgroups_regions on subgroups_regions.subgroup_id = subgroups.id").
            order("subgroups_regions.subgroup_id").to_a
-    res.each do |a|
+    end
+    @_res.each do |a|
       attr = a.attributes
       region_id = attr.delete 'region_id'
-      hash_array[region_id] << attr
-      hash_array[region_id].uniq!
+      @hash_array[region_id] << attr
+      @hash_array[region_id].uniq!
     end
-    hash_array
+    @hash_array
   end
   
   def get_region_country_hash region_id
     if !@_rc
-      @_rc = RegionsCountry.select("country_id, region_id")
+      @_rc = RegionsCountry.select("country_id, region_id").to_a
     end
     country_ids = @_rc.select{|c| c.region_id == region_id}.map(&:country_id)
     if !@_countries
-      @_countries  = Country.select("id, name").all
+      @_countries  = Country.select("id, name").all.to_a
     end
     @_countries.select{|c| country_ids.include? c.id }
   end
   
 end
-=begin
-  def fb_involved_countries
-    @fb_involved_countries ||=
-        involved_countries.map{|rc| [rc.country.id, rc.country.name] if rc.account.is_facebook?}.compact.uniq
-  end
-  def tw_involved_countries
-    @tw_involved_countries ||=
-        involved_countries.map{|rc| [rc.country.id, rc.country.name] if rc.account.is_twitter?}.compact.uniq
-  end
-  def yt_involved_countries
-    @yt_involved_countries ||=
-        involved_countries.map{|rc| [rc.country.id, rc.country.name] if rc.account.is_youtube?}.compact.uniq
-  end
-  def fb_related_countries
-    fb_involved_countries # - input_countries
-  end
-  def tw_related_countries
-    tw_involved_countries # - input_countries
-  end
-  def yt_related_countries
-    yt_involved_countries # - input_countries
-  end
-  
-  #
-  # <b>DEPRECATED:</b> Please use <tt>accounts_for</tt> instead.
-  def fb_accounts
-    warn Kernel.caller.first + " DEPRECATED"
-    accounts.map{|a| [a.id,a.object_name] if a.media_type_name=='FacebookAccount' }.compact
-  end
-  # <b>DEPRECATED:</b> Please use <tt>accounts_for</tt> instead.
-  def tw_accounts
-    warn Kernel.caller.first + " DEPRECATED"
-    accounts.map{|a| [a.id,a.object_name] if a.media_type_name=='TwitterAccount' }.compact
-  end
-  # <b>DEPRECATED:</b> Please use <tt>accounts_for</tt> instead.
-  def yt_accounts
-    warn Kernel.caller.first + " DEPRECATED"
-    accounts.map{|a| [a.id,a.object_name] if a.media_type_name=='YoutubeAccount' }.compact
-  end 
-  def fb_account_names
-    accounts.map{|a| a.object_name if a.media_type_name=='FacebookAccount' }.compact
-  end   
-  def fb_account_ids
-    accounts.map{|a| a.id if a.media_type_name=='FacebookAccount' }.compact
-  end  
-  def tw_account_names
-    accounts.map{|a| a.object_name if a.media_type_name=='TwitterAccount' }.compact
-  end   
-  def tw_account_ids
-    accounts.map{|a| a.id if a.media_type_name=='TwitterAccount' }.compact
-  end
-  def yt_account_names
-    accounts.map{|a| a.object_name if a.media_type_name=='YoutubeAccount' }.compact
-  end   
-  def yt_account_ids
-    accounts.map{|a| a.id if a.media_type_name=='YoutubeAccount' }.compact
-  end
-  def fb_involved_regions
-    @fb_involved_regions ||=
-        involved_regions.map{|rc| [rc.region.id, rc.region.name] if rc.account.is_facebook?}.compact.uniq
-  end
-  def tw_involved_regions
-    @tw_involved_regions ||=
-        involved_regions.map{|rc| [rc.region.id, rc.region.name] if rc.account.is_twitter?}.compact.uniq
-  end
-  def yt_involved_regions
-    @yt_involved_regions ||=
-        involved_regions.map{|rc| [rc.region.id, rc.region.name] if rc.account.is_youtube?}.compact.uniq
-  end
-  def fb_related_regions
-    fb_involved_regions # - input_regions
-  end
-  def tw_related_regions
-    tw_involved_regions # - input_regions
-  end
-  def yt_related_regions
-    yt_involved_regions # - input_regions
-  end
-=end

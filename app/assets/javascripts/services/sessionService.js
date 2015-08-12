@@ -48,8 +48,11 @@ angular.module('sessionService', [])
                 return $http.post('/api/users', {user: {firstname: firstname, lastname: lastname, email: email, password: password, password_confirmation: confirm_password} })
                 .then(function(response) {
                     service.currentUser = response.data;
-                    if (service.isAuthenticated()) {
-                        $location.path('/');
+
+					console.log(response.data);
+
+                    if (service.isAuthenticated() && response.data.status !== 'failed') {
+                        $location.path('/welcome');
                     }
                 });
             },

@@ -40,7 +40,9 @@ class User < ActiveRecord::Base
     if self.is_admin
       hsh['subrole_id'] = Subrole.super_admin_id
     end
-    self.update_columns hsh
+    unless hsh.blank?
+      self.update_columns hsh
+    end
   end
 
   def find_default_group

@@ -1,6 +1,6 @@
-EmailVerifier.config do |config|
-  config.verifier_email = "oddidev@bbg.gov"
-end
+# EmailVerifier.config do |config|
+#  config.verifier_email = "oddidev@bbg.gov"
+# end
 
 # Use this hook to configure devise mailer, warden hooks and so forth.
 # Many of these configuration options can be set straight in your model.

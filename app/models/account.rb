@@ -86,11 +86,20 @@ class Account < ActiveRecord::Base
     read_attribute(:object_name).split('/').last
   end
 
+  def self.accounts_profiles account_id
+    @accounts_profiles ||= AccountProfile.
+      select([:account_id,:platform_type,:name,:display_name,:description,
+             :url,:avatar,:total_followers,:verified]).to_a
+    @accounts_profiles.detect{|ap| ap.account_id==account_id}
+  end
+
   def info
     begin
      profile_attr = {data_collect_started: self.collect_started}
      begin
-       profile_attr.merge! self.account_profile.attributes
+       pro = Account.accounts_profiles self.id
+       profile_attr.merge! pro.attributes
+       # profile_attr.merge! self.account_profile.attributes
      rescue
      end
      ['id','account_id','location','created_at','updated_at'].each do |rm|

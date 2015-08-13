@@ -94,7 +94,6 @@ class Api::V2::ReportsController < Api::V2::BaseController
   end
   
   def get_stat_class media_type
-    logger.debug "  Final @options=#{@options.inspect}" 
     case media_type
     when "FacebookAccount"
       FbStat.new(@options)

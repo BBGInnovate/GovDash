@@ -271,22 +271,22 @@
             </div>
             <div class="modal-body">
 
-                <div class="form-group">
+                <div class="form-group cal-form-group">
                     <label class="col-lg-2 control-label">Start Date</label>
                     <div class="col-lg-10">
                         <div class="input-group">
                             <input type="text" id="start-date" class="datepicker-input form-control" date-picker data-date="{{ startDate }}">
-                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            <span date-picker-open data-index="0" class="input-group-addon"><i class="fa fa-calendar"></i></span>
                         </div>
                     </div><!-- /.col -->
                 </div><!-- /form-group -->
 
-                <div class="form-group">
+                <div class="form-group cal-form-group">
                     <label class="col-lg-2 control-label">End Date</label>
                     <div class="col-lg-10">
                         <div class="input-group">
                             <input type="text" id="end-date" class="datepicker-input form-control" date-picker data-date="{{ endDate }}">
-                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            <span date-picker-open data-index="1" class="input-group-addon"><i class="fa fa-calendar"></i></span>
                         </div>
                     </div><!-- /.col -->
                 </div><!-- /form-group -->
@@ -326,8 +326,8 @@
                         <i class="fa fa-calendar"></i>&nbsp;&nbsp;&nbsp; {{ startDate }} - {{ endDate }} &nbsp;&nbsp;&nbsp;<span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu pull-right" role="menu">
-                        <li><a href="" ng-click="finish('1.week')">Last Week <span class="sub-date">(Sun - Sat)</span></a></li>
-                        <li><a href="" ng-click="finish('1.month')">Last 4 Weeks <span class="sub-date">(Sun - Sat)</span></a></li>
+                        <li><a href="" ng-click="finish('1.week')">Last Week <span style="position: relative; left: 17px; color: gray;">(Sun - Sat)</span></a></li>
+                        <li><a href="" ng-click="finish('1.month')">Last 4 Weeks <span style="position: relative; left: 2px; color: gray;">(Sun - Sat)</span></a></li>
                         <!--
                         <li><a href="">Last Quarter</a></li>
                         -->

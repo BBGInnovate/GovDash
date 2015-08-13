@@ -565,6 +565,26 @@ angular.module('directives', []).
 
 		};
 	}])
+	.directive('datePickerOpen', [function () {
+		return {
+			link: function ($scope, element, attrs) {
+				element.bind('click', function () {
+					// when the modal hides, hide everything
+					$('#datePickerModal').on('hide.bs.modal', function () {
+						$('.bootstrap-datetimepicker-widget').hide();
+					});
+
+					// if any are showing, hide
+					$('.bootstrap-datetimepicker-widget').hide();
+
+					var id = element.prev().attr('id');
+					$('.bootstrap-datetimepicker-widget').eq(attrs.index).css('position','fixed').css('top',$('#'+id).offset().top+35+'px').css('left',$('#'+id).offset().left+'px').css('right','auto');
+					$('.bootstrap-datetimepicker-widget').eq(attrs.index).show();
+				});
+			}
+		};
+	}])
+
 	// Show the filter selection modal
 		.directive('exportCsv', [function () {
 			return {

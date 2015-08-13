@@ -617,13 +617,13 @@ angular.module('directives', []).
 						// Loop through each table and structure the stringified row
 						// into an array
 						$('.table tr').each(function() {
-							var text = $(this).text().trim().replace('Data Since:', '');
+							var text = $(this).text().trim().replace('Date Since:', '');
 
 							// replace spaces with special space character to work in CSV
 							text = text.replace(/ /g, spaceChar).replace(/,/g , '');
 
 
-							text = text.replace('Name', 'Name,Data' + spaceChar + 'Since');
+							text = text.replace('Name', 'Name,Date' + spaceChar + 'Since');
 
 							// Replace header characters
 							if (i === 0) {

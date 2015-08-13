@@ -59,7 +59,7 @@ class Api::V2::UsersController < Api::V2::BaseController
         end
       end
       if @user.valid?
-        if production && !EmailVerifier.check(@email)
+        if !email_valid?(@email)
           logger.debug "Email not valid"
           raise "Email is not valid"
         end
@@ -111,6 +111,13 @@ class Api::V2::UsersController < Api::V2::BaseController
     else
       respond_with :api, 'Not permitted'
     end
+  end
+
+  def email_valid? email
+    # EmailVerifier.check(email)
+    domain_name = email.split('@').last
+    mail_servers = Resolv::DNS.open.getresources(domain_name, Resolv::DNS::Resource::IN::MX)
+    !mail_servers.empty?
   end
 
   def confirm

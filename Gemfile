@@ -22,7 +22,7 @@ gem "koala"
 # gem "aws-s3", github: 'bartoszkopinski/aws-s3'
 gem 'aws-sdk', '~> 2'
 
-gem 'yt', '~> 0.24.1'
+gem 'yt', '~> 0.25.5'
 
 gem 'language_list'
 gem 'twitter', '>= 5.10.0'
@@ -33,8 +33,8 @@ gem 'therubyracer'
 gem 'bunny'
 gem 'amqp'
 gem 'rails-observers'
-gem 'email_verifier'
-# gem 'valid_email'
+# gem 'email_verifier'
+# gem 'valid_email', require: ['valid_email/all_with_extensions']
 
 gem 'daemons'
 gem 'delayed_job_active_record'

@@ -247,3 +247,11 @@ div.xAxis div.tickLabel
     margin-left: 20px;
     margin: 5px;
 }
+
+.cal-form-group {
+    height: 60px;
+}
+
+.input-group-addon {
+    cursor: pointer;
+}

@@ -565,6 +565,26 @@ angular.module('directives', []).
 
 		};
 	}])
+	.directive('datePickerOpen', [function () {
+		return {
+			link: function ($scope, element, attrs) {
+				element.bind('click', function () {
+					// when the modal hides, hide everything
+					$('#datePickerModal').on('hide.bs.modal', function () {
+						$('.bootstrap-datetimepicker-widget').hide();
+					});
+
+					// if any are showing, hide
+					$('.bootstrap-datetimepicker-widget').hide();
+
+					var id = element.prev().attr('id');
+					$('.bootstrap-datetimepicker-widget').eq(attrs.index).css('position','fixed').css('top',$('#'+id).offset().top+35+'px').css('left',$('#'+id).offset().left+'px').css('right','auto');
+					$('.bootstrap-datetimepicker-widget').eq(attrs.index).show();
+				});
+			}
+		};
+	}])
+
 	// Show the filter selection modal
 		.directive('exportCsv', [function () {
 			return {
@@ -597,13 +617,13 @@ angular.module('directives', []).
 						// Loop through each table and structure the stringified row
 						// into an array
 						$('.table tr').each(function() {
-							var text = $(this).text().trim().replace('Data Since:', '');
+							var text = $(this).text().trim().replace('Date Since:', '');
 
 							// replace spaces with special space character to work in CSV
 							text = text.replace(/ /g, spaceChar).replace(/,/g , '');
 
 
-							text = text.replace('Name', 'Name,Data' + spaceChar + 'Since');
+							text = text.replace('Name', 'Name,Date' + spaceChar + 'Since');
 
 							// Replace header characters
 							if (i === 0) {

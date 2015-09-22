@@ -1,0 +1,20 @@
+# Chef Name: facebook_daily_script
+PATH=/usr/local/bin:$PATH
+*/10 * * * * cd /srv/www/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.daily_aggregate_data'  > /tmp/fb-daily.log 2>&1
+# Chef Name: facebook_aggre_script
+PATH=/usr/local/bin:$PATH
+0 */2 * * * cd /srv/www/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.aggregate_data_daily'  > /tmp/fb-aggre.log 2>&1
+# Chef Name: facebook_script
+PATH=/usr/local/bin:$PATH
+10 */4 * * * cd /srv/www/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.retrieve 28.days.ago'  > /tmp/fb-cron.log 2>&1
+# Chef Name: twitter_script
+10 */4 * * * cd /srv/www/socialdash_app/current && bundle exec rails runner -e production  'TwitterAccount.retrieve'  > /tmp/tw-cron.log 2>&1
+# Chef Name: sitecatalyst_script
+59 * * * * cd /srv/www/socialdash_app/current && bundle exec rails runner -e production  'ScReferralTraffic.get_daily_report'  > /tmp/sc-cron.log 2>&1
+# Chef Name: youtube_script
+*/30 * * * * cd /srv/www/socialdash_app/current && bundle exec rails runner -e production  'YoutubeAccount.retrieve'  > /tmp/yt-cron.log 2>&1
+# Chef Name: account_check_update_status
+PATH=/usr/local/bin:$PATH
+0 * * * * cd /srv/www/socialdash_app/current && bundle exec rails runner -e production  'Account.check_status'  > /tmp/ac-status.log 2>&1
+
+

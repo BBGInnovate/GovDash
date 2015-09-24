@@ -453,7 +453,7 @@ ALTER TABLE accounts MODIFY object_name VARCHAR(100);
 SELECT * FROM govdash_app.languages where name like "%Croatian%";
 UPDATE `govdash_app`.`languages` SET `name`='Serbo-Croatian' WHERE `id`='33';
 SELECT * FROM govdash_app.countries where name like "Russia%";
-replace with Russia (North Caucasus) , 
+replace with Russia (North Caucasus) ,  Russia (Tatarstan / Bashkortistan)
 =end
 def Account.load_group_subgroup_csv
       require 'csv'

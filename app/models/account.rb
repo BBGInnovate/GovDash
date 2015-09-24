@@ -454,6 +454,38 @@ SELECT * FROM govdash_app.languages where name like "%Croatian%";
 UPDATE `govdash_app`.`languages` SET `name`='Serbo-Croatian' WHERE `id`='33';
 SELECT * FROM govdash_app.countries where name like "Russia%";
 replace with Russia (North Caucasus) ,  Russia (Tatarstan / Bashkortistan)
+
+# below are duplicates or Bad, should be deleted.
+delete from accounts_subgroups where subgroup_id in
+-- delete from groups_subgroups where subgroup_id in
+-- delete from subgroups_regions where subgroup_id in
+(
+select id,name from subgroups where name in (
+'Radio Free Afghanistan (Dari)',
+'Radio Free Afghanistan (Pashto)',
+'Radio Free Afghanistan  (Pashto)',
+'Radio Free Afghanistan  (Gandhara)',
+'Radio Free Afghanistan (Gandhara)',
+'Radio Mashaal (Pashto)',
+'Radio Persian',
+'RFERL English - Lady Liberty',
+'RFERL English - The Power Vertical'
+)
+)
+# some youtube account ids changed. map the new id 
+update yt_videos set account_id = 591 where account_id = 215;
+update yt_videos set account_id = 600 where account_id = 218;
+update yt_videos set account_id = 607 where account_id = 217;
+update yt_videos set account_id = 608 where account_id = 557;
+update yt_videos set account_id = 612 where account_id = 559;
+
+update yt_channels set account_id = 591 where account_id = 215;
+update yt_channels set account_id = 600 where account_id = 218;
+update yt_channels set account_id = 607 where account_id = 217;
+update yt_channels set account_id = 608 where account_id = 557;
+update yt_channels set account_id = 612 where account_id = 559;
+
+
 =end
 def Account.load_group_subgroup_csv
       require 'csv'

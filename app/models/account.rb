@@ -447,6 +447,74 @@ class Account < ActiveRecord::Base
      new_item = true
    end
    #  last account_id=233
+=begin
+ALTER TABLE accounts MODIFY name VARCHAR(100);
+ALTER TABLE accounts MODIFY object_name VARCHAR(100);
+SELECT * FROM govdash_app.languages where name like "%Croatian%";
+UPDATE `govdash_app`.`languages` SET `name`='Serbo-Croatian' WHERE `id`='33';
+SELECT * FROM govdash_app.countries where name like "Russia%";
+replace with Russia (North Caucasus) , 
+=end
+def Account.load_group_subgroup_csv
+      require 'csv'
+      @group = Group.find_by name: 'RFERL'
+      # backup groups_subgroups table first!
+      subgrp_ids = GroupsSubgroups.where("group_id = #{@group.id}").pluck(:subgroup_id)
+      GroupsSubgroups.delete_all "group_id = #{@group.id}"
+      Subgroup.delete_all(["id in (?)", subgrp_ids])
+      media_type = {0=>'FacebookAccount',
+                    1=>'TwitterAccount',
+                    2=>'YoutubeAccount'}
+      tables = ['Facebook-Table1','Twitter-Table1','Youtube-Table1']
+      tables.each_with_index do |  t, i |
+        file="/Users/lliu/Desktop/RFERLSMDataAccts/#{t}.csv"
+        CSV.foreach(file, quote_char: '"', col_sep: ',', row_sep: :auto, headers:  true) do | line |
+          next if !line['Account Name']
+          str = line['Account Name'].strip
+          account = Account.find_or_create_by object_name: str, 
+            media_type_name: media_type[i],organization_id: 1
+          account.name = str 
+          account.is_active = true
+          account.save
+          
+          # Add AccountsGroup
+          AccountsGroup.find_or_create_by account_id: account.id,
+                           group_id: @group.id
+          str=line['Sub Group'].strip
+          subgroup = Subgroup.find_or_create_by name: str
+          GroupsSubgroups.find_or_create_by group_id: @group.id,
+              subgroup_id: subgroup.id
+
+          AccountsSubgroup.delete_all "account_id = #{account.id}"
+          AccountsSubgroup.find_or_create_by account_id: account.id,
+              subgroup_id: subgroup.id
+          AccountsRegion.delete_all "account_id = #{account.id}"
+          str = line['Regions'] || ''
+          # Add SubgroupsRegion
+          str.split(',').each do | reg |
+            region = Region.find_or_create_by name: reg.strip
+            SubgroupsRegion.find_or_create_by subgroup_id: subgroup.id,
+                           region_id: region.id
+            AccountsRegion.find_or_create_by account_id: account.id,
+                           region_id: region.id
+          end
+          AccountsCountry.delete_all "account_id = #{account.id}"
+          line['Countries'].split(',').each do | con |
+             country = Country.find_or_create_by name: con.strip
+             AccountsCountry.find_or_create_by account_id: account.id,
+                country_id: country.id
+          end
+
+          AccountsLanguage.delete_all "account_id = #{account.id}"
+          line['Languages'].split(',').each do | lan |
+            language = Language.find_or_create_by name: lan.strip
+            AccountsLanguage.find_or_create_by account_id: account.id,
+              language_id: language.id
+          end
+        end
+      end
+ 
+   end
 
    def Account.load_group_csv
       require 'csv'
@@ -489,6 +557,7 @@ class Account < ActiveRecord::Base
       RegionsCountry.import! @bulk_region_country
       SubgroupsRegion.import! @bulk_subgroup_region
    end
+
    def self.update_region_countries region_countries_hash
      region_countries_hash.each_pair do | _region, _countries|
        _countries.flatten!

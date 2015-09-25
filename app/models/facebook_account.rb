@@ -20,7 +20,7 @@ class FacebookAccount < Account
    end
 
 # main entry point to process facebook data
-  QUERY_LIMIT = 250
+  QUERY_LIMIT = 100
   SCHEDULED_DELAY = 1.hour.from_now
   def self.archive
      started = Time.now
@@ -202,7 +202,8 @@ class FacebookAccount < Account
     # @num_attempts = 0
     begin
       # @num_attempts += 1
-      posts = graph_api.get_connections(self.object_name, "posts", :fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta)
+      objectname = self.object_name.split("/").last.gsub(/\?$/, "")
+      posts = graph_api.get_connections(objectname, "posts", :fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta)
       ret = true
     rescue Koala::Facebook::ClientError=>error
       # if error.fb_error_type == 'OAuthException'

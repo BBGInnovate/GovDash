@@ -4,7 +4,7 @@ angular.module('sessionService', [])
         function redirect(url) {
             url = url || '/';
           //  $location.path(url);
-            $location.path('users/login');
+            window.location = '#/users/login';
         }
         var service = {
             login: function(email, password) {

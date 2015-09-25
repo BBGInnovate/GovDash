@@ -485,6 +485,7 @@ update yt_channels set account_id = 607 where account_id = 217;
 update yt_channels set account_id = 608 where account_id = 557;
 update yt_channels set account_id = 612 where account_id = 559;
 
+update accounts set is_active= 0 where id in (215,218,217,557,559)
 
 =end
 def Account.load_group_subgroup_csv

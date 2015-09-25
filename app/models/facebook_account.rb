@@ -116,7 +116,7 @@ class FacebookAccount < Account
            a.since_date = sincedate
          end
          # if !!a.graph_api
-           if a.retrieve
+    G       if a.retrieve
              count += 1
              Rails.logger.debug "Sleep 5 seconds for next account"
              sleep 5
@@ -664,7 +664,7 @@ class FacebookAccount < Account
         options[:post_created_time] = curr_date
         today_page.total_likes=z['likes']
         today_page.total_talking_about=z['talking_about_count']
-        if yesterday_page && yesterday_page.total_likes
+        if today_page.total_likes && yesterday_page && yesterday_page.total_likes
           today_page.fan_adds_day =today_page.total_likes - yesterday_page.total_likes
         end
         today_page.save

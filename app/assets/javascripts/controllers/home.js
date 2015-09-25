@@ -9,161 +9,163 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 	// this variable is used for determining whether or not data was returned
 	$scope.noDataFound = false;
 
-	// get all data on page load
-	APIData.getInitialData($rootScope.userRole).then(function(response) {
+	if ($rootScope.userRole) {
+		// get all data on page load
+		APIData.getInitialData($rootScope.userRole).then(function (response) {
 
-		$scope.regions = response[0].regions;
-		$scope.languages = response[1].languages;
-		$scope.groups = response[2].groups;
-		$scope.countries = response[3].countries;
-		$scope.organizations = response[4].organizations;
-		$scope.subgroups = response[5].subgroups;
-
-		// this is a placeholder for the subgroups that gets filtered down
-		$scope.allSubgroups = response[5].subgroups;
-		$scope.allCountries = response[3].countries;
-		$scope.allGroups = response[2].groups;
-
-		$scope.$watchCollection('selectedOrganizations', function(newVal, oldVal) {
-			if (newVal) {
-
-				if (newVal.length > 0) {
-					var groups = [];
-					for (var i = 0; i < newVal.length; i++) {
-						for (var j = 0; j < $scope.allGroups.length; j++) {
-							if ($scope.allGroups[j].organization_id === newVal[i].id) {
-								groups.push($scope.allGroups[j]);
-							}
-						}
-					}
-
-					$scope.groups = groups;
-
-					// set the subgroups based on the organization(s) selected
-					// DASH-370
-					$scope.resetSubgroupsByOrganization(newVal);
-
-				// reset list
-				} else {
-					$scope.selectedGroups = [];
-					$scope.selectedSubgroups = [];
-					$scope.groups = $scope.allGroups;
-					$scope.subgroups = $scope.allSubgroups;
-				}
-
-
-			}
-
-		});
-
-		// This scope watch function handles the many to many group -> subgroup relationship
-		$scope.$watch('selectedGroups', function() {
-			$scope.subgroups = response[5].subgroups;
-			if ($scope.selectedGroups) {
-				var ids = [];
-				// Loop through the selected groups
-				for (var i = 0; i < $scope.selectedGroups.length; i++) {
-					// If the selected item has subgroup ids
-					if ($scope.selectedGroups[i].related_subgroups) {
-						for (var j = 0; j < $scope.selectedGroups[i].related_subgroups.length; j++) {
-							ids.push($scope.selectedGroups[i].related_subgroups[j].id);
-						}
-					}
-
-				}
-
-				// Place holder array for new ids
-				var newIds = [];
-
-				// if there were IDs found from the groups
-				if (ids.length > 0) {
-					// Loop through all the subgroups
-					for (var i = 0; i < $scope.subgroups.length; i++) {
-						// Now loop through all of the IDs that were accumulated from previous loop
-						for (var j = 0; j < ids.length; j++) {
-							// If there was an ID match
-							if ($scope.subgroups[i].id === ids[j]) {
-								// Push to newIds array to assign later to $scope.subgroups
-								var subgroup = $scope.subgroups[i];
-								newIds.push(subgroup);
-							}
-						}
-
-					}
-					// Assign $scope.subgroups to the accumulated Ids
-					$scope.subgroups = newIds;
-
-
-				} else {
-					// If there were no subgroup Ids for the selected group, set $scope.subgroups to empty
-					if (newIds.length === 0 && $scope.selectedOrganizations.length > 0) {
-						$scope.subgroups = [];
-						// Otherwise, reset $scope.subgroups to the full list of subgroups
-					} else {
-						$scope.subgroups = response[5].subgroups;
-					}
-
-				}
-
-
-			}
-		});
-
-
-		// This scope watch function handles the many to many regions -> countries relationship
-		$scope.$watch('selectedRegions', function() {
+			$scope.regions = response[0].regions;
+			$scope.languages = response[1].languages;
+			$scope.groups = response[2].groups;
 			$scope.countries = response[3].countries;
-			if ($scope.selectedRegions) {
-				var ids = [];
-				// Loop through the selected groups
-				for (var i = 0; i < $scope.selectedRegions.length; i++) {
-					// If the selected item has subgroup ids
-					if ($scope.selectedRegions[i].related_countries) {
-						for (var j = 0; j < $scope.selectedRegions[i].related_countries.length; j++) {
-							ids.push($scope.selectedRegions[i].related_countries[j].id);
+			$scope.organizations = response[4].organizations;
+			$scope.subgroups = response[5].subgroups;
+
+			// this is a placeholder for the subgroups that gets filtered down
+			$scope.allSubgroups = response[5].subgroups;
+			$scope.allCountries = response[3].countries;
+			$scope.allGroups = response[2].groups;
+
+			$scope.$watchCollection('selectedOrganizations', function (newVal, oldVal) {
+				if (newVal) {
+
+					if (newVal.length > 0) {
+						var groups = [];
+						for (var i = 0; i < newVal.length; i++) {
+							for (var j = 0; j < $scope.allGroups.length; j++) {
+								if ($scope.allGroups[j].organization_id === newVal[i].id) {
+									groups.push($scope.allGroups[j]);
+								}
+							}
 						}
+
+						$scope.groups = groups;
+
+						// set the subgroups based on the organization(s) selected
+						// DASH-370
+						$scope.resetSubgroupsByOrganization(newVal);
+
+						// reset list
+					} else {
+						$scope.selectedGroups = [];
+						$scope.selectedSubgroups = [];
+						$scope.groups = $scope.allGroups;
+						$scope.subgroups = $scope.allSubgroups;
 					}
+
 
 				}
 
-				// Place holder array for new ids
-				var newIds = [];
+			});
 
-				// if there were IDs found from the groups
-				if (ids.length > 0) {
-					// Loop through all the subgroups
-					for (var i = 0; i < $scope.countries.length; i++) {
-						// Now loop through all of the IDs that were accumulated from previous loop
-						for (var j = 0; j < ids.length; j++) {
-							// If there was an ID match
-							if ($scope.countries[i].id === ids[j]) {
-								// Push to newIds array to assign later to $scope.subgroups
-								var country = $scope.countries[i];
-								newIds.push(country);
+			// This scope watch function handles the many to many group -> subgroup relationship
+			$scope.$watch('selectedGroups', function () {
+				$scope.subgroups = response[5].subgroups;
+				if ($scope.selectedGroups) {
+					var ids = [];
+					// Loop through the selected groups
+					for (var i = 0; i < $scope.selectedGroups.length; i++) {
+						// If the selected item has subgroup ids
+						if ($scope.selectedGroups[i].related_subgroups) {
+							for (var j = 0; j < $scope.selectedGroups[i].related_subgroups.length; j++) {
+								ids.push($scope.selectedGroups[i].related_subgroups[j].id);
 							}
 						}
 
 					}
-					// Assign $scope.subgroups to the accumulated Ids
-					$scope.countries = newIds;
+
+					// Place holder array for new ids
+					var newIds = [];
+
+					// if there were IDs found from the groups
+					if (ids.length > 0) {
+						// Loop through all the subgroups
+						for (var i = 0; i < $scope.subgroups.length; i++) {
+							// Now loop through all of the IDs that were accumulated from previous loop
+							for (var j = 0; j < ids.length; j++) {
+								// If there was an ID match
+								if ($scope.subgroups[i].id === ids[j]) {
+									// Push to newIds array to assign later to $scope.subgroups
+									var subgroup = $scope.subgroups[i];
+									newIds.push(subgroup);
+								}
+							}
+
+						}
+						// Assign $scope.subgroups to the accumulated Ids
+						$scope.subgroups = newIds;
 
 
-				} else {
-					// If there were no subgroup Ids for the selected group, set $scope.subgroups to empty
-					if (newIds.length === 0) {
-						$scope.countries = [];
-						// Otherwise, reset $scope.subgroups to the full list of subgroups
 					} else {
-						$scope.countries = response[3].countries;
+						// If there were no subgroup Ids for the selected group, set $scope.subgroups to empty
+						if (newIds.length === 0 && $scope.selectedOrganizations.length > 0) {
+							$scope.subgroups = [];
+							// Otherwise, reset $scope.subgroups to the full list of subgroups
+						} else {
+							$scope.subgroups = response[5].subgroups;
+						}
+
 					}
 
+
 				}
+			});
 
 
-			}
+			// This scope watch function handles the many to many regions -> countries relationship
+			$scope.$watch('selectedRegions', function () {
+				$scope.countries = response[3].countries;
+				if ($scope.selectedRegions) {
+					var ids = [];
+					// Loop through the selected groups
+					for (var i = 0; i < $scope.selectedRegions.length; i++) {
+						// If the selected item has subgroup ids
+						if ($scope.selectedRegions[i].related_countries) {
+							for (var j = 0; j < $scope.selectedRegions[i].related_countries.length; j++) {
+								ids.push($scope.selectedRegions[i].related_countries[j].id);
+							}
+						}
+
+					}
+
+					// Place holder array for new ids
+					var newIds = [];
+
+					// if there were IDs found from the groups
+					if (ids.length > 0) {
+						// Loop through all the subgroups
+						for (var i = 0; i < $scope.countries.length; i++) {
+							// Now loop through all of the IDs that were accumulated from previous loop
+							for (var j = 0; j < ids.length; j++) {
+								// If there was an ID match
+								if ($scope.countries[i].id === ids[j]) {
+									// Push to newIds array to assign later to $scope.subgroups
+									var country = $scope.countries[i];
+									newIds.push(country);
+								}
+							}
+
+						}
+						// Assign $scope.subgroups to the accumulated Ids
+						$scope.countries = newIds;
+
+
+					} else {
+						// If there were no subgroup Ids for the selected group, set $scope.subgroups to empty
+						if (newIds.length === 0) {
+							$scope.countries = [];
+							// Otherwise, reset $scope.subgroups to the full list of subgroups
+						} else {
+							$scope.countries = response[3].countries;
+						}
+
+					}
+
+
+				}
+			});
+
 		});
-
-	});
+	}
 
 
 	// Remove functions for wizard builder

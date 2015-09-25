@@ -208,11 +208,13 @@ class FacebookAccount < Account
       # if error.fb_error_type == 'OAuthException'
         # log_fail "graph_api.get_connections() #{error.message}"
         logger.error "graph_api.get_connections() #{error.message}"
+        logger.debug "   retrieve #{error.backtrace}" 
       # end
     rescue Exception=>error
       # log_fail "graph_api.get_connections() #{error.message}"
       # delayed_do_retrieve(since, hasta)
       logger.error "   retrieve #{error.message}" 
+      logger.debug "   retrieve #{error.backtrace}" 
     end
     if ret  
       begin     
@@ -228,7 +230,8 @@ class FacebookAccount < Account
       rescue Exception=>error
         # log_fail "process_posts() #{error.message}"
         # delayed_do_retrieve(since, hasta)
-        logger.error "   retrieve #{error.message}" 
+        logger.error "   retrieve #{error.message}"
+        logger.debug "   retrieve #{error.backtrace}"
       end
     end
     logger.info "   #{self.id} retrieve #{ret}"
@@ -581,7 +584,7 @@ class FacebookAccount < Account
   end
   
   def graph_api(access_token=nil)
-    Koala.config.api_version = "v2.3"
+    Koala.config.api_version = "v2.4"
     if !access_token
       access_token = self.app_token.get_access_token
     end

@@ -20,7 +20,7 @@ class FacebookAccount < Account
    end
 
 # main entry point to process facebook data
-  QUERY_LIMIT = 250
+  QUERY_LIMIT = 100
   SCHEDULED_DELAY = 1.hour.from_now
   def self.archive
      started = Time.now
@@ -116,7 +116,7 @@ class FacebookAccount < Account
            a.since_date = sincedate
          end
          # if !!a.graph_api
-           if a.retrieve
+    G       if a.retrieve
              count += 1
              Rails.logger.debug "Sleep 5 seconds for next account"
              sleep 5
@@ -202,7 +202,8 @@ class FacebookAccount < Account
     # @num_attempts = 0
     begin
       # @num_attempts += 1
-      posts = graph_api.get_connections(self.object_name, "posts", :fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta)
+      objectname = self.object_name.split("/").last.gsub(/\?$/, "")
+      posts = graph_api.get_connections(objectname, "posts", :fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta)
       ret = true
     rescue Koala::Facebook::ClientError=>error
       # if error.fb_error_type == 'OAuthException'
@@ -663,7 +664,7 @@ class FacebookAccount < Account
         options[:post_created_time] = curr_date
         today_page.total_likes=z['likes']
         today_page.total_talking_about=z['talking_about_count']
-        if yesterday_page && yesterday_page.total_likes
+        if today_page.total_likes && yesterday_page && yesterday_page.total_likes
           today_page.fan_adds_day =today_page.total_likes - yesterday_page.total_likes
         end
         today_page.save

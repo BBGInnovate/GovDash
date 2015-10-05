@@ -265,6 +265,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 	// Function that makes the API call and returns data / assigns it
 	// 'period' is the date period (current, last week, last month, etc.)
 	$scope.finish = function (period) {
+
 		$scope.noDataFound = false;
 		// Used for loading indicator at the top
 		$rootScope.isLoading = true;
@@ -363,6 +364,17 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 			$scope.orderYoutubeAccounts = function(predicate, reverse) {
 				$scope.youtubeAccounts = orderBy($scope.youtubeAccounts, predicate, reverse);
 			};
+
+
+			$scope.lastPeriod = 'week';
+
+			if (period.indexOf('week') > -1) {
+				// sets the text for the percent change compared to last period
+				$scope.lastPeriod = 'week';
+			} else if (period.indexOf('month') > -1) {
+				$scope.lastPeriod = '4 weeks';
+			}
+
 
 			$timeout(function(){
 				// hide spinner loading

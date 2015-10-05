@@ -243,9 +243,9 @@ angular.module('filters', []).
 			if (label) {
 				label = label.replace(' ', '');
 				if (label.indexOf('-') > -1) {
-					return label.replace('-', '') + ' less than last week';
+					return label.replace('-', '') + ' less than last';
 				} else {
-					return label + ' greater than last week';
+					return label + ' greater than last';
 				}
 
 			}

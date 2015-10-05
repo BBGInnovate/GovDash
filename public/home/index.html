@@ -48,7 +48,7 @@
                                     <div class="block h4"><strong>Languages</strong></div>
 
                                     <div class="col-lg-10">
-                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedLanguages" ng-options="language.name for language in languages"></select>
+                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedLanguages" ng-options="language.name for language in languages | orderBy:'name'"></select>
                                     </div>
 
 
@@ -357,7 +357,7 @@
                         <span id="totalInteractions" count-up data-value="{{ totalInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-class="{'vis-hidden': totalPercentChange === 'NaN %'}">{{ totalPercentChange | percentChange }} &nbsp;</span></div>
+                    <div class="m-top-md"><span ng-class="{'vis-hidden': totalPercentChange === 'NaN %'}">{{ totalPercentChange | percentChange }} {{ lastPeriod }}</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-eye"></i>
@@ -375,7 +375,7 @@
                        <span id="facebookInteractions" count-up data-value="{{ facebookInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-class="{'vis-hidden': facebookPercentChange.length === 0}">{{ facebookPercentChange | percentChange }} &nbsp;</span></div>
+                    <div class="m-top-md"><span ng-class="{'vis-hidden': facebookPercentChange.length === 0}">{{ facebookPercentChange | percentChange }} {{ lastPeriod }}</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-social-facebook"></i>
@@ -393,7 +393,7 @@
                         <span id="twitterInteractions" count-up data-value="{{ twitterInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-class="{'vis-hidden': twitterPercentChange.length === 0}">{{ twitterPercentChange | percentChange }} &nbsp;</span></div>
+                    <div class="m-top-md"><span ng-class="{'vis-hidden': twitterPercentChange.length === 0}">{{ twitterPercentChange | percentChange }} {{ lastPeriod }}</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-social-twitter"></i>
@@ -411,7 +411,7 @@
                         <span id="youtubeInteractions" count-up data-value="{{ youtubeInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-class="{'vis-hidden': youtubePercentChange.length === 0}">{{ youtubePercentChange | percentChange }} &nbsp;</span></div>
+                    <div class="m-top-md"><span ng-class="{'vis-hidden': youtubePercentChange.length === 0}">{{ youtubePercentChange | percentChange }} {{ lastPeriod }}</span></div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-social-youtube"></i>

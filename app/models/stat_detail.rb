@@ -273,7 +273,7 @@ class StatDetail
     [rec1, rec2].each_with_index do |rec, i|
       result = init_struct
       result.values = {:period=>rec.period,
-        :compare_period=>rec.compare_period}
+        :previous_period=>rec.compare_period}
       result.values.merge! set_engagement_data(rec)
       totals << result.values[:totals]
       if i == 1
@@ -332,7 +332,7 @@ class StatDetail
     results = []
     result = init_struct
     result.values = {:period=>rec.period,
-                     :compare_period=>rec.compare_period}
+                     :previous_period=>rec.compare_period}
     result.values.merge! set_engagement_data(rec)
     ch = 0
     hash = {:totals=>ch}

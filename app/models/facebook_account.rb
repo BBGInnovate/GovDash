@@ -116,7 +116,7 @@ class FacebookAccount < Account
            a.since_date = sincedate
          end
          # if !!a.graph_api
-    G       if a.retrieve
+           if a.retrieve
              count += 1
              Rails.logger.debug "Sleep 5 seconds for next account"
              sleep 5

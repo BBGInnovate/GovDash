@@ -15,6 +15,12 @@ class Api::V2::OrganizationsController < Api::V2::BaseController
     {:groups=>grp_arr, :subgroups=>subgrp_arr}
   end
   
+  def option_for_select
+    cond = super
+    cond << "name = 'bbg'"
+    cond
+  end
+  
   def __option_for_select
     cond = super
     user = current_user

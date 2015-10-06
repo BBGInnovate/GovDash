@@ -140,6 +140,16 @@ class StatDetail
   # instance methods below
   
   protected
+  
+  def compare_date start_date,myend_date
+    previous_max = start_date - 1.day
+    days = ((myend_date - start_date).to_i/(60*60*24)).days
+    previous_min = previous_max - days
+    previous_min = previous_min.strftime "%Y-%m-%d"
+    previous_max = previous_max.strftime "%Y-%m-%d"
+    " CONCAT_WS(' - ','#{previous_min}','#{previous_max}') AS compare_period,"       
+  end
+  
   # select data for one year
   # sum over month
   def get_select_trend_by_month start_date,myend_date, myaccounts
@@ -152,7 +162,8 @@ class StatDetail
         
     cond = ["#{self.class.created_at} BETWEEN '#{start_date.beginning_of_month.to_s(:db)}' AND '#{myend_date.end_of_month.to_s(:db)}' "]
     sql = " #{max} AS trend_date,"   
-    sql += " CONCAT_WS(' - ',#{min},#{max}) AS period,"   
+    sql += " CONCAT_WS(' - ',#{min},#{max}) AS period,"
+    sql += compare_date(start_date,myend_date)  
     sql += " 'month' AS trend_type,"      
     sql += "MONTH(#{self.class.created_at}) AS month_number, "
     sql += select_account_name myaccounts
@@ -172,7 +183,8 @@ class StatDetail
     User.logger.debug "    get_select_trend_by_week"
     cond = ["#{self.class.created_at} BETWEEN '#{start_date.beginning_of_day.to_s(:db)}' AND '#{myend_date.end_of_day.to_s(:db)}' "]
     sql = " DATE_FORMAT(max(#{self.class.created_at}),'%Y-%m-%d') AS trend_date,"     
-    sql += " CONCAT_WS(' - ','#{min}','#{max}') AS period,"   
+    sql += " CONCAT_WS(' - ','#{min}','#{max}') AS period,"
+    sql += compare_date(start_date,myend_date)
     sql += " 'week' AS trend_type,"   
     sql += "1 + DATEDIFF(#{self.class.created_at}, '#{min}') DIV 7  AS week_number, "
     sql += "'#{min}' + INTERVAL (DATEDIFF(#{self.class.created_at}, '#{min}') DIV 7) WEEK AS week_start_date,"
@@ -206,6 +218,7 @@ class StatDetail
     account_ids = myaccounts.map{|a| a.id}
     cond = ["#{self.class.created_at} BETWEEN '#{start_date.beginning_of_day.to_s(:db)}' AND '#{myend_date.end_of_day.to_s(:db)}' "]
     sql = "'#{start_date.strftime('%Y-%m-%d')} - #{myend_date.strftime('%Y-%m-%d')}' AS period, "
+    sql += compare_date(start_date,myend_date)
     sql += select_account_name myaccounts
     sql += " 'placeholder' as changes,"
     sql += select_summary_sql
@@ -259,7 +272,8 @@ class StatDetail
 
     [rec1, rec2].each_with_index do |rec, i|
       result = init_struct
-      result.values = {:period=>rec.period}
+      result.values = {:period=>rec.period,
+        :compare_period=>rec.compare_period}
       result.values.merge! set_engagement_data(rec)
       totals << result.values[:totals]
       if i == 1
@@ -317,7 +331,8 @@ class StatDetail
   def missing_record rec
     results = []
     result = init_struct
-    result.values = {:period=>rec.period}
+    result.values = {:period=>rec.period,
+                     :compare_period=>rec.compare_period}
     result.values.merge! set_engagement_data(rec)
     ch = 0
     hash = {:totals=>ch}

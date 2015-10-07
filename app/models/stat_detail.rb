@@ -1,7 +1,7 @@
 require 'ostruct'
 
 class StatDetail
-  REPLICA = true
+  REPLICA = false
   attr_accessor :options,:account_hash,:accounts,
     # :account_name_hash, :page_likes,
     :fb_accounts, :tw_accounts, :sc_accounts, :yt_accounts, 
@@ -82,6 +82,8 @@ class StatDetail
       recs5=[recs5]
       recs6=[recs6]
     end
+    recs5.compact!
+    recs6.compact!
     myaccounts.each do |account|
       hash = account.info
       rec5 = recs5.detect{|a| a.account_id == account.id}
@@ -122,8 +124,8 @@ class StatDetail
       {}
     end
   end
-=begin
-  def _select_accounts
+
+  def __select_accounts
     Rails.logger.debug "   AAA select_accounts"
     records = []
     trend_records = []
@@ -157,7 +159,7 @@ class StatDetail
       {}
     end
   end
-=end
+
 
   def select_by
     # Rails.logger.debug "   AAA select_by"

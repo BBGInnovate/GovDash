@@ -255,3 +255,12 @@ div.xAxis div.tickLabel
 .input-group-addon {
     cursor: pointer;
 }
+
+.fa-info-circle {
+    cursor: pointer;
+}
+
+.m-top-md {
+    position: relative;
+    z-index: 20;
+}

@@ -1,7 +1,7 @@
 require 'ostruct'
 
 class StatDetail
-  REPLICA = false
+  REPLICA = true
   attr_accessor :options,:account_hash,:accounts,
     # :account_name_hash, :page_likes,
     :fb_accounts, :tw_accounts, :sc_accounts, :yt_accounts, 
@@ -43,80 +43,15 @@ class StatDetail
     result.values = Hash.new {|h,k| h[k] = {} }
     result
   end
-    
-  def select_sc_accounts dates, myaccounts
-    records = []
-    trend_records = []
-    data = []
-    hash = {}
-    myaccounts.each do |account|
-      hash = account.info
-      rec5 = get_select_by(dates[0], dates[1], [account])
-      rec6 = get_select_by(dates[2], dates[3], [account])
-      unless current_exist?(rec6)
-        next
-      end
-      value = get_detail_result(rec5, rec6)
-      hash[:values] = value
-      # TO replace above line
-      # hash[:engagement] = value.first
-      records << rec5
-      records << rec6
-      # dynamic method name
-      method = self.method(trend_summarize_method)
-      trend_records = method.call(trend_from_date, end_date,[account])
-      hash[:trend] = get_accounts_trend_result(trend_records)
-      data << hash
-    end
-    data
-  end
-  def select_FbTwYt_accounts dates, myaccounts
-    Rails.logger.debug "   AAAA select_FbTwYt_accounts call #{accounts.size}"
-    records = []
-    trend_records = []
-    data = []
-    hash = {}
-    recs5 = get_select_by(dates[0], dates[1], myaccounts)
-    recs6 = get_select_by(dates[2], dates[3], myaccounts)
-    if myaccounts.size == 1
-      recs5=[recs5]
-      recs6=[recs6]
-    end
-    recs5.compact!
-    recs6.compact!
-    myaccounts.each do |account|
-      hash = account.info
-      rec5 = recs5.detect{|a| a.account_id == account.id}
-      rec6 = recs6.detect{|a| a.account_id == account.id}
-      unless current_exist?(rec6)
-        next
-      end
-      value = get_detail_result(rec5, rec6)
-      hash[:values] = value
-      # TO replace above line
-      # hash[:engagement] = value.first
-      records << rec5
-      records << rec6
-      # dynamic method name
-      method = self.method(trend_summarize_method)
-      trend_records = method.call(trend_from_date, end_date,[account])
-      hash[:trend] = get_accounts_trend_result(trend_records)
-      data << hash
-    end
-    data
-  end
   
   def select_accounts
-    records = []
-    trend_records = []
-    data = []
-    hash = {}
+    # Rails.logger.debug "   AAA select_accounts"
     dates = calculated_dates
-    if self.class.name.match /(Fb)|(Tw)|(Yt)Stat/
-      data = select_FbTwYt_accounts dates, accounts
+    if self.class.name.match(/(Fb)|(Tw)|(Yt)Stat/)
+      data = select_none_sc_accounts dates, accounts
     else
       data = select_sc_accounts dates, accounts
-    end
+    end  
     final_results << {:accounts=>data}
     if !data.empty?
       {:accounts=>data}
@@ -124,43 +59,6 @@ class StatDetail
       {}
     end
   end
-
-  def __select_accounts
-    Rails.logger.debug "   AAA select_accounts"
-    records = []
-    trend_records = []
-    data = []
-    hash = {}
-    dates = calculated_dates
-    accounts.each do |account|
-      hash = account.info
-      rec5 = get_select_by(dates[0], dates[1], [account])
-      rec6 = get_select_by(dates[2], dates[3], [account])
-      
-      unless current_exist?(rec6)
-        next
-      end
-      value = get_detail_result(rec5, rec6)
-      hash[:values] = value
-      # TO replace above line
-      # hash[:engagement] = value.first
-      records << rec5
-      records << rec6
-      # dynamic method name
-      method = self.method(trend_summarize_method)
-      trend_records = method.call(trend_from_date, end_date,[account])
-      hash[:trend] = get_accounts_trend_result(trend_records)
-      data << hash
-    end
-    final_results << {:accounts=>data}
-    if !data.empty?
-      {:accounts=>data}
-    else
-      {}
-    end
-  end
-
-
   def select_by
     # Rails.logger.debug "   AAA select_by"
     records = []
@@ -222,6 +120,58 @@ class StatDetail
   # instance methods below
   
   protected
+  
+  def get_detail_result_value(rec5, rec6, account)
+    hash = {}
+    value = get_detail_result(rec5, rec6)
+    hash[:values] = value
+    # dynamic method name
+    method = self.method(trend_summarize_method)
+    trend_records = method.call(trend_from_date, end_date,[account])
+    hash[:trend] = get_accounts_trend_result(trend_records)
+    hash
+  end
+  
+  def select_sc_accounts dates, myaccounts
+    records = []
+    trend_records = []
+    data = []
+    hash = {}
+    dates = calculated_dates
+    myaccounts.each do |account|
+      hash = account.info
+      rec5 = get_select_by(dates[0], dates[1], [account])
+      rec6 = get_select_by(dates[2], dates[3], [account])
+      unless current_exist?(rec6)
+        next
+      end
+      hash = get_detail_result_value(rec5, rec6, account)
+      data << hash
+    end
+    data
+  end
+  
+  def select_none_sc_accounts dates, myaccounts
+    records = []
+    trend_records = []
+    data = []
+    hash = {}
+    recs5 = get_selects_by(dates[0], dates[1], myaccounts)
+    recs6 = get_selects_by(dates[2], dates[3], myaccounts)
+    recs5.compact!
+    recs6.compact!
+    accounts.each do |account|
+      hash = account.info
+      rec5 = recs5.detect{|a| a.account_id == account.id}
+      rec6 = recs6.detect{|a| a.account_id == account.id}
+      unless current_exist?(rec6)
+        next
+      end
+      hash = get_detail_result_value(rec5, rec6, account)
+      data << hash
+    end
+    data
+  end
   
   def compare_date start_date,myend_date
     previous_max = start_date - 1.day
@@ -303,34 +253,36 @@ class StatDetail
     sql += compare_date(start_date,myend_date)
     sql += select_account_name myaccounts
     sql += " 'placeholder' as changes,"
-    
-    if account_ids.size == 1
-      sql += select_summary_sql
-      record = self.class.table_class.select(sql).where(cond).
-        where(self.class.select_option account_ids).to_a.first
-      record = filter_zero record
-    else
-      if self.class.name != 'ScStat'
-        sql += "account_id,"
-        sql += select_summary_sql
-        records = self.class.table_class.select(sql).where(cond).
-          where(self.class.select_option account_ids).
-          group(:account_id).to_a
-      else
-        sql += select_summary_sql
-        records = self.class.table_class.select(sql).where(cond).
-          where(self.class.select_option account_ids).to_a
-      end
-      new_records = []
-      records.each do |record|
-        new_records << filter_zero(record)
-      end
-      new_records
-    end
+    sql += select_summary_sql
+    record = self.class.table_class.select(sql).where(cond).
+      where(self.class.select_option account_ids).first
+    record = filter_zero record
   end
 
+  # start_date,end_date : Time object
+  # myaccounts : array of Account object
+  # return array active_record
+  def get_selects_by start_date,myend_date,myaccounts
+    account_ids = myaccounts.map{|a| a.id}
+    cond = ["#{self.class.created_at} BETWEEN '#{start_date.beginning_of_day.to_s(:db)}' AND '#{myend_date.end_of_day.to_s(:db)}' "]
+    sql = "'#{start_date.strftime('%Y-%m-%d')} - #{myend_date.strftime('%Y-%m-%d')}' AS period, "
+    sql += compare_date(start_date,myend_date)
+    sql += select_account_name myaccounts
+    sql += " 'placeholder' as changes,"
+    sql += select_summary_sql
+    records = self.class.table_class.select(sql).where(cond).
+      where(self.class.select_option account_ids).
+      group(:account_id).to_a
+      
+    myrecords = []
+    records.each do |record|
+      myrecords << filter_zero(record)
+    end
+    myrecords
+  end
+  
   def select_summary_sql
-    arr = []
+    arr = ["account_id"]
     self.class.data_columns.each_pair do | col, _as |
       arr << "COALESCE(sum(#{col}),0) as #{_as}" 
     end

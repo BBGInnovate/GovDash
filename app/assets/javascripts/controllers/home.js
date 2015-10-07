@@ -326,6 +326,8 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 
 			$scope.totalPercentChange = response.totalPercentChange;
 
+			$scope.lastPeriodDate = response.lastPeriodDate;
+
 			// Bar Chart Data
 			$scope.barChartData = response.barChartData;
 
@@ -373,6 +375,8 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 				$scope.lastPeriod = 'week';
 			} else if (period.indexOf('month') > -1) {
 				$scope.lastPeriod = '4 weeks';
+			} else {
+				$scope.lastPeriod = 'period';
 			}
 
 

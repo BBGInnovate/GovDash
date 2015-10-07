@@ -4,7 +4,7 @@ class TwStat < StatDetail
   # include ReadStatDetail
 
   def self.table_class
-    TwTimeline
+    REPLICA ? ReplicaTwTimeline : TwTimeline
   end
   def self.created_at
     'tweet_created_at'

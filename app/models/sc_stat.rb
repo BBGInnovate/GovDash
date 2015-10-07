@@ -4,7 +4,7 @@ class ScStat < StatDetail
   # include ReadStatDetail
 
   def self.table_class
-    ScReferralTraffic
+    REPLICA ? ReplicaScReferralTraffic : ScReferralTraffic
   end
   def self.created_at
     'created_at'
@@ -15,9 +15,9 @@ class ScStat < StatDetail
      'facebook_count'=>'facebook_count'}
   end
   def self.select_option account_ids
-    records = AccountsScSegment.where(["account_id in (?)", account_ids])
-    segment_ids = records.map{|rec| rec.sc_segment_id}.uniq
-    ["sc_segment_id in (?)", segment_ids]
+    @segment_ids ||= AccountsScSegment.where(["account_id in (?)", account_ids]).
+       pluck(:sc_segment_id).uniq
+    ["sc_segment_id in (?)", @segment_ids]
   end
 
 end

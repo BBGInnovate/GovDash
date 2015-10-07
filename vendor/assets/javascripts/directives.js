@@ -584,6 +584,27 @@ angular.module('directives', []).
 			}
 		};
 	}])
+	.directive('tooltip', function(){
+		return {
+			restrict: 'A',
+			link: function(scope, element, attrs){
+
+				// watches for when the lastPeriodDate changes
+				scope.$watch("lastPeriodDate",function(newValue,oldValue) {
+					$(element)[0].title = newValue;
+					$(element).attr('data-original-title', newValue);
+				});
+
+				$(element).hover(function(){
+					// on mouseenter
+					$(element).tooltip('show');
+				}, function(){
+					// on mouseleave
+					$(element).tooltip('hide');
+				});
+			}
+		};
+	})
 
 	// Show the filter selection modal
 		.directive('exportCsv', [function () {

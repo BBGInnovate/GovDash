@@ -192,6 +192,8 @@ angular.module('apiQueryService', [])
 					var scTrend = [];
 					var scTotalTrendActions = 0;
 
+					var lastPeriodDate = '';
+
 					// If Facebook data exists
 					if (response.data.facebook) {
 						fbTotalInteractions = response.data.facebook.values.period[0].totals;
@@ -206,6 +208,18 @@ angular.module('apiQueryService', [])
 
 						startDate =  moment(response.data.facebook.values.period[0].period.substring(0,10), 'YYYY-MM-DD').format('MM/DD/YYYY');
 						endDate =  moment(response.data.facebook.values.period[0].period.substring(13,24), 'YYYY-MM-DD').format('MM/DD/YYYY');
+
+						var lastPeriodStartDateString = moment(response.data.facebook.values.period[0].previous_period.substring(0,10), 'YYYY-MM-DD').format('MM/DD/YYYY');
+						var lastPeriodEndDateString = moment(response.data.facebook.values.period[0].previous_period.substring(13,24), 'YYYY-MM-DD').format('MM/DD/YYYY');
+
+				//		var lastPeriodStartDate = new Date(lastPeriodStartDateString);
+				//		var lastPeriodEndDate = new Date(lastPeriodEndDateString);
+
+						//lastPeriodDate = Math.ceil((lastPeriodEndDate.getTime() - lastPeriodStartDate.getTime()) / (1000*60*60*24));
+						lastPeriodDate = lastPeriodStartDateString + ' - ' + lastPeriodEndDateString;
+
+						//lastPeriodDate = response.data.facebook.values.period[0].previous_period;
+
 
 						numAccounts++;
 
@@ -226,6 +240,19 @@ angular.module('apiQueryService', [])
 						startDate =  moment(response.data.twitter.values.period[0].period.substring(0,10), 'YYYY-MM-DD').format('MM/DD/YYYY');
 						endDate =  moment(response.data.twitter.values.period[0].period.substring(13,24), 'YYYY-MM-DD').format('MM/DD/YYYY');
 
+						var lastPeriodStartDateString = moment(response.data.twitter.values.period[0].previous_period.substring(0,10), 'YYYY-MM-DD').format('MM/DD/YYYY');
+						var lastPeriodEndDateString = moment(response.data.twitter.values.period[0].previous_period.substring(13,24), 'YYYY-MM-DD').format('MM/DD/YYYY');
+
+					//	var lastPeriodStartDate = new Date(lastPeriodStartDateString);
+					//	var lastPeriodEndDate = new Date(lastPeriodEndDateString);
+
+						//lastPeriodDate = Math.ceil((lastPeriodEndDate.getTime() - lastPeriodStartDate.getTime()) / (1000*60*60*24));
+						lastPeriodDate = lastPeriodStartDateString + ' - ' + lastPeriodEndDateString;
+
+					//	lastPeriodDate = response.data.twitter.values.period[0].previous_period;
+
+
+
 						numAccounts++;
 
 					}
@@ -244,6 +271,19 @@ angular.module('apiQueryService', [])
 
 						startDate =  moment(response.data.youtube.values.period[0].period.substring(0,10), 'YYYY-MM-DD').format('MM/DD/YYYY');
 						endDate =  moment(response.data.youtube.values.period[0].period.substring(13,24), 'YYYY-MM-DD').format('MM/DD/YYYY');
+
+						var lastPeriodStartDateString = moment(response.data.youtube.values.period[0].previous_period.substring(0,10), 'YYYY-MM-DD').format('MM/DD/YYYY');
+						var lastPeriodEndDateString = moment(response.data.youtube.values.period[0].previous_period.substring(13,24), 'YYYY-MM-DD').format('MM/DD/YYYY');
+
+					//	var lastPeriodStartDate = new Date(lastPeriodStartDateString);
+					//	var lastPeriodEndDate = new Date(lastPeriodEndDateString);
+
+					//	lastPeriodDate = Math.ceil((lastPeriodEndDate.getTime() - lastPeriodStartDate.getTime()) / (1000*60*60*24));
+						lastPeriodDate = lastPeriodStartDateString + ' - ' + lastPeriodEndDateString;
+
+
+						//lastPeriodDate = response.data.youtube.values.period[0].previous_period;
+
 
 						numAccounts++;
 
@@ -308,7 +348,8 @@ angular.module('apiQueryService', [])
 						scTrend: scTrend,
 						scTotalTrendActions: scTotalTrendActions,
 						startDate: startDate,
-						endDate: endDate
+						endDate: endDate,
+						lastPeriodDate: lastPeriodDate
 					};
 
 

@@ -20,4 +20,12 @@ class ScStat < StatDetail
     ["sc_segment_id in (?)", @segment_ids]
   end
 
+  def select_summary_sql
+    arr = ["sc_segment_id"]
+    self.class.data_columns.each_pair do | col, _as |
+      arr << "COALESCE(sum(#{col}),0) as #{_as}" 
+    end
+    arr.join(',')
+  end
+  
 end

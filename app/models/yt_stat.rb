@@ -4,7 +4,7 @@ class YtStat < StatDetail
   # include ReadStatDetail
 
   def self.table_class
-    YtChannel
+    REPLICA ? ReplicaYtChannel : YtChannel
   end
   def self.created_at
     'published_at'

@@ -185,7 +185,7 @@ class Api::V2::ReportsController < Api::V2::BaseController
       # sum data for each day
       @options[:trend] = 'daily'
     end
-    @options[:account_ids] = Account.get_account_ids @options
+    @options[:account_ids] = ReplicaAccount.get_account_ids @options
     @options[:accounts] = accounts
     valid_options = false
     [:group_ids, :subgroup_ids, :region_ids, :country_ids, :account_ids].each do |opt|

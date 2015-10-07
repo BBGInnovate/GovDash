@@ -48,13 +48,17 @@ class Account < ActiveRecord::Base
   end
 
   def self.send_alarm date, klass
-    if date < 6.hours.ago
-      ago = ((Time.now - date)/3600).to_i
-      to = ['liwliu@bbg.gov','aramachandran@bbg.gov','amartin@bbg.gov','hnoor@bbg.gov']
-      msg = "#{klass} data not updated in #{ago} hours"
-      UserMailer.alarm_email(to, msg).deliver_now!
+    ago = ((Time.now - date)/3600).to_i
+    to = ['liwliu@bbg.gov','aramachandran@bbg.gov','amartin@bbg.gov','hnoor@bbg.gov']
+    msg = "#{klass} data not updated in #{ago} hours"
+    if klass == 'Facebook'
+      to_send = (date < 9.hours.ago)
     else
-      puts "  #{klass} updated at #{date.to_s(:db)} Current time: #{Time.now.to_s(:db)}"
+      to_send = (date < 6.hours.ago) 
+    end
+    if to_send
+      UserMailer.alarm_email(to, msg).deliver_now!
+      logger.debug "  #{klass} updated at #{date.to_s(:db)} Current time: #{Time.now.to_s(:db)}"
     end
   end
 
@@ -64,9 +68,9 @@ class Account < ActiveRecord::Base
       run_it =  (FacebookAccount === a) ? false : true
       if run_it
         a.send_message_queue
-        puts "RUN #{a.object_name}"
+        logger.debug "RUN #{a.object_name}"
       else
-        puts "NOT RUN #{a.object_name}"
+        logger.debug "NOT RUN #{a.object_name}"
       end
       logger.info "Sleep 10 seconds for next account"
       sleep 10
@@ -111,25 +115,29 @@ class Account < ActiveRecord::Base
          the_groups << ac.group
        end
      end
+     the_groups.compact!
      the_subgroups = []
      Account.all_subgroups.each do | ac |
        if ac.account_id == self.id
          the_subgroups << ac.subgroup
        end
      end
-
+     the_subgroups.compact!
+     
      the_countries = []
      Account.all_countries.each do | ac |
        if ac.account_id == self.id
          the_countries << ac.country
        end
      end
+     the_countries.compact!
      the_regions = []
      Account.all_regions.each do | ac |
        if ac.account_id == self.id
          the_regions << ac.region
        end
      end
+     the_regions.compact!
      {:name=>self.name,:id=>self.id,
       :profile=>profile_attr,
       :groups=>the_groups.map(&:name),
@@ -320,7 +328,7 @@ class Account < ActiveRecord::Base
       account_ids = []
     end
 
-    puts "CONSOLIDATED account ids #{account_ids}"
+    logger.debug "CONSOLIDATED account ids #{account_ids}"
     account_ids
   end
   
@@ -612,7 +620,7 @@ def Account.load_group_subgroup_csv
        subgroup = Subgroup.find_or_create_by name: sg
        _regions.each do | _reg |
          region = Region.find_or_create_by name: _reg.strip
-         puts "  Create Subgroup: #{sg} Region: #{_reg}"
+         logger.debug "  Create Subgroup: #{sg} Region: #{_reg}"
          @bulk_subgroup_region << {:subgroup_id=>subgroup.id,:region_id=>region.id}
          # SubgroupsRegion.find_or_create_by subgroup_id: subgroup.id,
          #                   region_id: region.id
@@ -729,7 +737,7 @@ def Account.load_group_subgroup_csv
                @bulk_account_language << {:account_id=>account.id,:language_id=>language.id}
                # AccountsLanguage.find_or_create_by account_id: account.id, language_id: language.id
              else
-               puts "  Cannot find #{la}"
+               logger.debug "  Cannot find #{la}"
                raise
              end
            end
@@ -737,7 +745,7 @@ def Account.load_group_subgroup_csv
        end
        if _regions
        # select * from regions where name in ('Caucus','Caucusus')
-         puts "  #{account.object_name} REGIONS #{_regions.inspect}"
+         logger.debug "  #{account.object_name} REGIONS #{_regions.inspect}"
          _regions.split(',').each do | reg |
             reg.strip!
             next if reg.empty?
@@ -787,7 +795,7 @@ def Account.load_group_subgroup_csv
    def clean_accounts
      Account.all.each do |a|
        if a.object_name != a.object_name.strip
-         puts " DELETE #{a.object_name}"
+         logger.debug " DELETE #{a.object_name}"
          a.destroy!
        end
      end
@@ -923,7 +931,7 @@ def Account.load_group_subgroup_csv
        klass="#{arr['Platform'].titleize}Account".constantize
        objectname=arr['Account Name'] || arr['Name']
        
-       puts "  NNN   A_#{objectname}_A"
+       logger.debug "  NNN   A_#{objectname}_A"
        objectname.strip!
        a = klass.find_or_create_by object_name: objectname
        organization = arr['Org']
@@ -951,7 +959,7 @@ end
   file="/Users/lliu/Downloads/voachina-posts.csv"
   CSV.foreach(file, quote_char: '"', col_sep: ',', row_sep: :auto, headers:  false) do | line |
     if t.match(/by action type - like/)
-      puts "   #{t}"
+      logger.debug "   #{t}"
     end
   end
  
@@ -966,7 +974,7 @@ end
   head = str.split(',')  
   head.each_with_index do |b,i| 
     if b.match(/by action type - /)
-       puts "   #{i}   #{b}" 
+       logger.debug "   #{i}   #{b}" 
     end
   end; nil
   voalearningenglish-posts.csv:
@@ -1008,13 +1016,13 @@ end
     if fi > 0
      arr = line.split(',')
      hash.keys.each_with_index do | k, i |
-       # puts " #{k}  #{j+i} "
+       # logger.debug " #{k}  #{j+i} "
        hash[k] += arr[j+i].to_i
      end
     end
   end; nil
-  puts File.basename(file)
-  puts hash.inspect
+  logger.debug File.basename(file)
+  logger.debug hash.inspect
   
   # end
   talking_comments = 0
@@ -1041,11 +1049,11 @@ end
      story_shares += arr[j+5].to_i
     end
   end; nil
-  puts File.basename(file)
-  puts hash.inspect
+  logger.debug File.basename(file)
+  logger.debug hash.inspect
   
-  puts "talking_comments: #{talking_comments}, talking_likes: #{talking_likes}, talking_shares: #{talking_shares}"; nil
-  puts "story_comments: #{story_comments}, story_likes: #{story_likes}, story_shares: #{story_shares}"; nil
+  logger.debug "talking_comments: #{talking_comments}, talking_likes: #{talking_likes}, talking_shares: #{talking_shares}"; nil
+  logger.debug "story_comments: #{story_comments}, story_likes: #{story_likes}, story_shares: #{story_shares}"; nil
   
    
   file="/Users/lliu/Desktop/accounts.csv"
@@ -1063,21 +1071,21 @@ end
   File.readlines(file).each_with_index do |line, i|
     if i > 0
      arr = line.split(',')
-     puts "  #{arr[15].to_i}  - #{arr[18].to_i}"
+     logger.debug "  #{arr[15].to_i}  - #{arr[18].to_i}"
      talking_likes += arr[15].to_i
      story_likes += arr[18].to_i
      # dislikes += arr[3].to_i
     end
   end; nil
-  puts talking_likes
-  puts story_likes
-  # puts likes - dislikes
+  logger.debug talking_likes
+  logger.debug story_likes
+  # logger.debug likes - dislikes
     
   arr = []
   File.readlines(file).each do |line|
      arr << "'#{line.gsub("\n",'')}'"
   end
-  puts arr.join(',')
+  logger.debug arr.join(',')
   
    def self.load_account_csv file
       file="/Users/lliu/Desktop/new_sm_accounts_rferl.csv"

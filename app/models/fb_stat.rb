@@ -5,7 +5,7 @@
 class FbStat < StatDetail 
   # include ReadStatDetail
   def self.table_class
-    FbPage
+    REPLICA ? ReplicaFbPage : FbPage
   end
   def self.created_at
     "post_created_time"

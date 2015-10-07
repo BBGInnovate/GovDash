@@ -56,7 +56,7 @@ module Api::ReportsHelper
   def accounts
     @accounts ||=
     begin
-      Account.where("is_active=1").select("id, name, object_name, media_type_name, contact").
+      ReplicaAccount.where("is_active=1").select("id, name, object_name, media_type_name, contact").
         where(["id in (?)", @options[:account_ids]]).to_a
     rescue 
       []
@@ -77,6 +77,7 @@ module Api::ReportsHelper
       AccountsGroup.includes([:account,:group]).
           where(["account_id in (?)", @options[:account_ids]]).to_a
     Account.all_groups = @involved_groups
+    ReplicaAccount.all_groups = @involved_groups
   end
 
   def involved_subgroups
@@ -88,6 +89,7 @@ module Api::ReportsHelper
       []
     end
     Account.all_subgroups = @involved_subgroups
+    ReplicaAccount.all_subgroups = @involved_subgroups
   end
 
   def involved_countries 
@@ -99,6 +101,7 @@ module Api::ReportsHelper
       []
     end
     Account.all_countries = @involved_countries
+    ReplicaAccount.all_countries = @involved_countries
     @involved_countries
   end
   
@@ -115,11 +118,13 @@ module Api::ReportsHelper
     @involved_regions  ||=
     begin
       AccountsRegion.includes([:account,:region]).
-            where(["account_id in (?)", @options[:account_ids] ])
+            where(["account_id in (?)", @options[:account_ids] ]).
+            to_a
     rescue 
       []
     end
     Account.all_regions = @involved_regions
+    ReplicaAccount.all_regions = @involved_regions
     @involved_regions
   end
 

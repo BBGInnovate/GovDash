@@ -12,8 +12,7 @@ class TwitterAccount < Account
      started = Time.now
      count = 0
      begin
-       records = super
-       # where(:is_active=>true).all
+       records = self.retrieve_records from_id
        range = "0..#{records.size-1}"
        if TwitterApp.config[:retrieve_range] &&
           TwitterApp.config[:retrieve_range].match(/(\d+\.\.\d+)/)

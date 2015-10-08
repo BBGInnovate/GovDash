@@ -104,8 +104,15 @@ class FacebookAccount < Account
      count = 0
      no_count = 0
      begin
-       records = super
-       # select('id, object_name,new_item').where("is_active=1").to_a
+       if from_id.to_i > 0
+         from_id=" id >= #{from_id}"
+       else
+         from_id=""
+       end
+       records = select('id, object_name,new_item').
+         where(media_type_name: "FacebookAccount").
+         where(from_id).where("is_active=1").to_a
+
        range = "0..#{records.size-1}"
        if Facebook.config[:retrieve_range] &&
           Facebook.config[:retrieve_range].match(/(\d+\.\.\d+)/)
@@ -584,6 +591,18 @@ class FacebookAccount < Account
     @access_token = @tokens.sample # [self.id % @tokens.size]
   end
   
+=begin
+# find which FB accounts not accessible
+aa=FacebookAccount.where(media_type_name: 'FacebookAccount',is_active: true).to_a
+aa.each do |a|
+  begin
+    a.graph_api.get_object a.object_name
+  rescue Exception=>ex
+    Rails.logger.debug " AAA #{a.object_name} - #{ex.message}"
+  end
+end
+=end
+
   def graph_api(access_token=nil)
     Koala.config.api_version = "v2.4"
     if !access_token

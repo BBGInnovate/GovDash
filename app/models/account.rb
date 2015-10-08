@@ -21,13 +21,13 @@ class Account < ActiveRecord::Base
   has_and_belongs_to_many :sc_segments
   has_and_belongs_to_many :users
   
-  def self.retrieve sincedate=7.day.ago,  from_id=0
+  def self.retrieve_records from_id=0
      if from_id.to_i > 0
         from_id=" id >= #{from_id}"
      else
        from_id=""
      end
-      select('id, object_name,new_item').where(from_id).where("is_active=1").to_a
+     select('id, object_name,new_item').where(from_id).where("is_active=1").to_a
   end
  
   # run it evefy 1 hours

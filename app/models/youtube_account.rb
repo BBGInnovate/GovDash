@@ -18,7 +18,7 @@ class YoutubeAccount < Account
   def self.retrieve sincedate=nil, from_id=0
     started = Time.now.utc
     count = 0
-    records = super
+    records = self.retrieve_records from_id
     # where("is_active=1").to_a
     range = "0..#{records.size-1}"
     if YoutubeConf[:retrieve_range] &&

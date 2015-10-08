@@ -104,19 +104,11 @@ class FacebookAccount < Account
      count = 0
      no_count = 0
      begin
-       if from_id.to_i > 0
-         from_id=" id >= #{from_id}"
-       else
-         from_id=""
-       end
-       records = select('id, object_name,new_item').
-         where(media_type_name: "FacebookAccount").
-         where(from_id).where("is_active=1").to_a
-
+       records = self.retrieve_records from_id
        range = "0..#{records.size-1}"
        if Facebook.config[:retrieve_range] &&
           Facebook.config[:retrieve_range].match(/(\d+\.\.\d+)/)
-           range = $1
+         range = $1
        end
        records[eval range].each_with_index do |a,i|
          if sincedate

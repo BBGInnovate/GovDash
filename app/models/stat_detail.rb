@@ -43,16 +43,52 @@ class StatDetail
     result.values = Hash.new {|h,k| h[k] = {} }
     result
   end
-  
+=begin 
+  def select_accounts
+    # Rails.logger.debug "   AAA select_accounts"
+    records = []
+    trend_records = []
+    data = []
+    hash = {}
+    dates = calculated_dates
+    accounts.each do |account|
+      hash = account.info
+      rec5 = get_select_by(dates[0], dates[1], [account])
+      rec6 = get_select_by(dates[2], dates[3], [account])
+      
+      unless current_exist?(rec6)
+        next
+      end
+      value = get_detail_result(rec5, rec6)
+      hash[:values] = value
+      # TO replace above line
+      # hash[:engagement] = value.first
+      # records << rec5
+      # records << rec6
+      # dynamic method name
+      method = self.method(trend_summarize_method)
+      trend_records = method.call(trend_from_date, end_date,[account])
+      hash[:trend] = get_accounts_trend_result(trend_records)
+      puts "   SSSS #{hash.inspect}"
+      data << hash
+    end
+    # final_results << {:accounts=>data}
+    if !data.empty?
+      {:accounts=>data}
+    else
+      {}
+    end
+  end
+=end
+
   def select_accounts
     # Rails.logger.debug "   AAA select_accounts"
     dates = calculated_dates
-    if self.class.name.match(/(Fb)|(Tw)|(Yt)Stat/)
+    #if self.class.name.match(/(Fb)|(Tw)|(Yt)Stat/)
       data = select_none_sc_accounts dates, accounts
-    else
-      data = select_sc_accounts dates, accounts
-    end  
-    final_results << {:accounts=>data}
+    #else
+    #  data = select_sc_accounts dates, accounts
+    #end  
     if !data.empty?
       {:accounts=>data}
     else
@@ -160,14 +196,21 @@ class StatDetail
     recs6 = get_selects_by(dates[2], dates[3], myaccounts)
     recs5.compact!
     recs6.compact!
+    is_account = recs5[0].respond_to? :account_id
     accounts.each do |account|
       hash = account.info
-      rec5 = recs5.detect{|a| a.account_id == account.id}
-      rec6 = recs6.detect{|a| a.account_id == account.id}
+      if is_account
+        rec5 = recs5.detect{|a| a.account_id == account.id}
+        rec6 = recs6.detect{|a| a.account_id == account.id}
+      else
+        asc = AccountsScSegment.find_by(account_id: account.id)
+        rec5 = recs5.detect{|a| a.sc_segment_id == asc.sc_segment_id}
+        rec6 = recs6.detect{|a| a.sc_segment_id == asc.sc_segment_id}
+      end
       unless current_exist?(rec6)
         next
       end
-      hash = get_detail_result_value(rec5, rec6, account)
+      hash.merge! get_detail_result_value(rec5, rec6, account)
       data << hash
     end
     data
@@ -270,10 +313,15 @@ class StatDetail
     sql += select_account_name myaccounts
     sql += " 'placeholder' as changes,"
     sql += select_summary_sql
-    records = self.class.table_class.select(sql).where(cond).
-      where(self.class.select_option account_ids).
-      group(:account_id).to_a
-      
+    if self.class.name != 'ScStat'
+      records = self.class.table_class.select(sql).where(cond).
+        where(self.class.select_option account_ids).
+        group(:account_id).to_a
+    else
+      records = self.class.table_class.select(sql).where(cond).
+        where(self.class.select_option account_ids).
+        group(:sc_segment_id).to_a
+    end
     myrecords = []
     records.each do |record|
       myrecords << filter_zero(record)

@@ -597,6 +597,7 @@ end
 
   def graph_api(access_token=nil)
     Koala.config.api_version = "v2.4"
+    Koala.http_service.http_options = {request: {open_timeout: 3, timeout: 5}}
     if !access_token
       access_token = self.app_token.get_access_token
     end
@@ -746,7 +747,7 @@ end
   end
   
   def me  
-    feeds=graph_api.graph_call("v2.2/me")
+    feeds=graph_api.graph_call("v2.4/me")
   end
   
   # period 1.day or 1.week or 1.month

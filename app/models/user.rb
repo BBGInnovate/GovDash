@@ -7,8 +7,11 @@ class User < ActiveRecord::Base
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable
   attr_accessor :request_host
-
+  # roles list organizations a user can manager
   has_many :roles
+  # subrole specifies a user's read/write permissions 
+  # if sunrole_id == 3, user can read/write to the group he belongs_to
+  # if sunrole_id == 4, user can read/write to the org he belongs_to
   belongs_to :subrole
   has_and_belongs_to_many :accounts
   belongs_to :group

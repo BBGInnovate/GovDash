@@ -704,7 +704,7 @@ class TwitterAccount < Account
     begin
       TwTimeline.select("min(created_at) as created_at").where(account_id: self.id).first.created_at.to_s(:db)
     rescue
-       'N/A'
+      'N/A'
     end
   end
   

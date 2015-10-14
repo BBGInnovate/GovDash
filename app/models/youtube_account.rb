@@ -363,7 +363,6 @@ class YoutubeAccount < Account
     begin
       YtChannel.select("min(created_at) as created_at").where(account_id: self.id).first.created_at.to_s(:db)
     rescue Exception=>ex
-      logger.error "   collect_started #{ex.message}"
       'N/A'
     end
   end

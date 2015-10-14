@@ -2,19 +2,20 @@ class Api::V2::AccountsController < Api::V2::BaseController
   before_filter :authenticate_user!, only: [:lookups,:new, :create, :edit, :update, :destroy]
 
   def index 
-  
     arr = []
     name = ''
     model_class.where(condition1).
        where(condition2).
-       where(condition3).each do |s|
-      attr = add_associate_name(s)
+       where(condition3).
+       where(condition5).
+       each do |s|
+      attr = filter_metadata(add_associate_name(s))
+      attr[:data_collect_started] = s.send :collect_started
       arr << attr
     end
     pretty_respond arr
   end
-  
-  
+
   def create
     @data = model_class.new _params_
     update_countries_regions
@@ -30,6 +31,20 @@ class Api::V2::AccountsController < Api::V2::BaseController
   end
   
   private
+
+  def filter_metadata attr
+    ["new_item","description","page_admin","media_type_name",
+    "account_type_id","contact","is_active","sc_segment_id",
+    "object_name_type","group_names","language_names",
+    "language_ids","country_names","country_ids","segment_names",
+    "segment_ids","region_names","region_ids","subgroup_names",
+    "profile","object_name",
+    "group_ids", "subgroup_ids",
+    :account_type_name].each do |a|
+      attr.delete a
+    end
+    attr
+  end
 
   def update_countries_regions
     if @data.valid?
@@ -114,6 +129,29 @@ class Api::V2::AccountsController < Api::V2::BaseController
       cond = ["id in (?)", ids]
     end
     cond
+  end
+  
+  # :group_id has no effect if :subgroup_id presents
+  # params[:subgroup_id] comma separated id
+  # params[:group_id] comma separated id
+  def condition5
+    cond = nil
+    if params[:subgroup_id]
+      gids = params[:subgroup_id].split(",")
+      ids = AccountsSubgroup.where(["subgroup_id in (?)", gids]).
+        pluck(:account_id)
+      cond = ["id in (?)", ids]
+    elsif params[:group_id]
+      gids = params[:group_id].split(",")
+      ids = AccountsGroup.where(["group_id in (?)", gids]).
+        pluck(:account_id)
+      cond = ["id in (?)", ids]
+    end
+    if cond
+      cond
+    else
+      []
+    end
   end
   
   def add_profile record

@@ -9,11 +9,7 @@ class Api::V2::AccountsController < Api::V2::BaseController
        where(condition3).
        where(condition5).
        each do |s|
-       if params[:group_id] || params[:subgroup_id]
-         attr = filter_metadata(add_associate_name(s))
-       else
-         attr = add_associate_name(s)
-       end
+       attr = filter_metadata(add_associate_name(s))
        attr[:data_collect_started] = s.send :collect_started
        arr << attr
     end
@@ -37,14 +33,29 @@ class Api::V2::AccountsController < Api::V2::BaseController
   private
 
   def filter_metadata attr
-    ["new_item","description","page_admin","media_type_name",
+    arr1 = ["new_item","description","page_admin","media_type_name",
+    "account_type_id","contact","is_active","sc_segment_id",
+    "object_name_type",
+    "country_ids","group_ids", "subgroup_ids","region_ids",
+    "segment_names","segment_ids",
+    "profile",
+    :account_type_name]
+    
+    arr2 = ["new_item","description","page_admin","media_type_name",
     "account_type_id","contact","is_active","sc_segment_id",
     "object_name_type","group_names","language_names",
     "language_ids","country_names","country_ids","segment_names",
     "segment_ids","region_names","region_ids","subgroup_names",
     "profile","object_name",
     "group_ids", "subgroup_ids",
-    :account_type_name].each do |a|
+    :account_type_name]
+    
+    if params[:group_id] || params[:subgroup_id]
+      arr = arr2
+    else
+      arr = arr1
+    end
+    arr1.each do |a|
       attr.delete a
     end
     attr

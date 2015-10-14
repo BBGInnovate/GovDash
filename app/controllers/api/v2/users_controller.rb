@@ -96,8 +96,14 @@ class Api::V2::UsersController < Api::V2::BaseController
     @roles = params[:user].delete 'roles'
     u = User.find params[:id]
     if u
-      u.update_attributes(_params_)
+      mypar = _params_
+      u.update_attributes( mypar )
       reset_roles u, @roles
+      if Organization.all.size > u.roles.size
+        u.is_admin = false if u.is_admin
+        u.subrole_id = 4 if u.subrole_id == 5
+        u.save
+      end
     else
       u="User not found"
     end
@@ -196,16 +202,16 @@ class Api::V2::UsersController < Api::V2::BaseController
   def add_related obj
     arr = []
     orgs = Organization.all
-    if obj.is_admin?
-      arr = orgs.map(&:name)
-    else
+    # if obj.is_admin?
+    #  arr = orgs.map(&:name)
+    # else
       # hsh = {:allowed_orignizations=>[]}
       obj.roles.each do |role|
         oid = role.organization_id
         org = orgs.detect{|o| o.id==oid}
         arr << org.name if org
       end
-    end
+    # end
     hash = {:roles => arr}
   end
   

@@ -9,9 +9,13 @@ class Api::V2::AccountsController < Api::V2::BaseController
        where(condition3).
        where(condition5).
        each do |s|
-      attr = filter_metadata(add_associate_name(s))
-      attr[:data_collect_started] = s.send :collect_started
-      arr << attr
+       if params[:group_id] || params[:subgroup_id]
+         attr = filter_metadata(add_associate_name(s))
+       else
+         attr = add_associate_name(s)
+       end
+       attr[:data_collect_started] = s.send :collect_started
+       arr << attr
     end
     pretty_respond arr
   end

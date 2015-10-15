@@ -14,11 +14,12 @@ angular.module('apiService', []).factory('APIData', ['$http', '$q', function($ht
 				$http.get('/api/countries'),
 				$http.get('/api/organizations'),
 				$http.get('/api/subgroups')
+				//$http.get('/api/accounts')
 			]).then(function (results) {
 				// once all the promises are completed .then() will be executed
 				// and results will have the object that contains the data
 				var aggregatedData = [];
-				var listData = ['regions', 'languages', 'groups', 'countries', 'organizations', 'subgroups'];
+				var listData = ['regions', 'languages', 'groups', 'countries', 'organizations', 'subgroups', 'accounts'];
 				var listCount = 0;
 
 				// array used to hold the ids of the organization the user belongs to
@@ -70,10 +71,10 @@ angular.module('apiService', []).factory('APIData', ['$http', '$q', function($ht
 								}
 							}
 							aggregatedData.push({ 'subgroups' : subgroups});
+						} /*else if (listCount == 6) {
+							aggregatedData.push({ 'accounts' : result.data});
 						}
-
-
-
+						*/
 
 						listCount++;
 					}
@@ -138,6 +139,7 @@ angular.module('apiQueryService', [])
 				var organizationIds = APIData.getIds(queryData.organizations);
 				var groupIds = APIData.getIds(queryData.groups);
 				var subgroupIds = APIData.getIds(queryData.subgroups);
+				var accountIds = APIData.getIds(queryData.accounts);
 
 				// structure dates for API
 				var startDate = moment(queryData.startDate, 'MM/DD/YYYY').format('YYYY/MM/DD');
@@ -154,7 +156,7 @@ angular.module('apiQueryService', [])
 				// Query API service passing in all parameters
 				return $http.post('/api/reports', {options: {source: "all", country_ids: countryIds,
 					region_ids: regionIds, language_ids: languageIds, organization_ids: organizationIds,
-					group_ids: groupIds, subgroup_ids: subgroupIds, start_date: startDate, end_date: endDate,
+					group_ids: groupIds, subgroup_ids: subgroupIds, account_ids: accountIds, start_date: startDate, end_date: endDate,
 					period: period } }).then(function(response) {
 
 
@@ -192,7 +194,11 @@ angular.module('apiQueryService', [])
 					var scTrend = [];
 					var scTotalTrendActions = 0;
 
+				//	var dataSinceArray = [];
+
 					var lastPeriodDate = '';
+
+					//var minDate = '';
 
 					// If Facebook data exists
 					if (response.data.facebook) {
@@ -220,6 +226,12 @@ angular.module('apiQueryService', [])
 
 						//lastPeriodDate = response.data.facebook.values.period[0].previous_period;
 
+						/*
+						// gather up all of the data collect started for minimum date selection
+						for (var i = 0; i < fbAccounts.length; i++) {
+							dataSinceArray.push(new Date(fbAccounts[i].profile.data_collect_started.substring(0, 10)));
+						}
+						*/
 
 						numAccounts++;
 
@@ -251,6 +263,12 @@ angular.module('apiQueryService', [])
 
 					//	lastPeriodDate = response.data.twitter.values.period[0].previous_period;
 
+						/*
+						// gather up all of the data collect started for minimum date selection
+						for (var i = 0; i < twAccounts.length; i++) {
+							dataSinceArray.push(new Date(twAccounts[i].profile.data_collect_started.substring(0, 10)));
+						}
+						*/
 
 
 						numAccounts++;
@@ -284,6 +302,14 @@ angular.module('apiQueryService', [])
 
 						//lastPeriodDate = response.data.youtube.values.period[0].previous_period;
 
+						/*
+						// gather up all of the data collect started for minimum date selection
+						for (var i = 0; i < youtubeAccounts.length; i++) {
+							dataSinceArray.push(new Date(youtubeAccounts[i].profile.data_collect_started.substring(0, 10)));
+						}
+						*/
+
+
 
 						numAccounts++;
 
@@ -298,6 +324,7 @@ angular.module('apiQueryService', [])
 						scTwActions = response.data.sitecatalyst.values.period[0].twitter_count;
 
 						scTrend = response.data.sitecatalyst.values.trend;
+
 
 						for (var i = 0; i < scTrend.length; i++) {
 							scTotalTrendActions += scTrend[i].totals;
@@ -325,6 +352,13 @@ angular.module('apiQueryService', [])
 
 					};
 
+					/*
+
+					if (dataSinceArray.length > 0) {
+						minDate = new Date(Math.min.apply(null, dataSinceArray));
+					}
+					*/
+
 					// Build object to return to controller
 					var formattedData = {
 						totalPercentChange: totalPercentChange,
@@ -350,12 +384,57 @@ angular.module('apiQueryService', [])
 						startDate: startDate,
 						endDate: endDate,
 						lastPeriodDate: lastPeriodDate
+						//minDate: minDate
 					};
+
+
+
 
 
 
 					return formattedData;
 				});
+			},
+
+			getAccountsByGroupAndSubgroupIds: function (groupIdsArray, subgroupIdsArray) {
+				// Query API service passing in all parameters
+				var queryString = '';
+
+				// Stringify the groupIds
+				var groupIds = '';
+				if (groupIdsArray) {
+					for (var i = 0; i < groupIdsArray.length; i++) {
+						groupIds += groupIdsArray[i].id + ',';
+					}
+					groupIds = groupIds.substring(0, groupIds.length - 1);
+					//console.log('Groups: ' + groupIds);
+					if (groupIds.length > 0) {
+						queryString += '&group_id=' + groupIds;
+					}
+				}
+
+
+				// Stringify the subgroupIds
+
+				var subgroupIds = '';
+				if (subgroupIdsArray) {
+					for (var i = 0; i < subgroupIdsArray.length; i++) {
+						subgroupIds += subgroupIdsArray[i].id + ',';
+					}
+					subgroupIds = subgroupIds.substring(0, subgroupIds.length - 1);
+				//	console.log('Subgroups: ' + subgroupIds);
+					if (subgroupIds.length > 0) {
+						queryString += '&subgroup_id='+subgroupIds;
+					}
+				}
+
+
+
+
+				return $http.get('/api/accounts?' + queryString).then(function(response) {
+					return response.data;
+				});
+
 			}
 
 		};

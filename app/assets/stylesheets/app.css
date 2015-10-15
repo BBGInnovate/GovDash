@@ -27,6 +27,11 @@
     padding: 6px;
     margin: 4px;
     color: white;
+    white-space: nowrap;
+}
+
+.teal-tag span {
+    white-space: nowrap;
 }
 
 .fa-spin {
@@ -263,4 +268,18 @@ div.xAxis div.tickLabel
 .m-top-md {
     position: relative;
     z-index: 20;
+}
+
+.date-error {
+    border: 1px solid #d02d2d !important;
+}
+
+.date-error-msg {
+    color: #d02d2d;
+    padding: 5px;
+    display: none;
+}
+
+.tooltip-inner {
+    max-width: 210px !important;
 }

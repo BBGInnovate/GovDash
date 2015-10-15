@@ -55,11 +55,12 @@
 
                                 </div><!-- ./tab-pane -->
                                 <div class="tab-pane fade in active" id="organizations">
-
+                                    <!--
                                     <div class="col-md-4">
                                         <div class="block h4"><strong>Organizations</strong></div>
                                         <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedOrganizations" ng-options="organization.name | uppercase for organization in organizations"></select>
                                     </div>
+                                    -->
 
                                     <div class="col-md-4">
                                         <div class="block h4"><strong>Groups</strong></div>
@@ -69,6 +70,11 @@
                                     <div class="col-md-4">
                                         <div class="block h4"><strong>Subgroups</strong></div>
                                         <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedSubgroups" ng-options="(subgroup.name+' '+subgroup.parentGroup) for subgroup in subgroups | orderBy:'name'"></select>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="block h4"><strong>Accounts</strong></div>
+                                        <select class="form-control" size="10" multiple ng-multiple="true" ng-model="selectedAccounts" ng-options="(account.name + ' (' + account.media_type_name.slice(0,-7) + ')') for account in accounts | orderBy:'name'"></select>
                                     </div>
 
 
@@ -112,6 +118,12 @@
                         <span class="tag teal-tag" ng-repeat="subgroup in selectedSubgroups">
                             <span>{{ subgroup.name }}&nbsp;&nbsp;</span>
                             <a href="" ng-click="removeSubgroup($index)" title="Removing tag" style="color: white">
+                                <span class="ion-close"></span>
+                            </a>
+                        </span>
+                         <span class="tag teal-tag" ng-repeat="account in selectedAccounts">
+                            <i class="fa fa-info-circle" title="Data Collected Since: {{ account.data_collect_started | dateFormatMMDDYYYY }}" data-toggle="tooltip" data-placement="top" datatooltip></i>&nbsp;&nbsp;<span>{{ account.name }} ({{ account.media_type_name.slice(0, -7) }})&nbsp;&nbsp;</span>
+                            <a href="" ng-click="removeAccount($index)" title="Removing tag" style="color: white">
                                 <span class="ion-close"></span>
                             </a>
                         </span>
@@ -275,22 +287,24 @@
                     <label class="col-lg-2 control-label">Start Date</label>
                     <div class="col-lg-10">
                         <div class="input-group">
-                            <input type="text" id="start-date" class="datepicker-input form-control" date-picker data-date="{{ startDate }}">
+                            <input type="text" id="start-date" class="datepicker-input form-control" date-picker data-date="{{ startDate }}" data-mindate="{{ minDate }}">
                             <span date-picker-open data-index="0" class="input-group-addon"><i class="fa fa-calendar"></i></span>
                         </div>
+                        <p class="date-error-msg">Please enter a date after 04/01/2015.</p>
                     </div><!-- /.col -->
                 </div><!-- /form-group -->
-
+                <br>
                 <div class="form-group cal-form-group">
                     <label class="col-lg-2 control-label">End Date</label>
                     <div class="col-lg-10">
                         <div class="input-group">
-                            <input type="text" id="end-date" class="datepicker-input form-control" date-picker data-date="{{ endDate }}">
+                            <input type="text" id="end-date" class="datepicker-input form-control" date-picker data-date="{{ endDate }}" data-mindate="{{ minDate }}">
                             <span date-picker-open data-index="1" class="input-group-addon"><i class="fa fa-calendar"></i></span>
                         </div>
+                        <p class="date-error-msg">Please enter a date after 04/01/2015.</p>
                     </div><!-- /.col -->
                 </div><!-- /form-group -->
-
+                <br>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default teal-button" data-dismiss="modal" ng-click="finish('custom')">Save</button>
@@ -318,6 +332,7 @@
                     <span class="tag teal-tag" ng-repeat="organization in selectedOrganizations">{{ organization.name | uppercase }}</span>
                     <span class="tag teal-tag" ng-repeat="group in selectedGroups">{{ group.name }}</span>
                     <span class="tag teal-tag" ng-repeat="subgroup in selectedSubgroups">{{ subgroup.name }}</span>
+                    <span class="tag teal-tag" ng-repeat="account in selectedAccounts"><i class="fa fa-info-circle" title="Data Collected Since: {{ account.data_collect_started | dateFormatMMDDYYYY }}" data-toggle="tooltip" data-placement="top" datatooltip></i>&nbsp;&nbsp;{{ account.name }} ({{ account.media_type_name.slice(0, -7)}})</span>
                 </div>
             </div>
             <div class="col-sm-8 text-right text-right-sm p-top-sm">

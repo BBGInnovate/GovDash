@@ -12,4 +12,7 @@ staging:
   <<: *default
 
 production:
+
+redshift_development:
+  <<: *default
   

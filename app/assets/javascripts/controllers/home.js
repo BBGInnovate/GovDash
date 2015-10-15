@@ -5,6 +5,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 	// Initialize start and end dates
 	$scope.endDate = moment().format('L');
 	$scope.startDate =  moment($scope.endDate,"MM/DD/YYYY").subtract(6,'day').format('MM/DD/YYYY');
+	//$scope.minDate = '01/01/2015';
 
 	// this variable is used for determining whether or not data was returned
 	$scope.noDataFound = false;
@@ -19,11 +20,13 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 			$scope.countries = response[3].countries;
 			$scope.organizations = response[4].organizations;
 			$scope.subgroups = response[5].subgroups;
+		//	$scope.accounts = response[6].accounts;
 
 			// this is a placeholder for the subgroups that gets filtered down
 			$scope.allSubgroups = response[5].subgroups;
 			$scope.allCountries = response[3].countries;
 			$scope.allGroups = response[2].groups;
+		//	$scope.allAccounts = response[6].groups;
 
 			$scope.$watchCollection('selectedOrganizations', function (newVal, oldVal) {
 				if (newVal) {
@@ -71,6 +74,15 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 							}
 						}
 
+
+					}
+
+
+					if ($scope.selectedGroups.length > 0) {
+						// make backend call here
+						APIQueryData.getAccountsByGroupAndSubgroupIds($scope.selectedGroups, $scope.selectedSubgroups).then(function(response) {
+							$scope.accounts = response;
+						});
 					}
 
 					// Place holder array for new ids
@@ -97,7 +109,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 
 					} else {
 						// If there were no subgroup Ids for the selected group, set $scope.subgroups to empty
-						if (newIds.length === 0 && $scope.selectedOrganizations.length > 0) {
+						if (newIds.length === 0/* && $scope.selectedOrganizations.length > 0*/) {
 							$scope.subgroups = [];
 							// Otherwise, reset $scope.subgroups to the full list of subgroups
 						} else {
@@ -107,6 +119,15 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 					}
 
 
+				}
+			});
+
+			$scope.$watch('selectedSubgroups', function () {
+				if ($scope.selectedSubgroups && $scope.selectedSubgroups.length > 0) {
+					// make backend call here
+					APIQueryData.getAccountsByGroupAndSubgroupIds($scope.selectedGroups, $scope.selectedSubgroups).then(function(response) {
+						$scope.accounts = response;
+					});
 				}
 			});
 
@@ -230,7 +251,8 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 		$scope.selectedGroups.splice(index, 1);
 
 		// if no groups are selected, reset subgroups
-		if ($scope.selectedGroups.length === 0 && $scope.selectedOrganizations.length === 0) {
+		//if ($scope.selectedGroups.length === 0 && $scope.selectedOrganizations.length === 0) {
+		if ($scope.selectedGroups.length === 0) {
 			$scope.subgroups = $scope.allSubgroups;
 			$scope.selectedSubgroups = [];
 
@@ -255,10 +277,34 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 			$scope.resetSubgroupsByOrganization($scope.selectedOrganizations);
 		}
 
+		// adjust account list
+		if ($scope.selectedGroups.length > 0) {
+			// make backend call here
+			APIQueryData.getAccountsByGroupAndSubgroupIds($scope.selectedGroups, $scope.selectedSubgroups).then(function(response) {
+				$scope.accounts = response;
+			});
+		} else if ($scope.selectedSubgroups.length === 0 && $scope.selectedGroups.length === 0) {
+			$scope.accounts = [];
+		}
+
 	};
 
 	$scope.removeSubgroup = function (index) {
 		$scope.selectedSubgroups.splice(index, 1);
+
+		// adjust account list
+		if ($scope.selectedSubgroups.length > 0) {
+			// make backend call here
+			APIQueryData.getAccountsByGroupAndSubgroupIds($scope.selectedGroups, $scope.selectedSubgroups).then(function(response) {
+				$scope.accounts = response;
+			});
+		} else if ($scope.selectedSubgroups.length === 0 && $scope.selectedGroups == null || $scope.selectedGroups.length === 0) {
+			$scope.accounts = [];
+		}
+	};
+
+	$scope.removeAccount = function (index) {
+		$scope.selectedAccounts.splice(index, 1);
 	};
 
 
@@ -286,6 +332,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 			organizations: $scope.selectedOrganizations,
 			groups: $scope.selectedGroups,
 			subgroups: $scope.selectedSubgroups,
+			accounts: $scope.selectedAccounts,
 			startDate: $scope.startDate,
 			endDate: $scope.endDate,
 			period: period
@@ -294,7 +341,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 		APIQueryData.getData(queryData).then(function(response) {
 
 			if (response.fbAccounts.length === 0 && response.twAccounts.length === 0 &&
-				response.youtubeAccounts.length === 0) {
+				response.youtubeAccounts.length === 0 && response.scTotalTrendActions === 0) {
 
 				// Display notification
 				noty({
@@ -378,6 +425,8 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 			} else {
 				$scope.lastPeriod = 'period';
 			}
+
+			//$scope.minDate = response.minDate;
 
 
 			$timeout(function(){

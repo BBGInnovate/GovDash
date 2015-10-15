@@ -99,15 +99,18 @@ class FacebookAccount < Account
     logger.info "   finished retrieve #{started} - #{ended}"
   end
   
-  def self.retrieve sincedate=nil, from_id=0
+  def self.retrieve sincedate=nil, from_id=0, retrieve_range=nil
      started = Time.now.utc
      count = 0
      no_count = 0
      begin
        records = self.retrieve_records from_id
        range = "0..#{records.size-1}"
-       if Facebook.config[:retrieve_range] &&
-          Facebook.config[:retrieve_range].match(/(\d+\.\.\d+)/)
+       if retrieve_range &&
+          retrieve_range.match(/(\d+\.\.\d+)/)
+         range = $1
+       elsif Facebook.config[:retrieve_range] &&
+             Facebook.config[:retrieve_range].match(/(\d+\.\.\d+)/)
          range = $1
        end
        records[eval range].each_with_index do |a,i|

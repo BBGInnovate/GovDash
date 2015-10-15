@@ -28,7 +28,7 @@ class Api::V2::BaseController <  ActionController::Base
       arr = [{'lookup'=> p.name}]
       hsh = {}
       cond = []
-      if p.respond_to? :is_active
+      if p.column_names.include? 'is_active'
         cond << "is_active=1"
       end
       if request_admin == 1 && !current_user.is_admin?

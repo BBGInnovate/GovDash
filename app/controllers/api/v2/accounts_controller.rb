@@ -33,7 +33,7 @@ class Api::V2::AccountsController < Api::V2::BaseController
   private
 
   def filter_metadata attr
-    arr1 = ["new_item","description","page_admin","media_type_name",
+    arr1 = ["new_item","description","page_admin",
     "account_type_id","contact","is_active","sc_segment_id",
     "object_name_type",
     "country_ids","group_ids", "subgroup_ids","region_ids",
@@ -41,7 +41,7 @@ class Api::V2::AccountsController < Api::V2::BaseController
     "profile",
     :account_type_name]
     
-    arr2 = ["new_item","description","page_admin","media_type_name",
+    arr2 = ["new_item","description","page_admin",
     "account_type_id","contact","is_active","sc_segment_id",
     "object_name_type","group_names","language_names",
     "language_ids","country_names","country_ids","segment_names",

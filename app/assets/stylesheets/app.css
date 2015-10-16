@@ -34,6 +34,14 @@
     white-space: nowrap;
 }
 
+.forward-slash {
+    padding: 0px !important;
+    margin: 0px !important;
+    width: 5px !important;
+    position: relative !important;
+    top: 8px !important;
+}
+
 .fa-spin {
     font-size: 64px !important;
     margin-top: 40px;
@@ -282,4 +290,8 @@ div.xAxis div.tickLabel
 
 .tooltip-inner {
     max-width: 210px !important;
+}
+
+#object_name {
+    width: 116.7% !important;
 }

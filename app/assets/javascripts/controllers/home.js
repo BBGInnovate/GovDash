@@ -426,6 +426,10 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 				$scope.lastPeriod = 'period';
 			}
 
+			$scope.hasLastPeriod = response.hasLastPeriod;
+
+			console.log($scope.hasLastPeriod);
+
 			//$scope.minDate = response.minDate;
 
 

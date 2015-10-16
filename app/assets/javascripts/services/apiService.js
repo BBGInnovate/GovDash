@@ -193,6 +193,7 @@ angular.module('apiQueryService', [])
 					var scTwActions = 0;
 					var scTrend = [];
 					var scTotalTrendActions = 0;
+					var hasLastPeriod = true;
 
 				//	var dataSinceArray = [];
 
@@ -352,6 +353,11 @@ angular.module('apiQueryService', [])
 
 					};
 
+					if (lastPeriodDate.length > 0 && moment(lastPeriodDate.substring(0, 10)).isBefore('04/01/2015')) {
+						hasLastPeriod = false;
+					}
+
+
 					/*
 
 					if (dataSinceArray.length > 0) {
@@ -383,7 +389,8 @@ angular.module('apiQueryService', [])
 						scTotalTrendActions: scTotalTrendActions,
 						startDate: startDate,
 						endDate: endDate,
-						lastPeriodDate: lastPeriodDate
+						lastPeriodDate: lastPeriodDate,
+						hasLastPeriod: hasLastPeriod
 						//minDate: minDate
 					};
 

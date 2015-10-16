@@ -34,6 +34,15 @@ angular.module('filters', []).
 
         };
     })
+	// prepopulate URL for when user creates account
+	.filter('prepopulateUrl', function () {
+		return function (text) {
+			if (text) {
+				return text.substring(0, text.length - 7).toLowerCase() + '.com';
+			}
+
+		};
+	})
     // Filter for displaying roles name instead of ID
     .filter('displayRole', function () {
         return function (text) {

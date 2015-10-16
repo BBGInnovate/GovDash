@@ -5,6 +5,7 @@ class Account < ActiveRecord::Base
   cattr_accessor :all_groups, :all_subgroups
 
   before_create :record_new
+  after_save :save_organization
   
   has_one :account_profile, foreign_key: :account_id, 
       dependent: :destroy
@@ -454,6 +455,14 @@ class Account < ActiveRecord::Base
    def record_new
      new_item = true
    end
+   
+   def save_organization
+      mygroup =  self.groups.first
+      if mygroup
+        self.update_column :organization_id, mygroup.organization_id
+      end
+   end
+   
    #  last account_id=233
 =begin
 ALTER TABLE accounts MODIFY name VARCHAR(100);

@@ -2,6 +2,7 @@
  * Directives
  */
 
+
 // Directive for opening modals
 angular.module('directives', []).
 	directive(['opendialog', function() {
@@ -510,8 +511,45 @@ angular.module('directives', []).
 				//Date & Time Picker
 				$(element).datetimepicker({
 					defaultDate: attrs.date,
-					pickTime: false
+					pickTime: false,
+					minDate: '04/01/2015'
 				});
+
+				// watch the text input in case user tries to type in tex
+				$(element).on('blur', function () {
+					var value = $(element).val();
+
+					// if the date is before 04/01/2015
+					if (moment(value).isBefore('04/01/2015')) {
+						$(element).addClass('date-error');
+						$(element).parent().next().show();
+
+						// disable the save button
+						$('#datePickerModal .teal-button').prop('disabled', true);
+					// otherwise it's after, remove any styles
+					} else {
+						$(element).removeClass('date-error');
+						$(element).parent().next().hide();
+
+						// disable the save button
+						$('#datePickerModal .teal-button').prop('disabled', false);
+					}
+
+				});
+/*
+				//Watch for changes to the modal-visible attribute
+				scope.$watch('minDate', function (newValue, oldValue) {
+					var minDate = '01/01/2015';
+
+					if (attrs.mindate) {
+						minDate = attrs.mindate.substring(1, 11);
+					}
+					console.log(minDate);
+
+					$(element).data("DateTimePicker").options.minDate = moment(minDate);
+				});
+*/
+
 			}
 		};
 	}])
@@ -595,6 +633,20 @@ angular.module('directives', []).
 					$(element).attr('data-original-title', newValue);
 				});
 
+				$(element).hover(function(){
+					// on mouseenter
+					$(element).tooltip('show');
+				}, function(){
+					// on mouseleave
+					$(element).tooltip('hide');
+				});
+			}
+		};
+	})
+	.directive('datatooltip', function(){
+		return {
+			restrict: 'A',
+			link: function(scope, element, attrs){
 				$(element).hover(function(){
 					// on mouseenter
 					$(element).tooltip('show');

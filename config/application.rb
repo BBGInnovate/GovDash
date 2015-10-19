@@ -8,6 +8,9 @@ Bundler.require(:default, :assets, Rails.env)
 
 module Radd
   class Application < Rails::Application
+    # Configure sensitive parameters which will be filtered from the log file.
+    config.filter_parameters += [:password, :password_confirmation]
+
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.

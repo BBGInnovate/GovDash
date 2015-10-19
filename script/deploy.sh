@@ -114,6 +114,7 @@ function deploy {
 }
 for i in "${hosts[@]}"
 do
-#	 deploy $i
-  ;
+	 deploy $i
+#  host=54.242.85.238
+#  scp $tarfile ${app_user}@${host}:/tmp/.
 done

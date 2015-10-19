@@ -32,11 +32,23 @@
             </div>
         </div>
 		<div class="form-group">
-			<label for="object_name" class="col-md-2 control-label">Username</label>
-			<div class="col-md-10">
+			<label for="object_name" class="col-md-2 control-label">URL</label>
+            <div class="col-md-3">
+                <input type="text" value="http://www.{{ selectedMediaType.name | prepopulateUrl }}" class="form-control" placeholder="" required="" readonly>
+            </div>
+            <div class="col-md-1 forward-slash">/</div>
+			<div class="col-md-6">
 				<input type="text" class="form-control" data-ng-model="account.object_name" id="object_name" placeholder="@voanews (Twitter), voanews (Facebook)" required>
 			</div>
 		</div>
+        <div class="form-group">
+            <label for="object_name" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <div>
+                    <span>Try your URL here: </span><a class="account-link" target="_blank" href="http://www.{{ selectedMediaType.name | prepopulateUrl }}/{{ account.object_name }}">http://www.{{ selectedMediaType.name | prepopulateUrl }}/{{ account.object_name }}</a>
+                </div>
+            </div>
+        </div>
     <!--
 		<div class="form-group">
 			<label for="organization" class="col-md-2 control-label">Organization</label>
@@ -93,7 +105,7 @@
 			</div>
 		</div>
 		<div class="form-group">
-			<div class="col-md-offset-2 col-md-10">
+            <div class="col-md-2" style="float: right">
 				<button type="submit" class="btn btn-default">Submit</button>
 			</div>
 		</div>

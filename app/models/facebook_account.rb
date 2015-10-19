@@ -642,7 +642,7 @@ end
                  :replies_to_comment => data.replies_to_comment
                 }
         if z['likes']
-          options[:total_likes]=>z['likes']
+          options[:total_likes]=z['likes']
           today_page.total_likes=z['likes']
         end
         if z['talking_about_count']

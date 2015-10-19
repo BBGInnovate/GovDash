@@ -210,7 +210,7 @@ class FacebookAccount < Account
     rescue Koala::Facebook::ClientError=>error
       # if error.fb_error_type == 'OAuthException'
         # log_fail "graph_api.get_connections() #{error.message}"
-        logger.error "graph_api.get_connections() #{error.message}"
+        logger.error "FB Account: #{self.id} - graph_api.get_connections() #{error.message}"
         logger.debug "   retrieve #{error.backtrace}" 
       # end
     rescue Exception=>error
@@ -233,7 +233,7 @@ class FacebookAccount < Account
       rescue Exception=>error
         # log_fail "process_posts() #{error.message}"
         # delayed_do_retrieve(since, hasta)
-        logger.error "   retrieve #{error.message}"
+        logger.error "FB Account: #{self.id} - do_retrieve #{error.message}"
         logger.debug "   retrieve #{error.backtrace}"
       end
     end
@@ -348,7 +348,7 @@ class FacebookAccount < Account
          end
        rescue Exception=>error
          logger.error error.message
-         logger.error "   save_post_details Exception post #{post.post_id}"
+         logger.error "FB Account: #{self.id} - save_post_details Exception post #{post.post_id}"
        end
        completed = ((total_processed.to_f / myposts.size) * 100).to_i
        logger.debug "#{completed} % completed" if ((total_processed % 10)==0 )
@@ -373,7 +373,7 @@ class FacebookAccount < Account
              :comments=>comment_count,
              :shares=>share_count
          rescue Exception=>ex
-           logger.error "    FacebookAccount#save_post_details #{ex.message}"
+           logger.error "FB Account: #{self.id} - FacebookAccount#save_post_details #{ex.message}"
            logger.error "    #{ex.backtrace}"  
          end
        else
@@ -424,7 +424,7 @@ class FacebookAccount < Account
       self.update_profile options
       
     rescue Exception=>error
-      logger.error error.message
+      logger.error "FB Account: #{self.id} - #{error.message}"
       logger.debug error.backtrace
       return
     end
@@ -444,7 +444,7 @@ class FacebookAccount < Account
         shares += json['shares'].to_i
       end
     rescue Exception=>error
-      logger.debug "  FbPAge#save_lifetime_data #{error.message}"
+      logger.debug "FB Account: #{self.id} - FbPage#save_lifetime_data #{error.message}"
       logger.debug "  #{error.backtrace}"
     end
     # @page = self.account.graph_api.get_object self.obj_name

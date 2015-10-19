@@ -372,7 +372,10 @@
                         <span id="totalInteractions" count-up data-value="{{ totalInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-class="{'vis-hidden': totalPercentChange === 'NaN %'}">{{ totalPercentChange | percentChange }} {{ lastPeriod }} <i ng-show="totalPercentChange" class="fa fa-info-circle" title="{{ lastPeriodDate }}" data-toggle="tooltip" data-placement="top" tooltip></i></span></div>
+                    <div class="m-top-md">
+                        <span ng-show="hasLastPeriod === true" ng-class="{'vis-hidden': totalPercentChange === 'NaN %'}">{{ totalPercentChange | percentChange }} {{ lastPeriod }} <i ng-show="totalPercentChange" class="fa fa-info-circle" title="{{ lastPeriodDate }}" data-toggle="tooltip" data-placement="top" tooltip></i></span>
+                        <span ng-show="hasLastPeriod === false" ng-class="{'vis-hidden': twitterPercentChange.length === 0}">Unavailable</span>
+                    </div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-eye"></i>
@@ -390,7 +393,10 @@
                        <span id="facebookInteractions" count-up data-value="{{ facebookInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-class="{'vis-hidden': facebookPercentChange.length === 0}">{{ facebookPercentChange | percentChange }} {{ lastPeriod }} <i ng-show="facebookPercentChange" class="fa fa-info-circle" title="{{ lastPeriodDate }}" data-toggle="tooltip" data-placement="top" tooltip></i></span></div>
+                    <div class="m-top-md">
+                        <span ng-show="hasLastPeriod === true" ng-class="{'vis-hidden': facebookPercentChange.length === 0}">{{ facebookPercentChange | percentChange }} {{ lastPeriod }} <i ng-show="facebookPercentChange" class="fa fa-info-circle" title="{{ lastPeriodDate }}" data-toggle="tooltip" data-placement="top" tooltip></i></span>
+                        <span ng-show="hasLastPeriod === false" ng-class="{'vis-hidden': twitterPercentChange.length === 0}">Unavailable</span>
+                    </div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-social-facebook"></i>
@@ -408,7 +414,10 @@
                         <span id="twitterInteractions" count-up data-value="{{ twitterInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-class="{'vis-hidden': twitterPercentChange.length === 0}">{{ twitterPercentChange | percentChange }} {{ lastPeriod }} <i ng-show="twitterPercentChange" class="fa fa-info-circle" title="{{ lastPeriodDate }}" data-toggle="tooltip" data-placement="top" tooltip></i></span></div>
+                    <div class="m-top-md">
+                        <span ng-show="hasLastPeriod === true" ng-class="{'vis-hidden': twitterPercentChange.length === 0}">{{ twitterPercentChange | percentChange }} {{ lastPeriod }} <i ng-show="twitterPercentChange" class="fa fa-info-circle" title="{{ lastPeriodDate }}" data-toggle="tooltip" data-placement="top" tooltip></i></span>
+                        <span ng-show="hasLastPeriod === false" ng-class="{'vis-hidden': twitterPercentChange.length === 0}">Unavailable</span>
+                    </div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-social-twitter"></i>
@@ -426,7 +435,10 @@
                         <span id="youtubeInteractions" count-up data-value="{{ youtubeInteractions }}"></span>
                     </div>
 
-                    <div class="m-top-md"><span ng-class="{'vis-hidden': youtubePercentChange.length === 0}">{{ youtubePercentChange | percentChange }} {{ lastPeriod }} <i ng-show="youtubePercentChange" class="fa fa-info-circle" title="{{ lastPeriodDate }}" data-toggle="tooltip" data-placement="top" tooltip></i></span></div>
+                    <div class="m-top-md">
+                        <span ng-show="hasLastPeriod === true" ng-class="{'vis-hidden': youtubePercentChange.length === 0}">{{ youtubePercentChange | percentChange }} {{ lastPeriod }} <i ng-show="youtubePercentChange" class="fa fa-info-circle" title="{{ lastPeriodDate }}" data-toggle="tooltip" data-placement="top" tooltip></i></span>
+                        <span ng-show="hasLastPeriod === false" ng-class="{'vis-hidden': twitterPercentChange.length === 0}">Unavailable</span>
+                    </div>
 
                     <div class="statistic-icon-background">
                         <i class="ion-social-youtube"></i>

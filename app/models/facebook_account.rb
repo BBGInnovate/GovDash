@@ -354,6 +354,12 @@ class FacebookAccount < Account
      save_lifetime_data
   end
 
+  def self.save_lifetime_data
+     self.where(is_active: 1).each do |record|
+       record.save_lifetime_data
+     end
+  end
+  
   def save_lifetime_data
     begin
       options = {}
@@ -576,9 +582,7 @@ end
     @graph_api = Koala::Facebook::API.new(access_token)
   end
   
-  
-  
-  def self.aggregate_data_daily start_date=1.year.ago, end_date=Time.now
+  def self.aggregate_data_daily start_date=1.month.ago, end_date=Time.now
     if !start_date
       start_date = 3.months.ago
     end
@@ -1301,6 +1305,3 @@ end
   end
   
 =end
-
-
-  

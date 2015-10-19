@@ -594,7 +594,7 @@ end
      end
   end
   
-  def self.daily_aggregate_data start_date=1.year.ago, end_date=Time.now
+  def self.daily_aggregate_data
      records = select('id, object_name,new_item').where("is_active=1").to_a
      records.each do |record|
         puts " daily_aggregate_data for #{record.id} #{record.object_name}"
@@ -630,7 +630,7 @@ end
   # we may switch to FbStatNew.new to use table fbpages data
   #
   # This is for life time data
-  def daily_aggregate_data start_date=1.year.ago, end_date=Time.now
+  def daily_aggregate_data
     data = FbPost.select("count(*) AS post_count,sum(likes) as likes, sum(comments) as comments, sum(shares) as shares,sum(replies_to_comment) as replies_to_comment").
                     where(account_id: self.id).to_a.first
     if data
@@ -664,15 +664,15 @@ end
   end
   # for start_date thru end_date fb_pages
   # set likes, shares etc for each day
-  def aggregate_data_daily start_date=2.days.ago, end_date=Time.now
+  def aggregate_data_daily start_date=7.days.ago, end_date=Time.now
     start_date = Time.zone.parse start_date if String ===  start_date
     end_date = Time.zone.parse end_date if String ===  end_date
-    increment = 1.day
-    end_date = end_date.end_of_day
+    # end_date = end_date.end_of_day
     current_date = start_date.beginning_of_day
     my_arr = []
-    while current_date <= end_date do
-      # data = select_aggregated_data  current_date,  current_date.end_of_day
+    while current_date < end_date do
+      logger.debug " aggregate_data_daily for #{current_date.to_s(:db)}"
+    
       data = FbPost.select("count(*) AS post_count,sum(likes) as likes, sum(comments) as comments, sum(shares) as shares,sum(replies_to_comment) as replies_to_comment").
                     where(account_id:   self.id).
                     where(post_type: 'original').
@@ -686,12 +686,10 @@ end
                 }
            options[:post_created_time] = current_date.end_of_day
            find_or_create_page(options)
-           # current_date = current_date + 1.day
-           logger.debug " aggregate_data for #{current_date.to_s(:db)}"
        else
-           logger.debug "aggregate_data_daily NOT RECORDS for #{start_date.to_s(:db)} .. #{end_date.to_s(:db)}"
+           logger.debug " aggregate_data_daily NOT RECORDS for #{start_date.to_s(:db)} .. #{end_date.to_s(:db)}"
        end
-       current_date = current_date + 1.day
+       current_date += 1.day
     end
   end
   

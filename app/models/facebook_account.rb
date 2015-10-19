@@ -163,35 +163,13 @@ class FacebookAccount < Account
     # data = data.map{|d| d.post_created_time.beginning_of_day}
     while (hasta - since_date) >= back_to_date
       since = hasta - back_to_date
-=begin
-      data1 = nil
-      data2 = nil
-      if (since + back_to_date) < until_date
-        data1 = data.detect{|d| d == since.beginning_of_day}  
-        data2 = data.detect{|d| d == hasta.beginning_of_day}
-        # not to re retrieve
-        if !!data1 && !!data2 
-          success = true
-          aggregate_data 1,'day', true
-          # recent_page available after aggregate_data
-          save_lifetime_data
-          logger.debug "   SKIP: retrieve archieve #{since.to_s(:db)} - #{hasta.to_s(:db)}"  
-        else
-          logger.debug "   retrieve archieve #{since.to_s(:db)} - #{hasta.to_s(:db)}"
-          sleep 1  
-          success = do_retrieve(since, hasta)
-        end
-      else
-        logger.debug "   retrieve #{since.to_s(:db)} - #{hasta.to_s(:db)}"
-        success = do_retrieve(since, hasta)
-        sleep 1
-      end
-=end
       success = do_retrieve(since, hasta)
       # yes just minus 1 second, becomes the end of previous day
       hasta = since - 1
     end
     self.update_attributes :new_item=>false,:status=>success,:updated_at=>DateTime.now.utc
+    self.daily_aggregate_data
+    self.aggregate_data_daily
     ended=Time.now
     puts "   finished retrieve #{started} - #{ended}"
     STDOUT.flush
@@ -228,7 +206,7 @@ class FacebookAccount < Account
           save_post_details
           # moved into process_posts
           # daily_aggregate_data
-          aggregate_data_daily  since.beginning_of_day, hasta.end_of_day
+          # aggregate_data_daily  since.beginning_of_day, hasta.end_of_day
         end
       rescue Exception=>error
         # log_fail "process_posts() #{error.message}"
@@ -269,17 +247,8 @@ class FacebookAccount < Account
         logger.debug "  process_posts #{last_created_time.to_s(:db)} < #{since_date.to_s(:db)}"
       end
     end
-=begin
-    unless @bulk_insert.empty?
-      last_id = FbPost.import!(@bulk_insert)
-      from_id = last_id - @bulk_insert.size
-      # sync to Redshif database
-      RedshiftFbPost.upload from_id
-      @bulk_insert = []
-    end
-=end
     # fetch lifetime page likes
-    daily_aggregate_data
+    # daily_aggregate_data
     # fetch posts from next page
     unless posts.size < QUERY_LIMIT 
       if last_created_time > since_date
@@ -630,7 +599,7 @@ end
      records.each do |record|
         puts " daily_aggregate_data for #{record.id} #{record.object_name}"
         begin 
-          record.daily_aggregate_data start_date, end_date
+          record.daily_aggregate_data
         rescue Exception=>ex
           logger.error "daily_aggregate_data for #{record.id} #{ex.message}"
         end
@@ -660,25 +629,28 @@ end
   # for now. Let daily_aggregate_data run for another 3 weeks
   # we may switch to FbStatNew.new to use table fbpages data
   #
+  # This is for life time data
   def daily_aggregate_data start_date=1.year.ago, end_date=Time.now
-    end_date = end_date.end_of_day
-    start_date = start_date.beginning_of_day
     data = FbPost.select("count(*) AS post_count,sum(likes) as likes, sum(comments) as comments, sum(shares) as shares,sum(replies_to_comment) as replies_to_comment").
                     where(account_id: self.id).to_a.first
     if data
        z = self.graph_api.get_object self.object_name
-       options = {:total_likes=>z['likes'],
-                  :total_talking_about=>z['talking_about_count'],
-                  :likes=>data.likes, 
+       options = {:likes=>data.likes, 
                  :comments=>data.comments,
                  :shares=>data.shares,
                  :posts => data.post_count,
                  :replies_to_comment => data.replies_to_comment
                 }
+        if z['likes']
+          options[:total_likes]=>z['likes']
+          today_page.total_likes=z['likes']
+        end
+        if z['talking_about_count']
+          options[:total_talking_about] = z['talking_about_count']
+          today_page.total_talking_about=z['talking_about_count']
+        end
         curr_date = Time.zone.now.middle_of_day
         options[:post_created_time] = curr_date
-        today_page.total_likes=z['likes']
-        today_page.total_talking_about=z['talking_about_count']
         if today_page.total_likes && yesterday_page && yesterday_page.total_likes
           today_page.fan_adds_day =today_page.total_likes - yesterday_page.total_likes
         end
@@ -691,7 +663,8 @@ end
     end
   end
   # for start_date thru end_date fb_pages
-  def aggregate_data_daily start_date, end_date
+  # set likes, shares etc for each day
+  def aggregate_data_daily start_date=2.days.ago, end_date=Time.now
     start_date = Time.zone.parse start_date if String ===  start_date
     end_date = Time.zone.parse end_date if String ===  end_date
     increment = 1.day

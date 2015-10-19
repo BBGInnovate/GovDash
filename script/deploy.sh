@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
-# script/deploy.sh -e prod -u oddev -i /users/lliu/.ssh/oddev.pem -b DEV.0.2.41
+# This script requires SSH to the socialdash_app host without password
+# on Mac:
+# ssh-keygen
+# vi id_rsa.pub
+# copy content in id_rsa.pub to deploy@${host}:/home/deploy/.ssh/authorized_keys
+# chmod 400 authorized_keys
+# ssh deploy@${host}   # without password
+# usage:
+# script/deploy.sh -e prod -b prod/1.0.0.7
 
 if test $# -eq 0
 then
@@ -12,18 +20,15 @@ then
   exit 2
 fi
 
-# staging host
-#DEV=54.227.248.152
-#production host
-#PROD=54.83.61.132
-
 #defaults
-application='socialdash'
-user=lliu
-keyfile=~/.ssh/LLiu.pem
-app_user=lliu
-host=54.227.248.152
+application='socialdash_app'
+user=ubuntu
+keyfile=/Users/lliu/.ssh/oddev.pem
+app_user=deploy
+hosts=(54.221.43.111)
+git_auth=LiwenL:Changsha15\!
 
+# script/deploy.sh -e prod -b prod/1.0.0.7
 while getopts 'e:u:i:gb:' OPTION
   do
     case $OPTION in
@@ -45,67 +50,70 @@ version=$branch
 
 #set the host 
 if [ "$enviroment" == "prod" ]; then
-  host=54.83.61.132
-  app_user=oddev
-  user=oddev
-  keyfile=/users/lliu/.ssh/oddev.pem 
+  hosts=(54.242.85.238 54.160.167.102)
 fi
 
 echo "user: $user, key : $keyfile"
-echo "deploy to $enviroment ($host)"
+echo "deploy to $enviroment ($hosts)"
 echo "version $branch"
 
-# ssh -i ~/.ec2/BBGInstance.pem -t 50.19.63.102 -l ubuntu "sudo su; ls"
-
-root=/home/$app_user/$application
+root=/srv/www/$application
 shared=$root/shared
 name=`date '+%Y%m%d%H%M%S'`
-dest=$root/shared/releases/$name
+dest=$root/releases/$name
 
-tarfile=${name}_${application}.tar 
-branchcode=`git ls-remote -t https://liwenl:jx1951@bitbucket.org/bbginnovate-ondemand/socialdash $branch`
- 
-## branchcode=`git ls-remote git@localhost:/Users/git/hub.git $branch`
-## branchcode=`git ls-remote git@github.com:BBGInnovate/rIvr.git $branch`
+# branchcode=`git ls-remote -t https://liwenl:jx1951@bitbucket.org/bbginnovate-ondemand/socialdash $branch`
+branchcode=`git ls-remote -t https://${git_auth}@github.com/BBGInnovate/GovDash.git $branch`
 branchcode=(`echo $branchcode | tr ' ' ' '`)
-branch=${branchcode[0]}
+# branch=${branchcode[0]}
 
 mkdir -p /tmp
 cd /tmp
-rm -rf socialdash
+rm -rf $application
 
-git clone https://liwenl:jx1951@bitbucket.org/bbginnovate-ondemand/socialdash socialdash
-## git clone  git@localhost:/Users/git/hub.git
-## git clone git@github.com:BBGInnovate/rIvr.git
-
-cd socialdash
+git_auth=LiwenL:Changsha15\!
+git clone https://${git_auth}@github.com/BBGInnovate/GovDash.git
+cd GovDash
 git checkout -fb $branch
-tar cvf $tarfile --exclude '*.tar' --exclude 'tmp' --exclude '*.git' *
+tarfile=${name}_${application}.tar
+tar cvf $tarfile --exclude '*.tar' --exclude 'log' --exclude 'tmp' --exclude '*.git' .
 
-scp -i ${keyfile} $tarfile ${user}@${host}:/tmp/.
-ssh -i ${keyfile} -t ${host} -l ${user} \
-   "mkdir -p $dest; \
-   mkdir -p $shared/config; \
-   mkdir -p $shared/tmp;  \
-   mkdir -p $shared/log; \
-   cd $dest; \
-   tar xvf /tmp/$tarfile ; \
-   rm /tmp/$tarfile ; \
-   cd $root; \
-   rm -f current ; \
-   source /home/$app_user/.rvm/scripts/rvm; \
-   ln -s $dest current; \
-   rm -f current/config/database.yml; \
-   echo $version >> $shared/versions.txt; \
-   ln -s $shared/config/database.yml current/config/database.yml; \
-   ln -s $shared/log current/log; \
-   rm -rf  tmp/cache/assets; \
-   rm -rf public/assets; \
-   rake assets:precompile; \
-   ln -s $shared/tmp current/tmp; \
-   cd current; \
-   rake db:migrate RAILS_ENV=production; \
-   source /home/$app_user/.rvm/scripts/rvm; \
-   touch tmp/restart.txt;"
-
-
+function deploy {
+  host=$1
+  scp $tarfile ${app_user}@${host}:/tmp/.
+  ssh  -t ${host} -l ${app_user} \
+    "mkdir -p $dest; \
+     mkdir -p $shared/config; \
+     mkdir -p $shared/tmp;  \
+     mkdir -p $shared/log; \
+     cd $dest; echo '   In folder ' $dest; \
+     tar xf /tmp/$tarfile ; \
+     cd $root; echo '   Root folder ' $root; \
+     rm -f current ; \
+     ln -s $dest current; \
+     rm -f current/config/*.yml; \
+     echo $version >> $shared/versions.txt; \
+     ln -s $shared/config/database.yml current/config/database.yml; \
+     ln -s $shared/config/email.yml current/config/email.yml; \
+     ln -s $shared/config/facebook.yml current/config/facebook.yml; \
+     ln -s $shared/config/rabbit.yml current/config/rabbit.yml; \
+     ln -s $shared/config/s3.yml current/config/s3.yml; \
+     ln -s $shared/config/secret_token.rb  current/config/secret_token.rb; \
+     ln -s $shared/config/sitecatalyst.yml current/config/sitecatalyst.yml; \
+     ln -s $shared/config/twitter.yml current/config/twitter.yml; \
+     ln -s $shared/config/youtube.yml current/config/youtube.yml; \
+     ln -s $shared/log current/log; \
+     rm -rf  tmp/cache/assets; \
+     rm -rf public/assets; \
+     rake assets:precompile; \
+     cd current; \
+     rake db:migrate RAILS_ENV=production; \
+     /usr/local/bin/bundle install --path /home/deploy/.bundler/socialdash_app --without=test development; \
+     mkdir tmp; \
+     touch tmp/restart.txt; "
+}
+for i in "${hosts[@]}"
+do
+#	 deploy $i
+  ;
+done

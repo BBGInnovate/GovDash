@@ -131,7 +131,7 @@ class FacebookAccount < Account
          # end
        end
      rescue Exception => ex
-       Rails.logger.error "  FacebookAccount#retrieve  #{ex.message}"  
+       log_error "   retrieve #{ex.message}"  
      end
      # server = ActionMailer::Base.default_url_options[:server]
      ended = Time.now.utc
@@ -188,13 +188,13 @@ class FacebookAccount < Account
     rescue Koala::Facebook::ClientError=>error
       # if error.fb_error_type == 'OAuthException'
         # log_fail "graph_api.get_connections() #{error.message}"
-        logger.error "FB Account: #{self.id} - graph_api.get_connections() #{error.message}"
+        log_error " graph_api.get_connections() #{error.message}"
         logger.debug "   retrieve #{error.backtrace}" 
       # end
     rescue Exception=>error
       # log_fail "graph_api.get_connections() #{error.message}"
       # delayed_do_retrieve(since, hasta)
-      logger.error "   retrieve #{error.message}" 
+      log_error "   retrieve #{error.message}" 
       logger.debug "   retrieve #{error.backtrace}" 
     end
     if ret  
@@ -211,7 +211,7 @@ class FacebookAccount < Account
       rescue Exception=>error
         # log_fail "process_posts() #{error.message}"
         # delayed_do_retrieve(since, hasta)
-        logger.error "FB Account: #{self.id} - do_retrieve #{error.message}"
+        log_error " do_retrieve #{error.message}"
         logger.debug "   retrieve #{error.backtrace}"
       end
     end
@@ -268,7 +268,7 @@ class FacebookAccount < Account
         begin
           process_posts(feeds)
         rescue Exception=>error
-          logger.error "  process_posts #{error.message}"
+          log_error "  process_posts #{error.message}"
           # log_fail "by process_posts #{error.message}", 2
         end
       end
@@ -313,10 +313,10 @@ class FacebookAccount < Account
            retry
          else
            # log_fail "Tried #{@num_attempts} times. #{error.message[0..200]}", 5
-           logger.error error.message
+           log_error error.message
          end
        rescue Exception=>error
-         logger.error error.message
+         log_error error.message
          logger.error "FB Account: #{self.id} - save_post_details Exception post #{post.post_id}"
        end
        completed = ((total_processed.to_f / myposts.size) * 100).to_i
@@ -342,7 +342,7 @@ class FacebookAccount < Account
              :comments=>comment_count,
              :shares=>share_count
          rescue Exception=>ex
-           logger.error "FB Account: #{self.id} - FacebookAccount#save_post_details #{ex.message}"
+           log_error "  #save_post_details #{ex.message}"
            logger.error "    #{ex.backtrace}"  
          end
        else
@@ -399,7 +399,7 @@ class FacebookAccount < Account
       self.update_profile options
       
     rescue Exception=>error
-      logger.error "FB Account: #{self.id} - #{error.message}"
+      log_error "  save_lifetime_data #{error.message}"
       logger.debug error.backtrace
       return
     end
@@ -419,7 +419,7 @@ class FacebookAccount < Account
         shares += json['shares'].to_i
       end
     rescue Exception=>error
-      logger.debug "FB Account: #{self.id} - FbPage#save_lifetime_data #{error.message}"
+      log_debug "  save_lifetime_data #{error.message}"
       logger.debug "  #{error.backtrace}"
     end
     # @page = self.account.graph_api.get_object self.obj_name

@@ -659,7 +659,7 @@ angular.module('directives', []).
 	})
 
 	// Show the filter selection modal
-		.directive('exportCsv', [function () {
+		.directive('exportCsv', ['$filter', function ($filter) {
 			return {
 				link: function ($scope, element, attrs) {
 					element.bind('click', function () {
@@ -685,7 +685,55 @@ angular.module('directives', []).
 						var dataString = '';
 						var csvContent = "data:text/csv;charset=utf-8,";
 
-						csvContent += 'Included' + spaceChar + 'filters: | ' + filterCriteria;
+						csvContent += 'Included' + spaceChar + 'filters: | ' + filterCriteria + '\n';
+
+						if ($scope.fbSparkChart.length > 0) {
+							csvContent += "\n\n" + 'Facebook Engagements, Totals' + '\n';
+							for (var i = 0; i < $scope.fbSparkChart.length; i++) {
+								// if its a weekly average
+								if ($scope.fbSparkChart[i].period) {
+									var startDate = $filter('dateFormatMMDDYYYY')($scope.fbSparkChart[i].period.substring(0, 10));
+									var endDate = $filter('dateFormatMMDDYYYY')($scope.fbSparkChart[i].period.substring(13, 23));
+									var period = startDate + ' - ' + endDate;
+
+									csvContent += "\n" + period + ',' + $scope.fbSparkChart[i].totals;
+
+								// else its individual days
+								} else {
+									csvContent += "\n" + $filter('dateFormatMMDDYYYY')($scope.fbSparkChart[i].date) + ',' + $scope.fbSparkChart[i].totals;
+								}
+							}
+						}
+
+						if ($scope.twSparkChart.length > 0) {
+							csvContent += "\n\n" + 'Twitter Engagements, Totals' + '\n';
+							for (var i = 0; i < $scope.twSparkChart.length; i++) {
+								if ($scope.twSparkChart[i].period) {
+									var startDate = $filter('dateFormatMMDDYYYY')($scope.twSparkChart[i].period.substring(0, 10));
+									var endDate = $filter('dateFormatMMDDYYYY')($scope.twSparkChart[i].period.substring(13, 23));
+									var period = startDate + ' - ' + endDate;
+
+									csvContent += "\n" + period + ',' + $scope.twSparkChart[i].totals;
+								} else {
+									csvContent += "\n" + $filter('dateFormatMMDDYYYY')($scope.twSparkChart[i].date) + ',' + $scope.twSparkChart[i].totals;
+								}
+							}
+						}
+
+						if ($scope.youtubeSparkChart.length > 0) {
+							csvContent += "\n\n" + 'Youtube Engagements, Totals' + '\n';
+							for (var i = 0; i < $scope.youtubeSparkChart.length; i++) {
+								if ($scope.youtubeSparkChart[i].period) {
+									var startDate = $filter('dateFormatMMDDYYYY')($scope.youtubeSparkChart[i].period.substring(0, 10));
+									var endDate = $filter('dateFormatMMDDYYYY')($scope.youtubeSparkChart[i].period.substring(13, 23));
+									var period = startDate + ' - ' + endDate;
+
+									csvContent += "\n" + period + ',' + $scope.youtubeSparkChart[i].totals;
+								} else {
+									csvContent += "\n" + $filter('dateFormatMMDDYYYY')($scope.youtubeSparkChart[i].date) + ',' + $scope.youtubeSparkChart[i].totals;
+								}
+							}
+						}
 
 						// Loop through each table and structure the stringified row
 						// into an array
@@ -721,6 +769,11 @@ angular.module('directives', []).
 							i++;
 						});
 
+
+
+
+
+
 						dataArr.forEach(function(infoArray, index){
 
 							dataString = infoArray.join(",");
@@ -730,11 +783,11 @@ angular.module('directives', []).
 
 								var socialMediaPlatform = '';
 								if (infoArray[0].indexOf('Fans') > -1) {
-									socialMediaPlatform = 'Facebook';
+									socialMediaPlatform = 'Facebook Accounts';
 								} else if (infoArray[0].indexOf('Followers') > -1) {
-									socialMediaPlatform = 'Twitter';
+									socialMediaPlatform = 'Twitter Accounts';
 								} else if (infoArray[0].indexOf('Video') > -1) {
-										socialMediaPlatform = 'YouTube';
+									socialMediaPlatform = 'YouTube Accounts';
 								}
 
 								csvContent += "\n" + "\n" + [socialMediaPlatform] + "\n" + "\n";
@@ -745,6 +798,7 @@ angular.module('directives', []).
 
 
 						});
+
 
 
 

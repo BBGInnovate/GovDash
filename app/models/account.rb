@@ -22,6 +22,10 @@ class Account < ActiveRecord::Base
   has_and_belongs_to_many :sc_segments
   has_and_belongs_to_many :users
   
+  validates :object_name, uniqueness: {scope: :media_type_name, 
+     message: "Username %{value} exists." },
+     on: :create
+     
   def self.retrieve_records from_id=0
      if from_id.to_i > 0
         from_id=" id >= #{from_id}"
@@ -154,6 +158,11 @@ class Account < ActiveRecord::Base
       {}
     end
   end
+  
+  def log_error msg
+     logger.error "  #{self.media_type_name} - #{self.id} #{msg}"
+  end
+  
   def info_old
     begin
      profile_attr = {data_collect_started: self.collect_started}

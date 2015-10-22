@@ -22,7 +22,9 @@ class Account < ActiveRecord::Base
   has_and_belongs_to_many :sc_segments
   has_and_belongs_to_many :users
   
-  validates :object_name, uniqueness: {scope: :media_type_name,
+  alias_attribute :username, :object_name
+  
+  validates :username, uniqueness: {scope: :media_type_name,
      :message => Proc.new { |error, attributes| 
       "#{attributes[:model]} %{value} has already been taken." 
      }}, on: :create

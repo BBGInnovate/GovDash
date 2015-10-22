@@ -370,6 +370,7 @@
 
                     <div class="statistic-value">
                         <span id="totalInteractions" count-up data-value="{{ totalInteractions }}"></span>
+                        <p ng-show="totalCompleteWeeks > 1" class="weekly-average" id="totalInteractionsAverage">{{ totalInteractionsAvg | number: 0 }} per week</p>
                     </div>
 
                     <div class="m-top-md">
@@ -391,6 +392,7 @@
 
                     <div class="statistic-value">
                        <span id="facebookInteractions" count-up data-value="{{ facebookInteractions }}"></span>
+                        <p ng-show="totalCompleteWeeks > 1" class="weekly-average" id="fbInteractionsAverage">{{ fbInteractionsAvg | number: 0 }} per week</p>
                     </div>
 
                     <div class="m-top-md">
@@ -412,6 +414,7 @@
 
                     <div class="statistic-value">
                         <span id="twitterInteractions" count-up data-value="{{ twitterInteractions }}"></span>
+                        <p ng-show="totalCompleteWeeks > 1" class="weekly-average" id="twInteractionsAverage">{{ twInteractionsAvg | number: 0 }} per week</p>
                     </div>
 
                     <div class="m-top-md">
@@ -433,6 +436,7 @@
 
                     <div class="statistic-value">
                         <span id="youtubeInteractions" count-up data-value="{{ youtubeInteractions }}"></span>
+                        <p ng-show="totalCompleteWeeks > 1" class="weekly-average" id="youtubeInteractionsAverage">{{ youtubeInteractionsAvg | number: 0 }} per week</p>
                     </div>
 
                     <div class="m-top-md">

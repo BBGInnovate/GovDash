@@ -131,7 +131,7 @@ class FacebookAccount < Account
          # end
        end
      rescue Exception => ex
-       log_error "   retrieve #{ex.message}"  
+       logger.error "   retrieve #{ex.message}"  
      end
      # server = ActionMailer::Base.default_url_options[:server]
      ended = Time.now.utc
@@ -425,7 +425,7 @@ class FacebookAccount < Account
         shares += json['shares'].to_i
       end
     rescue Exception=>error
-      log_debug "  save_lifetime_data #{error.message}"
+      logger.error "  save_lifetime_data #{error.message}"
       logger.debug "  #{error.backtrace}"
     end
     # @page = self.account.graph_api.get_object self.obj_name

@@ -25,7 +25,8 @@ class Account < ActiveRecord::Base
   alias_attribute :username, :object_name
   
   validates :username, uniqueness: {scope: :media_type_name,
-     :message => Proc.new { |error, attributes| 
+     case_sensitive: false,
+     message: Proc.new { |error, attributes| 
       "#{attributes[:model]} %{value} has already been taken." 
      }}, on: :create
  #    message: "Username %{value} exists." },

@@ -22,10 +22,12 @@ class Account < ActiveRecord::Base
   has_and_belongs_to_many :sc_segments
   has_and_belongs_to_many :users
   
-  validates :object_name, uniqueness: {scope: :media_type_name, 
-     message: "Username %{value} exists." },
-     on: :create
-     
+  validates :object_name, uniqueness: {scope: :media_type_name,
+     :message => Proc.new { |error, attributes| 
+      "#{attributes[:model]} %{value} has already been taken." 
+     }}, on: :create
+ #    message: "Username %{value} exists." },
+  
   def self.retrieve_records from_id=0
      if from_id.to_i > 0
         from_id=" id >= #{from_id}"

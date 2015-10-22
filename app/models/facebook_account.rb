@@ -168,8 +168,14 @@ class FacebookAccount < Account
       hasta = since - 1
     end
     self.update_attributes :new_item=>false,:status=>success,:updated_at=>DateTime.now.utc
-    self.daily_aggregate_data
-    self.aggregate_data_daily
+    begin
+      self.daily_aggregate_data
+    rescue
+    end
+    begin
+      self.aggregate_data_daily
+    rescue
+    end
     ended=Time.now
     puts "   finished retrieve #{started} - #{ended}"
     STDOUT.flush
@@ -188,13 +194,13 @@ class FacebookAccount < Account
     rescue Koala::Facebook::ClientError=>error
       # if error.fb_error_type == 'OAuthException'
         # log_fail "graph_api.get_connections() #{error.message}"
-        log_error " graph_api.get_connections() #{error.message}"
+        puts " graph_api.get_connections() #{error.message}"
         logger.debug "   retrieve #{error.backtrace}" 
       # end
     rescue Exception=>error
       # log_fail "graph_api.get_connections() #{error.message}"
       # delayed_do_retrieve(since, hasta)
-      log_error "   retrieve #{error.message}" 
+      puts "   retrieve #{error.message}" 
       logger.debug "   retrieve #{error.backtrace}" 
     end
     if ret  
@@ -211,11 +217,11 @@ class FacebookAccount < Account
       rescue Exception=>error
         # log_fail "process_posts() #{error.message}"
         # delayed_do_retrieve(since, hasta)
-        log_error " do_retrieve #{error.message}"
+        puts " do_retrieve #{error.message}"
         logger.debug "   retrieve #{error.backtrace}"
       end
     end
-    logger.info "   #{self.id} retrieve #{ret}"
+    puts "   #{self.id} retrieve #{ret}"
     ret
   end
   

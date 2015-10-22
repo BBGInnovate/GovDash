@@ -300,3 +300,7 @@ div.xAxis div.tickLabel
     font-size: 12px;
     font-weight: 100;
 }
+
+.error-input {
+    border: 1px solid #d02d2d !important;
+}

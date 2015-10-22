@@ -40,7 +40,30 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		this.selectedMediaType.name, groups, subgroups,
 			languages, regions, countries, this.selectedAccountType.id, segments)
 			.then(function(response) {
-		   		$location.path('accounts');
+				// an error returned from the backend
+				if (response.data.error) {
+
+					var errorMsg = JSON.parse(response.data.error).username[0];
+
+					// add border on input color
+					$('#object_name').addClass('error-input');
+
+					// Display notification
+					noty({
+						text: errorMsg,
+						type: 'error',
+						layout: 'topCenter',
+						timeout: '5000'
+					});
+
+				// scroll to top of page
+				document.body.scrollTop = document.documentElement.scrollTop = 0;
+
+
+
+				} else {
+					$location.path('accounts');
+				}
 		});
 	
 

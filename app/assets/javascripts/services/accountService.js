@@ -6,7 +6,7 @@ angular.module('accountService', [])
             create: function(name, description, object_name, socialMediaAccount, groupIds, subgroupIds, languageIds, regionIds, countryIds, accountTypeId, segmentIds) {
                 return $http.post('/api/accounts', {account: {name: name, description: description, object_name: object_name, media_type_name: socialMediaAccount, group_ids: groupIds, subgroup_ids: subgroupIds, language_ids: languageIds, region_ids: regionIds, country_ids: countryIds, account_type_id: accountTypeId, sc_segment_ids: segmentIds } })
                 .then(function(response) {
-                //    console.log('Account Created!');
+					return response;
                 });
                 
             },

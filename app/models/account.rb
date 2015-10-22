@@ -165,7 +165,7 @@ class Account < ActiveRecord::Base
   end
   
   def log_error msg
-     logger.error "  #{self.media_type_name} - #{self.id} #{msg}"
+     logger.error "  - #{self.id} #{msg}"
   end
   
   def info_old

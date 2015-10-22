@@ -295,3 +295,8 @@ div.xAxis div.tickLabel
 #object_name {
     width: 116.7% !important;
 }
+
+.weekly-average {
+    font-size: 12px;
+    font-weight: 100;
+}

@@ -428,7 +428,17 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 
 			$scope.hasLastPeriod = response.hasLastPeriod;
 
-			console.log($scope.hasLastPeriod);
+			// this code is for the weekly averages for the top 4 boxes
+			var startDate = new Date(response.startDate);
+			var endDate = new Date(response.endDate);
+			var daysInBetween = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000*60*60*24)) + 1;
+			$scope.totalCompleteWeeks = daysInBetween / 7; // days
+
+			$scope.totalInteractionsAvg = $scope.totalInteractions / $scope.totalCompleteWeeks;
+			$scope.fbInteractionsAvg = $scope.facebookInteractions / $scope.totalCompleteWeeks;
+			$scope.twInteractionsAvg = $scope.twitterInteractions / $scope.totalCompleteWeeks;
+			$scope.youtubeInteractionsAvg = $scope.youtubeInteractions / $scope.totalCompleteWeeks;
+
 
 			//$scope.minDate = response.minDate;
 

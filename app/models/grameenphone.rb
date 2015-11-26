@@ -219,7 +219,8 @@ class Grameenphone
       if force_upload || files.empty?
         begin
           ftp.putbinaryfile(url, filename)
-          puts "  #{filename} uploaded #{url}" 
+          date = ftp.mtime(filename)
+          puts "  #{date} uploaded #{url}" 
         rescue Exception=>ex
           puts ex.message
         end

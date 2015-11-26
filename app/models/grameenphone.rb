@@ -4,7 +4,7 @@ class Grameenphone
     cattr_accessor :message
     
     def check_status
-      dir = '/english/audio/science'
+      dir = '/english/video/science'
       max_date = 1.day.ago
       ftp.nlst(dir).each do | file |
         date = ftp.mtime(file)
@@ -12,7 +12,7 @@ class Grameenphone
           max_date = date
         end
       end 
-      puts " Grameenphone english/audio/science #{max_date}"
+      puts " Grameenphone english/video/science #{max_date}"
       if max_date < 7.hours.ago
         to = ['liwliu@bbg.gov','dzabransky@bbg.gov']
         msg = 'Grameenphone english/audio/science is not updated in 7 hours'
@@ -47,12 +47,19 @@ class Grameenphone
                  :details=>2,
                  :limit=>limit}
       url = searcher options
+      puts "   english_audio #{url}"
       txt = open(url, :read_timeout => 20).read
       hash = JSON.parse txt
       contents = hash['contents']
+      force_upload = true
       (0..contents.size-1).each do |idx|
         audio_url = contents[idx]['_embedded']['audios'][0]['url']
-        upload_english_audio audio_url
+        # only force to upload the most recent item, even it exixts
+        ftp_putbinaryfile audio_url, force_upload
+        filename = File.basename audio_url
+        if !ftp.list(filename).empty?
+          force_upload = false
+        end
       end
       ftp_close
     end
@@ -69,17 +76,22 @@ class Grameenphone
                  :keywords=>"One-Minute Features - #{cat}",
                  :details=>2,
                  :limit=>limit}
-        url = searcher options         
+        url = searcher options
+        puts "   english_video #{url}"      
         txt = open(url, :read_timeout => 20).read
         hash = JSON.parse txt
         contents = hash['contents']
+        force_upload = true
         (0..contents.size-1).each do |idx|
            videos = contents[idx]['_embedded']['videos']
            videos.each do | v |
              if v['quality'] == 'hq'
                video_url = v['url']
-               puts "  URL #{video_url}"
-               upload_english_video video_url, cat.downcase
+               ftp_putbinaryfile video_url, force_upload
+               filename = File.basename video_url
+               if !ftp.list(filename).empty?
+                 force_upload = false
+               end
              end
            end
         end
@@ -99,20 +111,22 @@ class Grameenphone
                  :type=>'audio',
                  :details=>2,
                  :limit=>limit}
-      url = searcher options   
+      url = searcher options
+      puts "   bengali_audio #{url}"     
       txt = open(url, :read_timeout => 20).read
       hash = JSON.parse txt
       contents = hash['contents']
+      force_upload = true
       (0..contents.size-1).each do |idx|
         audio = contents[idx]['_embedded']['audios'][0]
         audio_url = audio['url']
         duration = audio['duration'].to_i
         if duration < 120
+          # puts "Grameenphone uploading bengali_audio #{audio_url}"
+          ftp_putbinaryfile audio_url, force_upload
           filename = File.basename audio_url
-          uploaded=false
-          unless uploaded
-            puts "Grameenphone uploading bengali_audio #{audio_url}"
-            upload_bengali audio_url, 'audio'
+          if !ftp.list(filename).empty?
+            force_upload = false
           end
         end
       end
@@ -120,9 +134,6 @@ class Grameenphone
     end
   
     def bengali_video
-      url = searcher 'VOA 60 Bangla'
-      url = "#{url}&language=bn&type=video"
-      
       dir = "/bangla/video/news"
       delete_old dir
       
@@ -135,17 +146,23 @@ class Grameenphone
                  :type=>'video',
                  :details=>2,
                  :limit=>limit}
-      url = searcher options 
+      url = searcher options
+      puts "   bengali_video #{url}"     
       txt = open(url, :read_timeout => 20).read
       hash = JSON.parse txt
       contents = hash['contents']
+      force_upload = true
       (0..contents.size-1).each do |idx|
         video_url = contents[idx]['_embedded']['videos'][0]['url']
         filename = File.basename video_url
         uploaded=false
         unless uploaded
-          puts "Grameenphone uploading bengali_video #{video_url}"
-          upload_bengali video_url, 'video'
+          # puts "Grameenphone uploading bengali_video #{video_url}"
+          ftp_putbinaryfile video_url, force_upload
+          filename = File.basename video_url
+          if !ftp.list(filename).empty?
+            force_upload = false
+          end
         end
       end
       ftp_close
@@ -160,39 +177,16 @@ class Grameenphone
     end
   
     def upload_english_audio url
-      filename = File.basename url
-      begin
-        files = ftp.list(filename)
-        puts "  #{filename} upload_english_audio #{files}"
-        if files.empty?
-          ftp_putbinaryfile(url, filename)
-        end
-      rescue
-        puts "  Not Exists #{filename}"
-        begin
-          ftp_putbinaryfile(url, filename)
-        rescue
-        end
-      end
+      ftp_putbinaryfile(url)
     end
 
-    def upload_english_video url, dir
-      filename = File.basename url
-      puts "Grameenphone uploading #{dir}/#{filename}"
-      begin
-        files = ftp.list(filename)
-        if files.empty?
-          ftp_putbinaryfile(url, filename)
-        end
-      rescue
-        puts "  Not Exists #{filename}"
-        ftp_putbinaryfile(url, filename)
-      end
+    def upload_english_video url
+      # puts "Grameenphone uploading #{dir}/#{filename}"
+      ftp_putbinaryfile(url)
     end
   
-    def upload_bengali url, asset
-      filename = File.basename url
-      ftp_putbinaryfile(url, filename)
+    def upload_bengali url
+      ftp_putbinaryfile(url)
     end
     
     def config
@@ -219,10 +213,16 @@ class Grameenphone
       @ftp = nil
     end
     
-    def ftp_putbinaryfile(url, filename)
-      begin
-        ftp.putbinaryfile(url, filename)
-      rescue
+    def ftp_putbinaryfile(url, force_upload=false)
+      filename = File.basename url
+      files = ftp.list(filename)
+      if force_upload || files.empty?
+        begin
+          ftp.putbinaryfile(url, filename)
+          puts "  #{filename} uploaded #{url}" 
+        rescue Exception=>ex
+          puts ex.message
+        end
       end
     end
     

@@ -13,9 +13,9 @@ class Grameenphone
         end
       end 
       puts " Grameenphone english/video/science #{max_date}"
-      if max_date < 7.hours.ago
+      if max_date < 1.hour.ago
         to = ['liwliu@bbg.gov','dzabransky@bbg.gov']
-        msg = 'Grameenphone english/audio/science is not updated in 7 hours'
+        msg = 'Grameenphone english/audio/science is not updated in 1 hour'
         UserMailer.alarm_email(to, msg).deliver_now!
       end
     end

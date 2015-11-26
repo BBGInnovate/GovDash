@@ -220,7 +220,7 @@ class Grameenphone
         begin
           ftp.putbinaryfile(url, filename)
           date = ftp.mtime(filename)
-          puts "  #{date} uploaded #{url}" 
+          puts " #{ftp.pwd} #{date} uploaded #{url}" 
         rescue Exception=>ex
           puts ex.message
         end

@@ -26,6 +26,8 @@ run <<-END
   ln -s '#{shared_path}/config/s3.yml' '#{current_path}/config/s3.yml'
   ln -s '#{shared_path}/config/sitecatalyst.yml' '#{current_path}/config/sitecatalyst.yml'
   ln -s '#{shared_path}/config/secret_token.rb' '#{current_path}/config/initializers/secret_token.rb' 
+  ln -s '#{shared_path}/config/akamai.yml' '#{current_path}/config/akamai.yml'
+  ln -s '#{shared_path}/config/grameenphone.yml' '#{current_path}/config/grameenphone.yml'
   touch tmp/restart.txt  
   bin/delayed_job stop
 END

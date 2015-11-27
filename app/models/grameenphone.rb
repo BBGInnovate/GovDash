@@ -57,7 +57,7 @@ class Grameenphone
         # only force to upload the most recent item, even it exixts
         ftp_putbinaryfile audio_url, force_upload
         filename = File.basename audio_url
-        if !ftp.list(filename).empty?
+        if file_exist?(filename)
           force_upload = false
         end
       end
@@ -89,7 +89,7 @@ class Grameenphone
                video_url = v['url']
                ftp_putbinaryfile video_url, force_upload
                filename = File.basename video_url
-               if !ftp.list(filename).empty?
+               if file_exist?(filename)
                  force_upload = false
                end
              end
@@ -125,7 +125,7 @@ class Grameenphone
           # puts "Grameenphone uploading bengali_audio #{audio_url}"
           ftp_putbinaryfile audio_url, force_upload
           filename = File.basename audio_url
-          if !ftp.list(filename).empty?
+          if file_exist?(filename)
             force_upload = false
           end
         end
@@ -160,7 +160,7 @@ class Grameenphone
           # puts "Grameenphone uploading bengali_video #{video_url}"
           ftp_putbinaryfile video_url, force_upload
           filename = File.basename video_url
-          if !ftp.list(filename).empty?
+          if file_exist?(filename)
             force_upload = false
           end
         end
@@ -212,18 +212,26 @@ class Grameenphone
       @ftp.close if @ftp
       @ftp = nil
     end
-    
+    def file_exist?(filename)
+      begin
+        !ftp.list(filename).empty?
+      rescue
+        false
+      end
+    end
     def ftp_putbinaryfile(url, force_upload=false)
       filename = File.basename url
-      files = ftp.list(filename)
-      if force_upload || files.empty?
-        begin
+      begin
+        if force_upload
           ftp.putbinaryfile(url, filename)
+          puts " #{ftp.pwd} uploaded #{url}"
+        else
           date = ftp.mtime(filename)
-          puts " #{ftp.pwd} #{date} uploaded #{url}" 
-        rescue Exception=>ex
-          puts ex.message
         end
+      rescue Exception=>ex
+          ftp.putbinaryfile(url, filename)
+          puts " #{ftp.pwd} #{date} uploaded #{url}"
+          puts ex.message
       end
     end
     

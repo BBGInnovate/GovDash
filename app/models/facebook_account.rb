@@ -405,7 +405,7 @@ class FacebookAccount < Account
       self.update_profile options
       
     rescue Exception=>error
-      log_error "  save_lifetime_data #{error.message}"
+      log_error " 1 save_lifetime_data #{error.message}"
       logger.debug error.backtrace
       return
     end
@@ -420,20 +420,26 @@ class FacebookAccount < Account
           website = "http://#{website}"
         end
         link = "https://graph.facebook.com/?id=#{website}"
-        response = self.class.fetch link
-        json = JSON.parse response.body
-        shares += json['shares'].to_i
+        begin
+          response = self.class.fetch link
+          json = JSON.parse response.body
+          shares += json['shares'].to_i
+        rescue Exception=>ex
+          logger.error "FacebookAccount#save_lifetime_data #{ex.message}"
+        end
       end
     rescue Exception=>error
-      logger.error "  save_lifetime_data #{error.message}"
+      logger.error "  2 save_lifetime_data #{error.message}"
       logger.debug "  #{error.backtrace}"
     end
     # @page = self.account.graph_api.get_object self.obj_name
     res = FbPage.where(:account_id=>self.id).select("sum(comments) AS comments").first
-    today_page.update_attributes :total_shares=>shares, 
-         :total_likes=>options[:total_followers], 
-         :total_comments => res.comments,
-         :total_talking_about=>talking_about
+    
+    hash = {:total_likes=>options[:total_followers], 
+            :total_comments => res.comments,
+            :total_talking_about=>talking_about}
+    hash[:total_shares]=shares if shares > 0
+    today_page.update_attributes hash
   end
   
   def get_replies_to_comment(f)

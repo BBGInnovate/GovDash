@@ -452,7 +452,7 @@ class Account < ActiveRecord::Base
           logger.debug "Redirect to " + new_url
           return fetch(new_url, limit - 1)
        else
-         response.error!
+         logger.error "Account::fetch #{url}"; response.error!
     end
     response
   end
@@ -463,6 +463,13 @@ class Account < ActiveRecord::Base
   end
   
   protected
+  def self.redirect_url(response)
+    if response['location']
+      response['location']
+    else
+      response.body.match(/<a href="([^>]+)">/i)[1]
+    end
+  end
    def obj_name
      self.object_name.split('/')[0]
    end

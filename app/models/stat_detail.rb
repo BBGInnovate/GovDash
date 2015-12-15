@@ -203,9 +203,18 @@ class StatDetail
         rec5 = recs5.detect{|a| a.account_id == account.id}
         rec6 = recs6.detect{|a| a.account_id == account.id}
       else
-        asc = AccountsScSegment.find_by(account_id: account.id)
-        rec5 = recs5.detect{|a| a.sc_segment_id == asc.sc_segment_id}
-        rec6 = recs6.detect{|a| a.sc_segment_id == asc.sc_segment_id}
+        rec6 = nil
+        asc = AccountsScSegment.where("sc_segment_id is not null").
+                where(account_id: account.id).first
+        if asc
+          begin
+            rec5 = recs5.detect{|a| a.sc_segment_id == asc.sc_segment_id}
+            rec6 = recs6.detect{|a| a.sc_segment_id == asc.sc_segment_id}
+          rescue Exception=>ex
+            Rails.logger.error " Rescued : #{ex.message}"
+            Rails.logger.error ex.backtrace
+          end
+        end
       end
       unless current_exist?(rec6)
         next

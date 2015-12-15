@@ -456,7 +456,7 @@ class StatDetail
     ch = 0
     hash = {:totals=>ch}
     self.class.data_columns.each_pair do |col, _as|
-      hash[_as.to_sym] = ch
+      hash[_as.to_sym] = "0 %"
     end
     result.values[:changes] = hash  
     results << result.values

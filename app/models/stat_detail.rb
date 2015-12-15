@@ -219,8 +219,8 @@ class StatDetail
             rec5 = recs5.detect{|a| a.sc_segment_id == asc.sc_segment_id}
             rec6 = recs6.detect{|a| a.sc_segment_id == asc.sc_segment_id}
           rescue Exception=>ex
-            Rails.logger.error " Rescued : #{ex.message}"
-            Rails.logger.error ex.backtrace
+            Rails.logger.error " select_none_sc_accounts Rescued : #{ex.message}"
+            # Rails.logger.debug ex.backtrace
           end
         end
       end
@@ -459,7 +459,7 @@ class StatDetail
       hash[_as.to_sym] = ch
     end
     result.values[:changes] = hash  
-    results << result.data
+    results << result.values
     msg = " #{applicatio_name} #{self.class.name} Data missing in #{rec.name} #{previous_period}"
     ErrorLog.to_error msg,msg,3
     results

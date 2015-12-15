@@ -113,11 +113,19 @@ class StatDetail
     records.flatten!
 
     value = get_period_result records[0], records[1]
-    hash[:period] = value
     # select aggregate method - by_week or by_day 
     method = self.method(trend_summarize_method)
     trend_records = method.call(trend_from_date, end_date,accounts).to_a
     rec = get_trend_result(trend_records)
+=begin
+    for top level period
+    "values": {
+      "period": [
+      ],
+      "trend": [
+      ]
+=end
+    hash[:period] = value
     hash[:trend] = rec unless rec.empty?
     final_results  << hash
     hash

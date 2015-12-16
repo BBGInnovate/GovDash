@@ -454,7 +454,7 @@ class StatDetail
                      :previous_period=>rec.compare_period}
     result.values.merge! set_engagement_data(rec)
     ch = 0
-    hash = {:totals=>ch}
+    hash = {:totals=>"0 %"}
     self.class.data_columns.each_pair do |col, _as|
       hash[_as.to_sym] = "0 %"
     end

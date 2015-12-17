@@ -102,7 +102,8 @@ class YoutubeAccount < Account
     started = Time.now
     changed_videos = []
     channel.videos.each do |v|
-      if v.published_at.to_i > since_date.to_i
+      old_v = my_videos.detect{|v| v.published_at.to_date == v.published_at.to_date}
+      if !old_v || v.published_at.to_i > since_date.to_i
         begin
           hs = construct_hash(v)
           video = my_videos.select{|a| a.video_id == v.id}.first
@@ -125,7 +126,6 @@ class YoutubeAccount < Account
         end
       else
         logger.debug "  Skip #{v.published_at.to_s(:db)}"
-        break 
       end
     end
 

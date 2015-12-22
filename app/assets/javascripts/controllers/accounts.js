@@ -72,8 +72,10 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   	// lists all accounts
   	$scope.list = function() {
   		var orderBy = $filter('orderBy');
-  		
-  		Accounts.getAllAccounts()
+  		$scope.limit = 50;
+		$scope.offset = 0;
+
+  		Accounts.getAllAccounts($scope.limit, $scope.offset)
             .then(function(response) {
                $scope.accounts = response.data;
                
@@ -83,7 +85,35 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 			   };
 			
         });
-       
+
+
+		$scope.previousPage = function () {
+			$scope.offset -= $scope.limit;
+			Accounts.getAllAccounts($scope.limit, $scope.offset)
+				.then(function(response) {
+					$scope.accounts = response.data;
+
+					// Handles array for sorting table
+					$scope.order = function(predicate, reverse) {
+						$scope.accounts = orderBy($scope.accounts, predicate, reverse);
+					};
+
+				});
+		};
+
+        $scope.nextPage = function () {
+			$scope.offset += $scope.limit;
+			Accounts.getAllAccounts($scope.limit, $scope.offset)
+				.then(function(response) {
+					$scope.accounts = response.data;
+
+					// Handles array for sorting table
+					$scope.order = function(predicate, reverse) {
+						$scope.accounts = orderBy($scope.accounts, predicate, reverse);
+					};
+
+				});
+		};
 		
 		 
        
@@ -323,9 +353,9 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 		for (var i = 0; i < this.selectedLanguages.length; i++) {
 			languages.push(this.selectedLanguages[i].id);
 		}
-  		
+
   		Accounts.update($routeParams.accountId, $scope.account.name, 
-  		$scope.account.description, $scope.account.object_name, $scope.media_type_name,
+  		$scope.account.description, $scope.account.object_name, $scope.selectedMediaType.name,
   		groups, subgroups, languages,
   		regions, countries, $scope.selectedAccountType.id, segments)
             .then(function(response) {

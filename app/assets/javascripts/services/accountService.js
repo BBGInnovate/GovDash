@@ -10,8 +10,8 @@ angular.module('accountService', [])
                 });
                 
             },
-            getAllAccounts: function() {
-				return $http.get('/api/accounts').then(function(response) {
+            getAllAccounts: function(limit, offset) {
+				return $http.get('/api/accounts?limit='+limit+'&offset='+offset).then(function(response) {
 					account = response;
 					return account;
 				});

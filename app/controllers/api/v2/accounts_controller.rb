@@ -4,10 +4,15 @@ class Api::V2::AccountsController < Api::V2::BaseController
   def index 
     arr = []
     name = ''
+    @limit = params[:limit].to_i
+    @offset = params[:offset].to_i
     model_class.where(condition1).
        where(condition2).
        where(condition3).
        where(condition5).
+       order('name').
+       limit(@limit).
+       offset(@offset).
        each do |s|
        attr = filter_metadata(add_associate_name(s))
        attr[:data_collect_started] = s.send :collect_started

@@ -51,7 +51,7 @@
           <tr ng-repeat="account in accounts">
 				<td>
 					<i class="ion-social-{{account.media_type_name | displayIcon}} {{account.media_type_name | displayIcon}}-icon-list account-icon"></i>
-					<a class="account-link" ng-show="loggedInUser" href="#/accounts/edit/{{account.id}}">{{account.object_name}}</a>
+					<a class="account-link" ng-show="loggedInUser" href="#/accounts/edit/{{account.id}}">{{account.name}}</a>
 					<span ng-show="!loggedInUser">{{account.object_name}}</span> 
 				</td>
 			<!--	<td><i class="icon-{{account.media_type_name | displayIcon}}"></i></td> -->
@@ -68,6 +68,16 @@
             </tr>
         </tbody>
       </table>
-    
+
+
      
 </div>
+
+<div ng-show="accounts" style="margin-top: -10px; font-size: 32px; cursor:pointer; color: #4C5F70">
+
+    <i ng-show="offset > 0" ng-click="previousPage()" class="fa fa-arrow-circle-left" style="float: left; margin-left: 10px"></i>
+    <i ng-show="accounts.length === limit" ng-click="nextPage()" class="fa fa-arrow-circle-right" style="float: right; margin-right: 10px"></i>
+</div>
+<br>
+<br>
+<br>

@@ -320,3 +320,31 @@ div.xAxis div.tickLabel
 .total-engagement-actions-value {
     font-size: 44px !important;
 }
+
+.delete-account-btn {
+    border-radius: 10px;
+    color: white;
+    padding: 2px 5px;
+    background: #EA4A41;
+}
+
+.remove-user {
+    background: #ea4a41 none repeat scroll 0 0;
+    border-radius: 10px;
+    color: white;
+    padding: 2px 4px 3px;
+    position: relative;
+    margin-left: -15px;
+}
+
+.edit-icon {
+    background: #4c5f70 none repeat scroll 0 0;
+    border-radius: 10px;
+    color: white;
+    padding: 2px 4px 3px;
+    position: relative;
+}
+
+.well-sm {
+    padding: 0 0 5px 10px !important;
+}

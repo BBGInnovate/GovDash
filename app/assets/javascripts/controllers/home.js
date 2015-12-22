@@ -61,9 +61,14 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 			});
 
 			// This scope watch function handles the many to many group -> subgroup relationship
-			$scope.$watch('selectedGroups', function () {
+			$scope.$watch('selectedGroups', function (newVal, oldVal) {
 				$scope.subgroups = response[5].subgroups;
 				if ($scope.selectedGroups) {
+					// reset all filters
+					$scope.accounts = [];
+					$scope.selectedSubgroups = [];
+					$scope.selectedAccounts = [];
+
 					var ids = [];
 					// Loop through the selected groups
 					for (var i = 0; i < $scope.selectedGroups.length; i++) {

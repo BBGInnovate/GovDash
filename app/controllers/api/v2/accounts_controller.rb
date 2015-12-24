@@ -4,8 +4,17 @@ class Api::V2::AccountsController < Api::V2::BaseController
   def index 
     arr = []
     name = ''
+
     @limit = params[:limit].to_i
+    if (params[:limit] == nil)
+      @limit = 100
+    end
+
     @offset = params[:offset].to_i
+    if (params[:offset] == nil)
+      @offset = 0
+    end
+
     model_class.where(condition1).
        where(condition2).
        where(condition3).

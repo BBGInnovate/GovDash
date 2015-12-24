@@ -322,10 +322,10 @@ div.xAxis div.tickLabel
 }
 
 .delete-account-btn {
+    background: #ea4a41 none repeat scroll 0 0;
     border-radius: 10px;
     color: white;
-    padding: 2px 5px;
-    background: #EA4A41;
+    padding: 2px 4px 3px;
 }
 
 .remove-user {
@@ -347,4 +347,14 @@ div.xAxis div.tickLabel
 
 .well-sm {
     padding: 0 0 5px 10px !important;
+}
+
+.pagination-label {
+    font-size: 18px;
+    position: relative;
+    top: -4px;
+}
+
+.modal-sm {
+    width: 500px !important;
 }

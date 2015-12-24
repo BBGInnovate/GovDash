@@ -16,7 +16,7 @@
         <h4 class="modal-title">Delete Confirmation</h4>
       </div>
       <div class="modal-body">
-        <p>Are you sure you want to delete {{ accountName }}?</p>
+        <p>Are you sure you want to delete the {{ accountName }} <span style="text-transform: capitalize">{{ socialMediaPlatform | displayIcon }}</span> account?</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
@@ -63,7 +63,7 @@
 	<!--		<td>{{account.segment_names | toString}}</td> -->
 				<td ng-show="loggedInUser" style="text-align: center">
 					<a href="#/accounts/edit/{{account.id}}"><i class="icon-pencil"></i></a>
-					<a class="delete-icon" data-toggle="modal" data-target=".bs-example-modal-sm" ng-click="getAccountName($index)"><strong><span class="ion-close-round delete-account-btn"></span></strong></i></a>
+					<a class="delete-icon" data-toggle="modal" data-target=".bs-example-modal-sm" ng-click="getAccountName($index)"><strong><span class="fa fa-times delete-account-btn"></span></strong></i></a>
 				</td>
             </tr>
         </tbody>
@@ -74,9 +74,14 @@
 </div>
 
 <div ng-show="accounts" style="margin-top: -10px; font-size: 32px; cursor:pointer; color: #4C5F70">
-
-    <i ng-show="offset > 0" ng-click="previousPage()" class="fa fa-arrow-circle-left" style="float: left; margin-left: 10px"></i>
-    <i ng-show="accounts.length === limit" ng-click="nextPage()" class="fa fa-arrow-circle-right" style="float: right; margin-right: 10px"></i>
+    <div ng-click="previousPage()"  ng-show="offset > 0" style="float: left; margin-left: 10px">
+        <i class="fa fa-arrow-circle-left"></i>
+        <span class="pagination-label">Previous Page</span>
+    </div>
+    <div ng-click="nextPage()"  ng-show="accounts.length === limit" style="float: right; margin-right: 10px">
+        <span class="pagination-label">Next Page</span>
+        <i class="fa fa-arrow-circle-right"></i>
+    </div>
 </div>
 <br>
 <br>

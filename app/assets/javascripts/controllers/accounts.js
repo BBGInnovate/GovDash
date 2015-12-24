@@ -488,6 +488,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		$scope.accountIndex = accountIndex;
   		var accountToDelete = $scope.accounts[accountIndex];
   		$scope.accountName = accountToDelete.name;
+		$scope.socialMediaPlatform = accountToDelete.media_type_name;
   		
   	};
   	

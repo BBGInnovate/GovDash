@@ -7,7 +7,9 @@ angular.module('filters', []).
 	// Display Facebook or Twitter icon
     filter('displayIcon', function () {
         return function (text) {
-            return text.substring(0, text.length - 7).toLowerCase()
+			if (text) {
+				return text.substring(0, text.length - 7).toLowerCase()
+			}
 
         };
     })

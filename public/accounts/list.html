@@ -6,7 +6,8 @@
 	</div>
 	<!--<p style="float:right">{{user.email}} <a class="btn btn-primary" ng-click="logout('/users/login')">Logout</a></p>-->
 </div>
-<div style="clear:both;"></div>
+<div id="accounts-table" style="clear:both;"></div>
+
 
 <!-- Modal for Delete Confirmation -->
 <div ng-if="loggedInUser" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
@@ -29,11 +30,32 @@
 <a ng-show="loggedInUser" class="btn btn-info" href="#/accounts/create"><span class="ion-plus-round"></span> New Social Media Source</a>
 <hr ng-show="loggedInUser">
 
-<div class="panel panel-default" ng-init="list()">
+<div class="search" ng-show="allAccounts">
+    <span class="fa fa-search" style="font-size: 16px"></span>
+    <div angucomplete-alt id="ex1"
+         placeholder="Search accounts"
+         maxlength="50"
+         pause="100"
+         selected-object="selectedAccount"
+         local-data="allAccounts"
+         search-fields="name"
+         description-field="description"
+         title-field="name"
+         minlength="1"
+         input-class="form-control form-control-small"
+         match-class="highlight"></div>
+</div>
+
+
+
+<hr ng-show="loggedInUser">
+
+
+<div class="panel panel-default" ng-init="list()" ng-show="accounts.length > 0" style="z-index: 10">
  <!-- Default panel contents -->
 	  <br>
       <!-- Table -->
-      <table class="table table-striped accounts-table" ng-show="accounts.length > 0">
+      <table class="table table-striped accounts-table" >
         <thead>
           <tr>
             <th style="width: 170px"><a href="" ng-click="reverse=!reverse;order('name', reverse)">Name <i class="icon-sort"></i></a></th>

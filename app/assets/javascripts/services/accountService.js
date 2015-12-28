@@ -16,6 +16,12 @@ angular.module('accountService', [])
 					return account;
 				});
             },
+            getAllAccountNames: function() {
+                return $http.get('/api/show_all_accounts').then(function(response) {
+                    account = response;
+                    return account;
+                });
+            },
             getAccountById: function(accountId) {
             	return $http.get('api/accounts/' + accountId).then(function(response) {
 					account = response;

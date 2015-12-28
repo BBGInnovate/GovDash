@@ -19,6 +19,7 @@ class Api::V2::AccountsController < Api::V2::BaseController
        where(condition2).
        where(condition3).
        where(condition5).
+  #    where(name: '1800 Online').
        order('name').
        limit(@limit).
        offset(@offset).
@@ -42,6 +43,10 @@ class Api::V2::AccountsController < Api::V2::BaseController
     @data.update_attributes par
     update_countries_regions
     responding
+  end
+
+  def show_all
+    pretty_respond model_class.select('name', 'id', 'description').where(is_active: true).as_json
   end
   
   private
@@ -212,5 +217,5 @@ class Api::V2::AccountsController < Api::V2::BaseController
     end
     attr
   end
-  
+
 end

@@ -47,6 +47,7 @@
 //= require modernizr.min
 //= require countUp.min
 //= require jquery.noty.packaged.min
+//= require angucomplete-alt.min
 //= require simplify
 //= require main
 
@@ -54,7 +55,7 @@
 angular.module('radd', ['sessionService','recordService', 'roleService', 'regionService',
 	'countryService', 'organizationService', 'groupService', 'subgroupService', 'accountService',
 	'accountTypeService', 'mediaTypeService', 'languageService', 'reportService', 'userService',
-	'dateService', 'apiService', 'apiQueryService', 'segmentService', '$strap.directives', 'directives', 'filters', 'ngRoute'])
+	'dateService', 'apiService', 'apiQueryService', 'segmentService', '$strap.directives', 'directives', 'filters', 'ngRoute', 'angucomplete-alt'])
 
 
 	.config(['$httpProvider', function($httpProvider){

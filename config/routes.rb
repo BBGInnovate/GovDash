@@ -138,9 +138,11 @@ Radd::Application.routes.draw do
           get 'confirm'
         end
       end
+
+      match '/show_all_accounts' => 'accounts#show_all', :via => :get
       
       # 3/18/15  resources :facebooks, :only=>:index
-      
+
       # match '/users' => 'users#show', :via => :get 
       # match '/users' => 'users#update', :via => :put
       # match '/users' => 'users#destroy', :via => :delete
@@ -220,7 +222,7 @@ Radd::Application.routes.draw do
       end
     end
   end
-  
+
   # See how all your routes lay out with "rake routes"
 
   # This is a legacy wild controller route that's not recommended for RESTful applications.

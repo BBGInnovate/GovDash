@@ -75,15 +75,25 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
   		$scope.limit = 50;
 		$scope.offset = 0;
 
-  		Accounts.getAllAccounts($scope.limit, $scope.offset)
-            .then(function(response) {
-               $scope.accounts = response.data;
-               
-               // Handles array for sorting table
-               $scope.order = function(predicate, reverse) {
-			   		$scope.accounts = orderBy($scope.accounts, predicate, reverse);
-			   };
-			
+  		Accounts.getAllAccounts($scope.limit, $scope.offset).then(function(response) {
+		   $scope.accounts = response.data;
+
+		   // Handles array for sorting table
+		   $scope.order = function(predicate, reverse) {
+				$scope.accounts = orderBy($scope.accounts, predicate, reverse);
+		   };
+
+			// get all account names for search purposes
+		   Accounts.getAllAccountNames().then(function(response) {
+		   		$scope.allAccounts = response.data;
+
+			    $scope.$watch('selectedAccount', function () {
+				   if ($scope.selectedAccount) {
+					   $location.path('/accounts/edit/' + $scope.selectedAccount.originalObject.id);
+				   }
+			    });
+
+		   });
         });
 
 
@@ -98,6 +108,8 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 						$scope.accounts = orderBy($scope.accounts, predicate, reverse);
 					};
 
+					// scroll to top of table
+					document.getElementById('accounts-table').scrollIntoView();
 				});
 		};
 
@@ -111,6 +123,9 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 					$scope.order = function(predicate, reverse) {
 						$scope.accounts = orderBy($scope.accounts, predicate, reverse);
 					};
+
+					// scroll to top of table
+					document.getElementById('accounts-table').scrollIntoView();
 
 				});
 		};
@@ -491,8 +506,7 @@ function AccountsCtrl($scope, Accounts, $routeParams, $rootScope, $location, $fi
 		$scope.socialMediaPlatform = accountToDelete.media_type_name;
   		
   	};
-  	
-  
+
 }
 
  

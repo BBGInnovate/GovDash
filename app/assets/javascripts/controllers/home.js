@@ -55,7 +55,7 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 						$scope.subgroups = $scope.allSubgroups;
 					}
 
-
+					$scope.selectedFilters = true;
 				}
 
 			});
@@ -86,8 +86,14 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 					if ($scope.selectedGroups.length > 0) {
 						// make backend call here
 						APIQueryData.getAccountsByGroupAndSubgroupIds($scope.selectedGroups, $scope.selectedSubgroups).then(function(response) {
-							$scope.accounts = response;
+							// if there are no subgroups selected, go ahead and populate the accounts
+							// Fix for DASH-427
+							if ($scope.selectedSubgroups.length === 0) {
+								$scope.accounts = response;
+							}
 						});
+
+						$scope.selectedFilters = true;
 					}
 
 					// Place holder array for new ids
@@ -133,6 +139,9 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 					APIQueryData.getAccountsByGroupAndSubgroupIds($scope.selectedGroups, $scope.selectedSubgroups).then(function(response) {
 						$scope.accounts = response;
 					});
+
+
+					$scope.selectedFilters = true;
 				}
 			});
 
@@ -186,9 +195,27 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 
 					}
 
-
+					$scope.selectedFilters = true;
 				}
 			});
+
+			$scope.$watch('selectedCountries', function () {
+				if ($scope.selectedCountries && $scope.selectedCountries.length > 0) {
+					$scope.selectedFilters = true;
+
+				} else {
+					$scope.selectedFilters = false;
+				}
+			});
+
+			$scope.$watch('selectedLanguages', function () {
+				if ($scope.selectedLanguages && $scope.selectedLanguages.length > 0) {
+					$scope.selectedFilters = true;
+				} else {
+					$scope.selectedFilters = false;
+				}
+			});
+
 
 		});
 	}
@@ -520,6 +547,17 @@ function HomeCtrl($scope, APIData, APIQueryData, $filter, $rootScope, $timeout) 
 		$scope.subgroups = subgroups;
 	};
 
+
+	$scope.resetAllFilters = function () {
+		$scope.selectedCountries = [];
+		$scope.selectedLanguages = [];
+		$scope.selectedRegions = [];
+		$scope.selectedGroups = [];
+		$scope.selectedSubgroups = [];
+		$scope.selectedAccounts = [];
+
+		$scope.selectedFilters = false;
+	};
 
 
 

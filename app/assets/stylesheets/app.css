@@ -450,3 +450,11 @@ div.xAxis div.tickLabel
 #ex1_value {
     opacity: .8 !important;
 }
+
+.clear-filter-tags {
+    float: left;
+}
+
+.selected-filters-text {
+    line-height: 39px;
+}

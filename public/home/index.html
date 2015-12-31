@@ -84,7 +84,7 @@
                         </div>
                     </div>
                     <div class="m-left-md m-bottom-sm modal-filters">
-                        <span>Selected Filters:</span>
+                        <span class="selected-filters-text">Selected Filters:</span>
                         <span class="tag teal-tag" ng-repeat="region in selectedRegions">
                             <span>{{ region.name }}&nbsp;&nbsp;</span>
                             <a href="" ng-click="removeRegion($index)" title="Removing tag" style="color: white">
@@ -135,9 +135,7 @@
             </div>
 
             <div class="modal-footer" ng-if="regions">
-                <!--
-                <button type="button" class="btn btn-default" data-dismiss="modal" >Close</button>
-                -->
+                <button ng-show="selectedFilters" ng-click="resetAllFilters()" type="button" class="btn btn-default clear-filter-tags">Clear Filters</button>
                 <button type="button" class="btn btn-primary" ng-click="finish('current')" data-dismiss="modal" style="background: #2BAAB1; border: none">Finish</button>
             </div>
 
@@ -320,9 +318,9 @@
 <div class="main-container m-left-xs">
     <div class="padding-md">
         <div class="row">
-            <div class="col-sm-4">
+            <div class="col-sm-5">
                 <div class="page-title">
-                    Social Media Dashboard
+                    Social&nbsp;Media&nbsp;Engagements&nbsp;Dashboard
                 </div>
                 <div class="page-sub-header">
                     Includes accounts targeting: <i class="fa fa-map-marker text-danger"></i>
@@ -335,7 +333,7 @@
                     <span class="tag teal-tag" ng-repeat="account in selectedAccounts"><i class="fa fa-info-circle" title="Data Collected Since: {{ account.data_collect_started | dateFormatMMDDYYYY }}" data-toggle="tooltip" data-placement="top" datatooltip></i>&nbsp;&nbsp;{{ account.name }} ({{ account.media_type_name.slice(0, -7)}})</span>
                 </div>
             </div>
-            <div class="col-sm-8 text-right text-right-sm p-top-sm">
+            <div class="col-sm-7 text-right text-right-sm p-top-sm">
                 <div class="btn-group">
                     <button type="button" class="btn btn-default dropdown-toggle top-filters" data-toggle="dropdown">
                         <i class="fa fa-calendar"></i>&nbsp;&nbsp;&nbsp; {{ startDate }} - {{ endDate }} &nbsp;&nbsp;&nbsp;<span class="caret"></span>
@@ -362,7 +360,7 @@
         </div>
 
         <div class="row m-top-md">
-            <div class="col-lg-3 col-sm-12">
+            <div class="col-lg-12 col-sm-12">
                 <div class="statistic-box bg-success m-bottom-md">
                     <div class="statistic-title total-engagement-actions-title">
                         Total Engagements
@@ -384,7 +382,7 @@
                 </div>
             </div>
 
-            <div class="col-lg-3 col-sm-4">
+            <div class="col-lg-4 col-sm-4">
                 <div class="statistic-box bg-primary m-bottom-md">
                     <div class="statistic-title">
                         Facebook
@@ -406,7 +404,7 @@
                 </div>
             </div>
 
-            <div class="col-lg-3 col-sm-4">
+            <div class="col-lg-4 col-sm-4">
                 <div class="statistic-box bg-info m-bottom-md">
                     <div class="statistic-title">
                         Twitter
@@ -428,7 +426,7 @@
                 </div>
             </div>
 
-            <div class="col-lg-3 col-sm-4">
+            <div class="col-lg-4 col-sm-4">
                 <div class="statistic-box bg-danger m-bottom-md">
                     <div class="statistic-title">
                         YouTube

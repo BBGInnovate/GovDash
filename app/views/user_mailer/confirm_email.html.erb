@@ -2,8 +2,11 @@
 <html>
   <head>
   <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
-  <% host = @user.request_host || "http://localhost:3001" %>
-  <% link = "#{host}/api/users/confirm?code=#{@user.confirmation_code}" %>
+  <% 
+    host = @user.request_host || "http://localhost:3000"
+    link = "#{host}/api/users/confirm?code=#{@user.confirmation_code}" 
+    hours = Rails.configuration.new_user_confirmation_expires_in
+  %>
   </head>
   <body>
     <p>
@@ -14,7 +17,7 @@
     <a href="<%= link %>"><%= link %></a>
     </p>
     <p>
-    Please note that this confirmation link will expire in 48 hours.
+    Please note that this confirmation link will expire in <%= hours %> hours.
     </p>
   </body>
 </html>

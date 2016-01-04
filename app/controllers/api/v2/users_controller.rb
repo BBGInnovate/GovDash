@@ -51,8 +51,8 @@ class Api::V2::UsersController < Api::V2::BaseController
       pars = _params_
       @roles = pars.delete 'roles'
       @email = pars[:email]
-      @user = User.find_by email: @email
-      @user = User.new if !@user
+      # @user = User.find_by email: @email
+      @user = User.new # if !@user
       pars.each_pair do | key, val |
         if @user.respond_to?(key) && val
           @user.send("#{key}=", val)
@@ -82,7 +82,8 @@ class Api::V2::UsersController < Api::V2::BaseController
         render json: {:status => 'OK', :message => "Email confirmation sent"}
       else
         logger.info @user.errors.full_messages.join(', ')
-        render json: {:status => 'failed', :message => @user.errors.full_messages}
+        render json: {:status => 406, :message => @user.errors.full_messages.first},
+           :status => 406
       end
     rescue Exception=>ex
       logger.info ex.message

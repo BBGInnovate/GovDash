@@ -36,6 +36,6 @@ Radd::Application.configure do
   config.assets.debug = true
   # When a new user registered with GovDash, a confirmation email is
   # sent. A user has this time window to confirm, he/she owns the email
-  config.new_user_confirmation_expires_in = 24  # hours
+  config.new_user_confirmation_expires_in = 72  # hours
   # Rails.configuration.new_user_confirmation_expires_in
 end

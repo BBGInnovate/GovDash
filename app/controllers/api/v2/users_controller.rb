@@ -1,6 +1,6 @@
 require 'ostruct'
 class Api::V2::UsersController < Api::V2::BaseController
-   before_filter :authenticate_user!, :except => [:confirm,:create, :show]
+   before_filter :authenticate_user!, :except => [:confirm,:create, :show, :reset_password]
    skip_before_filter :is_admin?,:only => [:create, :show]  
     
   def roles
@@ -130,7 +130,8 @@ class Api::V2::UsersController < Api::V2::BaseController
   def confirm
     begin
       user = User.find_by :confirmation_code=>params[:code]
-      if Time.zone.now <= user.confirmation_sent_at + 48.hours
+      num = Rails.configuration.new_user_confirmation_expires_in
+      if Time.zone.now <= user.confirmation_sent_at + num.hours
         user.subrole_id = Subrole.viewer_id
         user.save!
         flash[:notice]="Your email is confirmed"
@@ -147,6 +148,32 @@ class Api::V2::UsersController < Api::V2::BaseController
     end
   end
 
+  def reset_password
+    @user = User.find_by email: params[:email]
+    status = 406
+    if @user
+      message = "New password sent to #{@user.email}"
+      new_pass = @user.generate_confirmation_code
+      @user.password = new_pass
+      @user.password_confirmation = new_pass
+      if @user.valid?
+        msg = @user.send_reset_password_email(new_pass)
+        if msg.to_s.match(/^Error:/)
+          message = msg
+        else
+          @user.reset_password_sent_at = Time.zone.now
+          @user.save
+          status = 200
+        end
+      else
+        message = @user.errors.full_messages.first
+      end
+    end
+
+    render json: {:status => status, :message => message},
+      :status => status
+  end
+  
   protected
  
   def modify_row user, row

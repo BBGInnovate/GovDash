@@ -4,7 +4,19 @@ class Api::V2::SessionsController < Devise::SessionsController
   def create
     warden.authenticate!(:scope => resource_name, :recall => "#{controller_path}#failure")
     user = current_user.merge_role
-    render :status => 200, :json => { :success => true, :info => "Logged in", :user => user.send('table') }
+    num = Rails.configuration.new_user_confirmation_expires_in
+    if current_user.reset_password_sent_at
+      if (Time.zone.now <= current_user.reset_password_sent_at + num.hours)
+        current_user.update_column :reset_password_sent_at, nil
+        render :status => 200, :json => { :success => true, :info => "Logged in", :user => user.send('table') }
+      else
+        current_user = nil
+        user = nil
+        render :status => 406, :json => { :success => false, :info => "Password expired", :user => {} }
+      end
+    else
+      render :status => 200, :json => { :success => true, :info => "Logged in", :user => user.send('table') }
+    end
   end
 
   def destroy

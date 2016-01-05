@@ -19,6 +19,11 @@ class UserMailer < ActionMailer::Base
     mail(to: @user.email, subject: "BBG Social Media Dashboard Registration Confirmation")
   end
 
+  def reset_password_email(user, pass)
+    @user = user
+    @pass = pass
+    mail(to: @user.email, subject: "BBG Social Media Dashboard Password Reset")
+  end
   protected
   def set_headers
     headers["return-path"] = "oddidev@bbg.gov"

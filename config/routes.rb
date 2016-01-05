@@ -136,6 +136,8 @@ Radd::Application.routes.draw do
         collection do
           get 'roles'
           get 'confirm'
+          get 'reset_password'
+          post 'reset_password'
         end
       end
 

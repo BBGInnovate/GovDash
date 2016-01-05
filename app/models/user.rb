@@ -204,9 +204,9 @@ class User < ActiveRecord::Base
     end
   end
 
-  def send_reset_password_email new_pass
+  def send_forget_password_email new_pass
     begin
-      UserMailer.reset_password_email(self, new_pass).deliver_now!
+      UserMailer.forget_password_email(self, new_pass).deliver_now!
     rescue Net::SMTPFatalError=>ex
       "Error: #{ex.message}"
     end

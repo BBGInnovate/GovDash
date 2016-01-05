@@ -27,7 +27,12 @@ class Api::V2::UsersController < Api::V2::BaseController
 
   def show
     arr = []
-    record = model_class.find(params[:id])
+    id = params[:id]
+    if id.size == 64
+      record = model_class.find_by reset_password_token: params[:id]
+    else
+      record = model_class.find(params[:id])
+    end
     arr << add_associate_name(record)
     arr[0] = modify_row record, arr[0]
     pretty_respond arr
@@ -148,16 +153,17 @@ class Api::V2::UsersController < Api::V2::BaseController
     end
   end
 
-  def reset_password
+  def forget_password
     @user = User.find_by email: params[:email]
     status = 406
     if @user
       message = "New password sent to #{@user.email}"
+      status = 200
       new_pass = @user.generate_confirmation_code
       @user.password = new_pass
       @user.password_confirmation = new_pass
       if @user.valid?
-        msg = @user.send_reset_password_email(new_pass)
+        msg = @user.send_forget_password_email(new_pass)
         if msg.to_s.match(/^Error:/)
           message = msg
         else
@@ -169,7 +175,6 @@ class Api::V2::UsersController < Api::V2::BaseController
         message = @user.errors.full_messages.first
       end
     end
-
     render json: {:status => status, :message => message},
       :status => status
   end

@@ -43,7 +43,7 @@ module Radd
     config.action_mailer.raise_delivery_errors = false
     config.action_mailer.perform_deliveries = true
     config.action_mailer.delivery_method = :smtp
-    # config.action_mailer.default_url_options = {:host => 'localhost' }
+    config.action_mailer.default_url_options = {:host => 'localhost:3000' }
     EMAIL_SETTINGS = YAML::load(
       File.open("#{Rails.root.to_s}/config/email.yml")
     )[Rails.env]

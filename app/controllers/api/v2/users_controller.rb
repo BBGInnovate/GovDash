@@ -103,6 +103,10 @@ class Api::V2::UsersController < Api::V2::BaseController
     u = User.find params[:id]
     if u
       mypar = _params_
+      if mypar[:password]
+        u.reset_password_token = nil if u.reset_password_token
+        u.reset_password_sent_at = nil if u.reset_password_sent_at
+      end
       u.update_attributes( mypar )
       reset_roles u, @roles
       if Organization.all.size > u.roles.size
@@ -167,6 +171,7 @@ class Api::V2::UsersController < Api::V2::BaseController
         if msg.to_s.match(/^Error:/)
           message = msg
         else
+          @user.reset_password_token = new_pass
           @user.reset_password_sent_at = Time.zone.now
           @user.save
           status = 200

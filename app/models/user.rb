@@ -111,7 +111,7 @@ class User < ActiveRecord::Base
   def merge_role
     user = OpenStruct.new(self.attributes)
     attr = []
-    orgs = self.roles.map(&:organization).map(&:name)
+    orgs = self.roles.map(&:organization).compact.map(&:name)
     if !orgs.empty?
       org_names = orgs.join(',')
     else

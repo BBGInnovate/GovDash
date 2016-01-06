@@ -7,14 +7,14 @@ class Api::V2::SessionsController < Devise::SessionsController
     num = Rails.configuration.new_user_confirmation_expires_in
     if current_user.reset_password_sent_at
       if (Time.zone.now <= current_user.reset_password_sent_at + num.hours)
-        current_user.update_column :reset_password_sent_at, nil
-        render :status => 200, :json => { :success => true, :info => "Logged in", :user => user.send('table') }
+        render :status => 200, :json => { :success => true, :info => "Logged in with temporary password", :user => user.send('table') }
       else
-        current_user = nil
-        user = nil
-        render :status => 406, :json => { :success => false, :info => "Password expired", :user => {} }
+        # current_user = nil
+        # user = nil
+        render :status => 406, :json => { :success => false, :info => "Temporary password expired", :user => {"email": current_user.email} }
       end
     else
+      # current_user.update_column :reset_password_sent_at, nil
       render :status => 200, :json => { :success => true, :info => "Logged in", :user => user.send('table') }
     end
   end

@@ -87,8 +87,8 @@ class Api::V2::UsersController < Api::V2::BaseController
         render json: {:status => 'OK', :message => "Email confirmation sent"}
       else
         logger.info @user.errors.full_messages.join(', ')
-        render json: {:status => 406, :message => @user.errors.full_messages.first},
-           :status => 406
+        render json: {:status => 200, :message => @user.errors.full_messages.first},
+           :status => 200
       end
     rescue Exception=>ex
       logger.info ex.message

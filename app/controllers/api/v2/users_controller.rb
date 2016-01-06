@@ -110,7 +110,7 @@ class Api::V2::UsersController < Api::V2::BaseController
       u.update_attributes( mypar )
       reset_roles u, @roles
       if Organization.all.size > u.roles.size
-        u.is_admin = false if u.is_admin
+        # u.is_admin = false if u.is_admin
         u.subrole_id = 4 if u.subrole_id == 5
         u.save
       end

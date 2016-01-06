@@ -9,7 +9,7 @@ class Api::V2::SessionsController < Devise::SessionsController
       if (Time.zone.now <= current_user.reset_password_sent_at + num.hours)
         render :status => 200, :json => { :success => true, :info => "Logged in with temporary password", :user => user.send('table') }
       else
-        render :status => 406, :json => { :success => false, :info => "Temporary password expired", :user => {"email": current_user.email} }
+        render :status => 200, :json => { :success => false, :info => "Temporary password expired", :user => {"email": current_user.email} }
       end
     else
       render :status => 200, :json => { :success => true, :info => "Logged in", :user => user.send('table') }

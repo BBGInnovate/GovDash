@@ -1,6 +1,6 @@
 require 'ostruct'
 class Api::V2::UsersController < Api::V2::BaseController
-   before_filter :authenticate_user!, :except => [:confirm,:create, :show, :reset_password]
+   before_filter :authenticate_user!, :except => [:confirm,:create, :show, :forget_password,:reset_password]
    skip_before_filter :is_admin?,:only => [:create, :show]  
     
   def roles
@@ -159,13 +159,14 @@ class Api::V2::UsersController < Api::V2::BaseController
 
   def forget_password
     @user = User.find_by email: params[:email]
-    status = 406
+    status = 200
     if @user
       message = "New password sent to #{@user.email}"
       status = 200
       new_pass = @user.generate_confirmation_code
       @user.password = new_pass
       @user.password_confirmation = new_pass
+      p " @user.valid? = #{@user.valid?}"
       if @user.valid?
         msg = @user.send_forget_password_email(new_pass)
         if msg.to_s.match(/^Error:/)

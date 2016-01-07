@@ -458,3 +458,7 @@ div.xAxis div.tickLabel
 .selected-filters-text {
     line-height: 39px;
 }
+
+#timing-out {
+    z-index: 99999999999999;
+}

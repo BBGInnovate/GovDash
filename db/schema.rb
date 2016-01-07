@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151013183253) do
+ActiveRecord::Schema.define(version: 20160106181442) do
 
   create_table "account_profiles", force: :cascade do |t|
     t.integer  "account_id",      limit: 4
@@ -36,9 +36,9 @@ ActiveRecord::Schema.define(version: 20151013183253) do
   end
 
   create_table "accounts", force: :cascade do |t|
-    t.string   "name",             limit: 40
+    t.string   "name",             limit: 100
     t.string   "description",      limit: 255
-    t.string   "object_name",      limit: 40
+    t.string   "object_name",      limit: 100
     t.boolean  "status",           limit: 1,   default: true
     t.boolean  "page_admin",       limit: 1,   default: false
     t.string   "media_type_name",  limit: 20,  default: "FacebookAccount"
@@ -467,8 +467,9 @@ ActiveRecord::Schema.define(version: 20151013183253) do
 
   create_table "organizations", force: :cascade do |t|
     t.string   "name",       limit: 255
-    t.datetime "created_at",             null: false
-    t.datetime "updated_at",             null: false
+    t.datetime "created_at",                            null: false
+    t.datetime "updated_at",                            null: false
+    t.boolean  "is_active",  limit: 1,   default: true
   end
 
   create_table "photo_galleries", force: :cascade do |t|

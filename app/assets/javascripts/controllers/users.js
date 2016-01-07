@@ -27,12 +27,12 @@ function UsersCtrl($scope, Session, $rootScope, Users, $routeParams, $location, 
 
         Session.register(user.firstname, user.lastname, user.email, user.password, user.confirm_password)
             .then(function(response) {
-                console.log(response);
-
 				// if no response was found, user was not created in backend
-				if (!response) {
-					$scope.authError = 'Could not create user';
+
+				if (response.data.message) {
+					$scope.authError = 'Could not create user: ' + response.data.message;
 				}
+
             }, function(response) {
                 var errors = '';
                 $.each(response.data.errors, function(index, value) {
@@ -111,5 +111,50 @@ function UsersCtrl($scope, Session, $rootScope, Users, $routeParams, $location, 
   		$scope.lastName = userToDelete.lastname;
   		$scope.email = userToDelete.email;
   	};
+
+
+    $scope.resetPassword = function(user) {
+
+        Users.resetPassword(user.email).then(function(response) {
+            if (response.status === 200) {
+                if (response.data.message) {
+                    $scope.authReason = response.data.message;
+                } else {
+                    $scope.authError = 'Could not find a user with the email address provided.';
+                }
+            }
+
+        });
+
+    };
+
+
+    $scope.changePassword = function(user) {
+
+        if (user.password !== user.password_confirmation) {
+            $scope.authError = 'Passwords do not match';
+            setTimeout(function() {
+                $scope.authError = null
+            }, 2000);
+        } else {
+            Users.changePassword(user).then(function (response) {
+
+                 if (response.status === 200) {
+                     $scope.authSuccess = 'Password changed successfully!';
+
+                     // delay for user to see message before redirecting
+                     setTimeout(function () {
+                         $location.path("/");
+                     }, 2000);
+
+
+                 }
+
+            });
+        }
+
+
+    };
+
 }
 

@@ -4,6 +4,7 @@
 //= require angular-strap.min
 //= require angular-route
 //= require angular-resource
+//= require angular-idle.min
 //= require filters
 //= require directives
 //= require services/reportService
@@ -55,7 +56,7 @@
 angular.module('radd', ['sessionService','recordService', 'roleService', 'regionService',
 	'countryService', 'organizationService', 'groupService', 'subgroupService', 'accountService',
 	'accountTypeService', 'mediaTypeService', 'languageService', 'reportService', 'userService',
-	'dateService', 'apiService', 'apiQueryService', 'segmentService', '$strap.directives', 'directives', 'filters', 'ngRoute', 'angucomplete-alt'])
+	'dateService', 'apiService', 'apiQueryService', 'segmentService', '$strap.directives', 'directives', 'filters', 'ngRoute', 'angucomplete-alt', 'ngIdle'])
 
 
 	.config(['$httpProvider', function($httpProvider){
@@ -89,8 +90,10 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 			.when('/', {templateUrl:'/home/index.html', controller:HomeCtrl})
 			.when('/record', {templateUrl:'/record/index.html', controller:RecordCtrl})
 			.when('/users/login', {templateUrl:'/users/login.html', controller:UsersCtrl})
+			.when('/users/forgotpassword', {templateUrl:'/users/forgotpassword.html', controller:UsersCtrl})
 			.when('/users/register', {templateUrl:'/users/register.html', controller:UsersCtrl})
 			.when('/config', {templateUrl:'/config/index.html'})
+			.when('/config/resetpassword', {templateUrl:'/config/resetpassword.html', controller:UsersCtrl})
 			.when('/organizations/create/', {templateUrl:'/organizations/create.html', controller:OrganizationsCtrl})
 			.when('/organizations', {templateUrl:'/organizations/list.html', controller:OrganizationsCtrl})
 			.when('/organizations/edit/:organizationId', {templateUrl:'/organizations/edit.html', controller:OrganizationsCtrl})
@@ -119,8 +122,18 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 		;
 	}])
 
+	.config(['KeepaliveProvider', 'IdleProvider', function(KeepaliveProvider, IdleProvider) {
+		IdleProvider.idle(1500);
+		IdleProvider.timeout(60);
+		KeepaliveProvider.interval(10);
+	}])
+
+	.run(['Idle', function(Idle) {
+		Idle.watch();
+	}])
+
 	// register listener to watch for route changes
-	.run(function ($rootScope, $location, Session, $timeout) {
+	.run(function ($rootScope, $location, Session, $timeout, Idle) {
 		$rootScope.headerRedirect = '';
 
 		// watch loggedInUser and control headerRedirect which is the header logo's redirect anchor reference
@@ -138,11 +151,30 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 		$rootScope.$on('$locationChangeStart',function(evt, absNewUrl, absOldUrl) {
 			if (absOldUrl.indexOf('login') === -1) {
 				$rootScope.origPath = absOldUrl;
+
+
 			}
+/*
+
+			//setInterval(function () {
+				var sessionAlert = confirm('Your session will timeout in 5 minutes. Press OK to renew your session or cancel to logout');
+				if (sessionAlert == true) {
+					alert('Your session is renewed!');
+				} else {
+
+					$('a:contains("Logout")')[2].click();
+					$('.modal-backdrop').hide();
+
+
+				}
+			//}, 5000);
+			*/
+
 		});
 
+
 		// if they are trying to access a page other than register page, check authentication
-		if ($location.$$path.indexOf('register') === -1 && $location.$$path.indexOf('login') === -1) {
+		if ($location.$$path.indexOf('register') === -1 && $location.$$path.indexOf('login') === -1 && $location.$$path.indexOf('forgotpassword') === -1) {
 
 			// call back-end to check session
 			Session.checkUserLoggedIn()
@@ -162,7 +194,13 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 						$rootScope.email = response.user.email;
 						$rootScope.isAdmin = response.user['is_admin'];
 						$rootScope.user = response.user;
-					}
+					} else if (response.info == 'Logged in with temporary password') {
+						$rootScope.loggedInUser = true;
+						$rootScope.email = response.user.email;
+						$rootScope.isAdmin = response.user['is_admin'];
+						$rootScope.user = response.user;
+						$location.path("/config/resetpassword");
+					} else
 
 					// if a user with subrole_id 2 (viewer) is trying to go to config page, redirect
 					// them to home
@@ -176,7 +214,7 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 
 						if (!$rootScope.loggedInUser) {
 							// no logged user, we should be going to the login route
-							if (next.templateUrl === "/users/login.html" || next.templateUrl === "/users/register.html") {
+							if (next.templateUrl === "/users/login.html" || next.templateUrl === "/users/register.html" || next.templateUrl === "/users/forgotpassword.html") {
 								// don't redirect anon users on the login or register routes
 							} else {
 								// redirect all dashboard routes to login
@@ -188,7 +226,7 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 						// Only ADMIN users can access user based pages
 						if (next.templateUrl) {
 							if (next.templateUrl.indexOf('/users/') > -1 &&
-								next.templateUrl != "/users/login.html" && next.templateUrl != "/users/register.html" && $rootScope.isAdmin === false) {
+								next.templateUrl != "/users/login.html" && next.templateUrl != "/users/register.html" && next.templateUrl != "/users/forgotpassword.html" && $rootScope.isAdmin === false) {
 								$location.path("/config");
 
 
@@ -204,6 +242,52 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 
 			});
 		}
+
+		$rootScope.events = [];
+
+		$rootScope.$on('IdleStart', function() {
+			// the user appears to have gone idle
+		});
+
+		$rootScope.$on('IdleWarn', function(e, countdown) {
+			// follows after the IdleStart event, but includes a countdown until the user is considered timed out
+			// the countdown arg is the number of seconds remaining until then.
+			// you can change the title or display a warning dialog from here.
+			// you can let them resume their session by calling Idle.watch()
+
+			$('#timing-out').modal('show');
+			$rootScope.countdown = countdown;
+
+		});
+
+		$rootScope.$on('IdleTimeout', function() {
+			// the user has timed out (meaning idleDuration + timeout has passed without any activity)
+			// this is where you'd log them
+
+			$('#timing-out').modal('hide');
+			$('#largeModal').modal('hide');
+			setTimeout(function () {
+				$('a:contains("Logout")')[2].click();
+			}, 1000)
+
+		});
+
+		$rootScope.$on('IdleEnd', function() {
+			// the user has come back from AFK and is doing stuff. if you are warning them, you can use this to hide the dialog
+			$('#timing-out').modal('hide');
+		});
+
+		$rootScope.$on('Keepalive', function() {
+			// do something to keep the user's session alive
+/*
+			// call back-end to check session
+			Session.checkUserLoggedIn()
+				.then(function (response) {
+					console.log(response);
+				});
+				*/
+		});
+
 
 
 	});

@@ -45,15 +45,19 @@ angular.module('sessionService', [])
             },
 
             register: function(firstname, lastname, email, password, confirm_password) {
+                console.log('making post');
                 return $http.post('/api/users', {user: {firstname: firstname, lastname: lastname, email: email, password: password, password_confirmation: confirm_password} })
                 .then(function(response) {
+
                     service.currentUser = response.data;
 
-					console.log(response.data);
 
-                    if (service.isAuthenticated() && response.data.status !== 'failed') {
+
+                    if (service.isAuthenticated() && response.data.status !== 'failed' && response.data.message != 'Email has already been taken') {
                         $location.path('/welcome');
                     }
+
+                    return response;
                 });
             },
             requestCurrentUser: function() {

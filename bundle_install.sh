@@ -12,7 +12,7 @@ release_path="$root/releases"
 export RAILS_ENV=production
 
 # $bundle exec bundle install --path=/home/deploy/.bundler/socialdash_app --without=test development
-$bundle install --without=test development
-${rake} db:migrate
+bundle install --without=test development
+rake db:migrate
 touch tmp/restart.txt
     

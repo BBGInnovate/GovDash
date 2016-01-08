@@ -4,10 +4,10 @@ development: &defaults
   :port: 587
   :domain: gmail.com
   :authentication: plain
-  :user_name: oddidev@gmail.com
-  :password: "oddi3600BBG2015"
+  :user_name: 
+  :password: ""
   :enable_starttls_auto: true
-  :receivers: "liwliu@bbg.gov"
+  :receivers: ""
 staging:
   <<: *defaults
   

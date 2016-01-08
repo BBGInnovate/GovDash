@@ -128,12 +128,11 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 		KeepaliveProvider.interval(10);
 	}])
 
-	.run(['Idle', function(Idle) {
-		Idle.watch();
-	}])
-
 	// register listener to watch for route changes
 	.run(function ($rootScope, $location, Session, $timeout, Idle) {
+	//	commented out for now
+	//	Idle.watch();
+
 		$rootScope.headerRedirect = '';
 
 		// watch loggedInUser and control headerRedirect which is the header logo's redirect anchor reference
@@ -200,7 +199,7 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 						$rootScope.isAdmin = response.user['is_admin'];
 						$rootScope.user = response.user;
 						$location.path("/config/resetpassword");
-					} else
+					}
 
 					// if a user with subrole_id 2 (viewer) is trying to go to config page, redirect
 					// them to home

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 source /home/uberdash/.rvm/scripts/rvm
-rake=/home/uberdash/.rvm/gems/ruby-2.2.1/bin/rake
+rake=/home/uberdash/.rvm/rubies/ruby-2.2.1/bin/rake
 bundle=/home/uberdash/.rvm/gems/ruby-2.2.1/bin/bundle
 
 root=/home/uberdash/socialdash_app

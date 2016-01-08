@@ -28,8 +28,19 @@ angular.module('userService', [])
                    
                 });
               
+            },
+            resetPassword: function(email) {
+                return $http.get('/api/users/forget_password?email=' + email)
+                    .then(function(response) {
+                        return response;
+                    });
+            },
+            changePassword: function(user) {
+                return $http.put('api/users/' + user.id, {"user":{"password": user.password, "password_confirmation": user.password_confirmation }} )
+                    .then(function(response) {
+                        return response;
+                    });
             }
-            
         };
         return user;
     });

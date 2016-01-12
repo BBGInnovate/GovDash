@@ -69,6 +69,8 @@ class Account < ActiveRecord::Base
     if to_send
       UserMailer.alarm_email(to, msg).deliver_now!
       logger.debug "  #{klass} updated at #{date.to_s(:db)} Current time: #{Time.now.to_s(:db)}"
+    else
+      puts "  #{klass} status OK at #{date.to_s(:db)}"
     end
   end
 

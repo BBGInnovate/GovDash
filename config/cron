@@ -1,0 +1,25 @@
+SHELL=/bin/bash
+#
+0 * * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'Account.check_status'  > /tmp/ac-status.log 2>&1
+30 */8 * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.daily_aggregate_data'  > /tmp/fb-daily.log 2>&1
+0 */7 * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.aggregate_data_daily'  > /tmp/fb-aggre.log 2>&1
+# Facebook retrieve for govdash-1
+10 */6  * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.retrieve 28.days.ago,0,"0..15"'  > /tmp/fb-cron1.log 2>&1
+15 */6  * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.retrieve 28.days.ago,0,"16..30"'  > /tmp/fb-cron2.log 2>&1
+20 */6  * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.retrieve 28.days.ago,0,"31..45"'  > /tmp/fb-cron3.log 2>&1
+25 */6  * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.retrieve 28.days.ago,0,"46..60"'  > /tmp/fb-cron4.log 2>&1
+#
+# Facebook retrieve for govdash-2
+10 */6  * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.retrieve 28.days.ago,0,"61..75"'  > /tmp/fb-cron5.log 2>&1
+15 */6  * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.retrieve 28.days.ago,0,"76..90"'  > /tmp/fb-cron6.log 2>&1
+20 */6  * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.retrieve 28.days.ago,0,"91..105"'  > /tmp/fb-cron7.log 2>&1
+25 */6  * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.retrieve 28.days.ago,0,"106..400"'  > /tmp/fb-cron8.log 2>&1
+#
+# 
+10 */4 * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'TwitterAccount.retrieve'  > /tmp/tw-cron.log 2>&1
+59 */4 * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'ScReferralTraffic.get_daily_report'  > /tmp/sc-cron.log 2>&1
+# 
+30 * * * * source /home/uberdash/.rvm/scripts/rvm && cd source /home/uberdash/.rvm/scripts/rvm && /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'YoutubeAccount.retrieve'  > /tmp/yt-cron.log 2>&1
+# 
+0 */6 * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.save_lifetime_data'  > /tmp/fb-cron-life.log 2>&1
+

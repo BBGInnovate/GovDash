@@ -123,7 +123,9 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 	}])
 
 	.config(['KeepaliveProvider', 'IdleProvider', function(KeepaliveProvider, IdleProvider) {
-		IdleProvider.idle(1500);
+	//	var time = 1500;
+		var time = 5;
+		IdleProvider.idle(time);
 		IdleProvider.timeout(60);
 		KeepaliveProvider.interval(10);
 	}])

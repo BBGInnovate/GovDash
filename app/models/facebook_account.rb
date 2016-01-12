@@ -189,7 +189,7 @@ class FacebookAccount < Account
     begin
       # @num_attempts += 1
       objectname = self.object_name.split("/").last.gsub(/\?$/, "")
-      posts = graph_api.get_connections(objectname, "posts", :fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta)
+      posts = graph_api.get_connections(objectname, "posts", {:fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta}, { request: { timeout: 10 } })
       ret = true
     rescue Koala::Facebook::ClientError=>error
       # if error.fb_error_type == 'OAuthException'
@@ -450,8 +450,10 @@ class FacebookAccount < Account
         @num_attempts = 0            
         begin
           @num_attempts += 1
-          comments = graph_api.api("#{comment_id}/comments")  
-          replies_to_comment += comments['data'].size
+          comments = graph_api.api("#{comment_id}/comments") 
+          if comments['data'] 
+            replies_to_comment += comments['data'].size
+          end
         rescue Koala::Facebook::ClientError=>error
           if @num_attempts < self.max_attempts
             sleep RETRY_SLEEP

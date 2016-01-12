@@ -58,7 +58,7 @@
             </div>
             <div class="col-md-1 forward-slash">/</div>
 			<div class="col-md-6">
-				<input type="text" class="form-control" data-ng-model="object_name" id="object_name" placeholder="Username" required>
+				<input type="text" class="form-control" data-ng-model="object_name" id="object_name" placeholder="Username"  pattern="[^//\x22]+" title="Please enter the username only. No '/' characters allowed" required>
 			</div>
 		</div>
         <div class="form-group">

@@ -10,9 +10,11 @@ shared_path="${root}/shared"
 release_path="$root/releases"
 
 export RAILS_ENV=production
-
 # $bundle exec bundle install --path=/home/deploy/.bundler/socialdash_app --without=test development
 bundle install --without=test development
 rake db:migrate
+rm $current_path
+ln -fs $release_path/$name $current_path
+cd $current_path
 touch tmp/restart.txt
     

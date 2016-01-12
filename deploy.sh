@@ -27,7 +27,7 @@ rake=/home/uberdash/.rvm/rubies/ruby-2.2.1/bin/rake
 bundle=/home/uberdash/.rvm/gems/ruby-2.2.1/bin/bundle
 
 aliases=( govdash-1 govdash-2 )
-array=( 1 )
+array=( 0 )
 
 configs="config/database.yml config/email.yml config/facebook.yml config/rabbit.yml config/twitter.yml \
   config/youtube.yml config/s3.yml config/sitecatalyst.yml \
@@ -50,8 +50,7 @@ do
     sudo ln -fs ${shared_path}/system public/system; \
     echo chown -R uberdash:www-data ${release_path}/$name; \
     sudo chown -R uberdash:www-data ${release_path}/$name; \
-    ln -fs $release_path/$name $current_path; \
-    sudo su - uberdash -c 'cd $release_path/$name; ./bundle_install.sh'; \
+    sudo su - uberdash -c 'cd $release_path/$name; ./bundle_install.sh';
    "
 done
 # sudo su - deploy -c 'cd /srv/www/socialdash_app/releases/20160107123115 && /usr/local/bin/bundle install --path /home/deploy/.bundler/socialdash_app --without=test development'

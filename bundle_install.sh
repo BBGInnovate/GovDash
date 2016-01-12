@@ -14,7 +14,8 @@ export RAILS_ENV=production
 bundle install --without=test development
 rake db:migrate
 rm $current_path
-ln -fs $release_path/$name $current_path
+curr=`pwd`
+ln -fs $curr $current_path
 cd $current_path
 touch tmp/restart.txt
-    
+

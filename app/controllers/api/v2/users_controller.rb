@@ -46,6 +46,7 @@ class Api::V2::UsersController < Api::V2::BaseController
     message = 'Session OK'
     if user.timedout?(dura.seconds.ago)
       message = 'Session expired'
+      signed_out = (Devise.sign_out_all_scopes ? sign_out : sign_out(resource_name))
     else
       (1..600).each do | mm |
         if user.timeout_in.to_i - (dura + mm.minutes) < 0

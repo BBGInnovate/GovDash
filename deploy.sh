@@ -45,7 +45,13 @@ do
     sudo mkdir -p tmp; \
     echo checkout -fb $branch ; \
     sudo git checkout -fb $branch ; \
-    sudo chown -R uberdash:www-data ${release_path}/$name
+    
+    for j in $configs; do sudo ln -fs ${shared_path}/\$j \$j ;done; \
+    sudo ln -fs ${shared_path}/$secret_token config/initializers/secret_token.rb; \
+    sudo ln -fs ${shared_path}/system public/system; \
+    sudo chown -R uberdash:www-data ${release_path}/$name; \
+    sudo rm $current_path; \
+    sudo ln -fs ${release_path}/$name $current_path; \
     sudo su - uberdash -c 'cd $release_path/$name; ./bundle_install.sh';
    "
 done

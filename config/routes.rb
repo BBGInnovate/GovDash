@@ -133,6 +133,7 @@ Radd::Application.routes.draw do
       resources :accounts_subgroups
       resources :subroles  # , :only=>:index
       resources :users do
+        get 'check_timeout'
         collection do
           get 'roles'
           get 'confirm'

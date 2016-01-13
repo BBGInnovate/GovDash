@@ -4,6 +4,7 @@ class Api::V2::BaseController <  ActionController::Base
   protect_from_forgery with: :null_session, :if => Proc.new { |c| c.request.format == 'application/vnd.radd.v1' }
 
   before_filter :controller_name
+  after_filter :update_session
   
   append_view_path ["#{Rails.root}/app/views/api/v2/#{controller_name}", "#{Rails.root}/app/views/default"]
   
@@ -13,9 +14,20 @@ class Api::V2::BaseController <  ActionController::Base
   # rescue_from Exception, with: :generic_exception
   rescue_from ActiveRecord::RecordNotFound, :with => :record_not_found
   
+  def update_session
+    return if !current_user
+    begin
+      user_id = session["warden.user.user.key"][0][0]
+      if user_id == current_user.id
+        current_user.update_column :updated_at, Time.zone.now
+      end
+    rescue Exception=>ex
+      logger.error ex.message
+    end
+  end
+  
   # params[:lang] to return shortened languages list
   def lookups
-    logger.debug "  AAA lookups"
     # respond_with(model_class.all)  Country,Language
     names = Language.common_names
     # params[:admin] = '1'

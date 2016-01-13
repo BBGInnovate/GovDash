@@ -47,9 +47,9 @@ class Api::V2::UsersController < Api::V2::BaseController
     if user.timedout?(dura.seconds.ago)
       message = 'Session expired'
     else
-      (1..10).each do | mm |
+      (1..600).each do | mm |
         if user.timeout_in.to_i - (dura + mm.minutes) < 0
-          message = 'Session expires in #{mm} minutes'
+          message = "Session expires in #{mm} minutes"
           break
         end
       end

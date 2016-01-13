@@ -1,8 +1,9 @@
 require 'ostruct'
 class Api::V2::UsersController < Api::V2::BaseController
-   before_filter :authenticate_user!, :except => [:confirm,:create, :show, :forget_password,:reset_password]
-   skip_before_filter :is_admin?,:only => [:create, :show]  
-    
+  before_filter :authenticate_user!, :except => [:timeout,:confirm,:create, :show, :forget_password,:reset_password]
+  skip_before_filter :is_admin?,:only => [:create, :show]  
+  skip_after_filter :update_session, :only => [:timeout]
+  
   def roles
     render :json => {:roles => User.roles}, :status => 200
   end
@@ -36,6 +37,26 @@ class Api::V2::UsersController < Api::V2::BaseController
     arr << add_associate_name(record)
     arr[0] = modify_row record, arr[0]
     pretty_respond arr
+  end
+  
+  # /api/users/5/check_timeout
+  def timeout
+    user = User.find_by id: (params[:user_id] || params[:id])
+    dura = (Time.zone.now - user.updated_at).to_i
+    message = 'Session OK'
+    if user.timedout?(dura.seconds.ago)
+      message = 'Session expired'
+    else
+      (1..10).each do | mm |
+        if user.timeout_in.to_i - (dura + mm.minutes) < 0
+          message = 'Session expires in #{mm} minutes'
+          break
+        end
+      end
+    end
+    render json: {:status => 200, :user_id=>user.id, :message =>message},
+        :status => 200
+    # user.timedout?( dura.to_i.seconds.ago - 5.minutes)
   end
   
 =begin

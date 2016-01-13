@@ -5,7 +5,9 @@ class User < ActiveRecord::Base
   # :lockable, :timeoutable and :omniauthable
   
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :trackable, :validatable
+         :recoverable, :rememberable, :trackable, :validatable,
+         :timeoutable
+         
   attr_accessor :request_host
   # roles list organizations a user can manager
   has_many :roles

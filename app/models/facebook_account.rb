@@ -209,10 +209,8 @@ class FacebookAccount < Account
         if !!rabbit
           send_mq_message(rabbit)
         else
-          save_post_details
-          # moved into process_posts
-          # daily_aggregate_data
-          # aggregate_data_daily  since.beginning_of_day, hasta.end_of_day
+          # save_post_details
+          save_posts_details
         end
       rescue Exception=>error
         # log_fail "process_posts() #{error.message}"
@@ -360,6 +358,62 @@ class FacebookAccount < Account
      save_lifetime_data
   end
 
+  def save_posts_details
+     count = 0
+     total_processed = 0
+     results = []
+     myposts = FbPost.select('id, post_id').where(account_id: self.id).
+        where("post_created_time > '#{since_date}'").to_a
+     post_ids = myposts.map(&:post_id)
+     puts " POSTS count: #{post_ids.size}"
+     post_ids.each_slice(50) do | ids |
+       @num_attempts = 0
+       begin
+         @num_attempts += 1
+         results = graph_api.get_objects(ids, :fields => "id,shares,likes.summary(true),comments.summary(true)") 
+       rescue Koala::Facebook::ClientError, Timeout::Error, Exception=>error
+         if @num_attempts < self.max_attempts
+           sleep RETRY_SLEEP
+           retry
+         else
+           log_error error.message
+         end
+       end
+       puts "  Results count: #{results.size}"
+       results.each do | result | 
+         unless result.empty?
+           begin
+             data = result.last
+             like_count = 0
+             comment_count = 0
+             share_count = 0
+             if data['likes']
+               like_count=data['likes']['summary']['total_count']
+             end
+             if data['comments']
+               comment_count = data['comments']['summary']['total_count']
+             end
+             if data['shares']
+               share_count = data['shares']['count']
+             end
+             post = myposts.detect{|a| data['id'] == a.post_id}
+             post.update_attributes :likes=>like_count,
+               :comments=>comment_count,
+               :shares=>share_count
+           rescue Exception=>ex
+             log_error "  #save_posts_details #{ex.message}"
+             logger.error "    #{ex.backtrace}"  
+           end
+         else
+           logger.debug "No public data for post #{post.post_id}"
+         end
+       end
+     end
+     aggregate_data 1,'day', true
+     # recent_page available after aggregate_data
+     save_lifetime_data
+  end
+  
   def self.save_lifetime_data
      self.where(is_active: 1).each do |record|
        record.save_lifetime_data

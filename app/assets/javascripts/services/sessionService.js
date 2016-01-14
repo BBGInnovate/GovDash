@@ -87,6 +87,11 @@ angular.module('sessionService', [])
             		}
             		return response.data;
                 });
+            },
+            checkSessionStatus: function(userId) {
+                return $http.get('/api/users/'+userId+'/timeout').then(function(response) {
+                    return response;
+                });
             }
         };
         return service;

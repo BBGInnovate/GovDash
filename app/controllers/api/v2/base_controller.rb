@@ -17,9 +17,14 @@ class Api::V2::BaseController <  ActionController::Base
   def update_session
     return if !current_user
     begin
-      user_id = session["warden.user.user.key"][0][0]
-      if user_id == current_user.id
-        current_user.update_column :updated_at, Time.zone.now
+      if current_user.respond_to? :timedout?
+        dura = (Time.zone.now - current_user.updated_at).to_i
+        if current_user.timedout?(dura.seconds.ago)
+          signed_out = (Devise.sign_out_all_scopes ? sign_out : sign_out(resource_name))
+        else
+          # user_id = session["warden.user.user.key"][0][0]
+          current_user.update_column :updated_at, Time.zone.now
+        end
       end
     rescue Exception=>ex
       logger.error ex.message

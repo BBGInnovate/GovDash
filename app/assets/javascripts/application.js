@@ -123,8 +123,8 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 	}])
 
 	.config(['KeepaliveProvider', 'IdleProvider', function(KeepaliveProvider, IdleProvider) {
-	//	var time = 1500;
-		var time = 5;
+		var time = 1500;
+	//	var time = 100;
 		IdleProvider.idle(time);
 		IdleProvider.timeout(60);
 		KeepaliveProvider.interval(10);
@@ -133,7 +133,7 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 	// register listener to watch for route changes
 	.run(function ($rootScope, $location, Session, $timeout, Idle) {
 	//	commented out for now
-	//	Idle.watch();
+		Idle.watch();
 
 		$rootScope.headerRedirect = '';
 
@@ -258,18 +258,23 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 
 			$('#timing-out').modal('show');
 			$rootScope.countdown = countdown;
-
 		});
 
 		$rootScope.$on('IdleTimeout', function() {
 			// the user has timed out (meaning idleDuration + timeout has passed without any activity)
 			// this is where you'd log them
 
-			$('#timing-out').modal('hide');
-			$('#largeModal').modal('hide');
-			setTimeout(function () {
-				$('a:contains("Logout")')[2].click();
-			}, 1000)
+			var userId = $rootScope.user.id;
+			Session.checkSessionStatus(userId).then(function(response) {
+				if (response.data.message === 'Session expired') {
+					$('#timing-out').modal('hide');
+					$('#largeModal').modal('hide');
+					setTimeout(function () {
+						$('a:contains("Logout")')[2].click();
+					}, 1000)
+				}
+			});
+
 
 		});
 
@@ -280,13 +285,7 @@ angular.module('radd', ['sessionService','recordService', 'roleService', 'region
 
 		$rootScope.$on('Keepalive', function() {
 			// do something to keep the user's session alive
-/*
-			// call back-end to check session
-			Session.checkUserLoggedIn()
-				.then(function (response) {
-					console.log(response);
-				});
-				*/
+
 		});
 
 

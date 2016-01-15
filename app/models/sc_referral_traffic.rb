@@ -150,9 +150,10 @@ class ScReferralTraffic < Account
 			#existing_report.touch
 		else
 			#Save a new report
-			report = ScReferralTraffic.new(report_data)
-			report.created_at = report_date
-			report.save
+			report_data['created_at'] = report_date
+			report_data['updated_at'] = Time.zone.now
+			# report = ScReferralTraffic.new(report_data)
+			report = ScReferralTraffic.find_or_create_by report_data
 		end
 		report
 	end

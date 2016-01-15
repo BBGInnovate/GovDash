@@ -52,9 +52,6 @@ class YoutubeAccount < Account
       i -= 1
       begin
         # video = Yt::Video.new id: v.id
-        if YtVideo.find_by(video_id: v.id)
-          next
-        end
         hs = construct_hash(v)
         # v.update_attributes hs
         @bulk_insert << hs
@@ -116,12 +113,9 @@ class YoutubeAccount < Account
       old_v = my_videos.detect{|v| v.published_at.to_date == v.published_at.to_date}
       if !old_v || v.published_at.to_i > since_date.to_i
         begin
-          if YtVideo.find_by(video_id: v.id)
-            logger.debug "Video exists: #{v.id}"
-            next
-          end
           hs = construct_hash(v)
-          video = my_videos.select{|a| a.video_id == v.id}.first
+          # video = my_videos.select{|a| a.video_id == v.id}.first
+          video = YtVideo.find_by video_id: v.id
           if video
             video.update_attributes hs
           else
@@ -333,7 +327,8 @@ class YoutubeAccount < Account
   end 
 
   def summary_for_day init_date, data
-    ch = my_yt_channels.select{|a| a.published_at == init_date.middle_of_day}.first
+    # ch = my_yt_channels.select{|a| a.published_at == init_date.middle_of_day}.first
+    ch = YtChannel.find_by published_at: init_date.middle_of_day
     pre_day = init_date.middle_of_day - 1.day
     pre_ch = self.yt_channels.where("published_at = '#{pre_day}'").last
     

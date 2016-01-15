@@ -15,10 +15,13 @@ class YoutubeAccount < Account
     end
   end
   
-  def self.retrieve sincedate=nil, from_id=0
+  def self.retrieve sincedate=nil, from_id=0, reversed=false
     started = Time.now.utc
     count = 0
     records = self.retrieve_records from_id
+    if reversed
+      records = records.reverse
+    end
     # where("is_active=1").to_a
     range = "0..#{records.size-1}"
     if YoutubeConf[:retrieve_range] &&
@@ -49,6 +52,9 @@ class YoutubeAccount < Account
       i -= 1
       begin
         # video = Yt::Video.new id: v.id
+        if YtVideo.find_by(video_id: v.id)
+          next
+        end
         hs = construct_hash(v)
         # v.update_attributes hs
         @bulk_insert << hs
@@ -95,9 +101,14 @@ class YoutubeAccount < Account
     @bulk_insert = []
     puts "Started #{self.class.name}#retrieve #{self.id}"
     
-    process_channel
-   
-    my_videos = self.yt_videos.to_a
+    begin
+      process_channel
+      my_videos = self.yt_videos.to_a
+    rescue Exception=>ex
+      logger.error ex.message
+      return
+    end
+    should_break = 0
     @bulk_insert = []
     started = Time.now
     changed_videos = []
@@ -105,6 +116,10 @@ class YoutubeAccount < Account
       old_v = my_videos.detect{|v| v.published_at.to_date == v.published_at.to_date}
       if !old_v || v.published_at.to_i > since_date.to_i
         begin
+          if YtVideo.find_by(video_id: v.id)
+            logger.debug "Video exists: #{v.id}"
+            next
+          end
           hs = construct_hash(v)
           video = my_videos.select{|a| a.video_id == v.id}.first
           if video
@@ -126,6 +141,10 @@ class YoutubeAccount < Account
         end
       else
         logger.debug "  Skip #{v.published_at.to_s(:db)}"
+        should_break += 1
+      end
+      if should_break > 3
+        break
       end
     end
 

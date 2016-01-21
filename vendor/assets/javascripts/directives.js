@@ -273,7 +273,13 @@ angular.module('directives', []).
 						}
 
 
+						var largestNum = Math.max.apply(Math, [dataArr[0].a, dataArr[0].b, dataArr[0].c]);
 
+						// add one to round it up again
+						var maxY = intelliRound(largestNum) + 1;
+
+						// round it up again
+						maxY = intelliRound(maxY);
 
 						window.m = Morris.Bar({
 							// ID of the element in which to draw the chart.
@@ -283,6 +289,7 @@ angular.module('directives', []).
 							data: dataArr,
 							xkey: 'y',
 							ykeys: yKeys,
+							ymax: maxY,
 							labels: labels,
 							barColors: barColors,
 							resize: true,
@@ -315,17 +322,28 @@ angular.module('directives', []).
 						var xPosOne = ($('rect')[0].width.baseVal.value + $('rect')[0].x.baseVal.value) + 10;
 						var xPosTwo = ($('rect')[1].width.baseVal.value + $('rect')[1].x.baseVal.value) + 10;
 						var xPosThree = ($('rect')[2].width.baseVal.value + $('rect')[2].x.baseVal.value) + 10;
+						var yPosOne = $('rect')[0].y.baseVal.value + 6;
+						var yPosTwo = $('rect')[1].y.baseVal.value + 7;
+						var yPosThree = $('rect')[2].y.baseVal.value + 8;
 						var fbValue = dataArr[0].a.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' (' + fbPercentage + ')';
 						var twValue = dataArr[0].b.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' (' + twPercentage + ')';
 						var ytValue = dataArr[0].c.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' (' + ytPercentage + ')';
-						$('rect')[0].outerHTML += '<svg class="morris-bars-custom-labels" x="' + xPosOne + '" y="55.375" height="30" width="200"><text x="0" y="15" fill="#3278B3">' + fbValue + '</text></svg>';
-						$('rect')[1].outerHTML += '<svg class="morris-bars-custom-labels" x="' + xPosTwo + '" y="97.375" height="30" width="200"><text x="0" y="15" fill="#23B7E5">' + twValue + '</text></svg>';
-						$('rect')[2].outerHTML += '<svg class="morris-bars-custom-labels" x="' + xPosThree + '" y="141.375" height="30" width="200"><text x="0" y="15" fill="#E36159">' + ytValue + '</text></svg>';
+						$('rect')[0].outerHTML += '<svg class="morris-bars-custom-labels" x="' + xPosOne + '" y="'+yPosOne+'" height="30" width="200"><text x="0" y="15" fill="#3278B3">' + fbValue + '</text></svg>';
+						$('rect')[1].outerHTML += '<svg class="morris-bars-custom-labels" x="' + xPosTwo + '" y="'+yPosTwo+'" height="30" width="200"><text x="0" y="15" fill="#23B7E5">' + twValue + '</text></svg>';
+						$('rect')[2].outerHTML += '<svg class="morris-bars-custom-labels" x="' + xPosThree + '" y="'+yPosThree+'" height="30" width="200"><text x="0" y="15" fill="#E36159">' + ytValue + '</text></svg>';
 					}
 
 
 
 
+				}
+
+				// this function handles rounding up for the sake of the values getting
+				// cut off when the percentages are large
+				function intelliRound(num) {
+					var len = (num + '').length;
+					var fac = Math.pow(10, len - 1);
+					return Math.ceil(num / fac) *fac;
 				}
 
 			}

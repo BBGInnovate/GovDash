@@ -185,23 +185,24 @@ class FacebookAccount < Account
   def do_retrieve(since=7.days.ago, hasta=DateTime.now.utc, rabbit=false)
     ret = false
     started = DateTime.now.utc
-    # @num_attempts = 0
+    @num_attempts = 0
     begin
-      # @num_attempts += 1
+      @num_attempts += 1
       objectname = self.object_name.split("/").last.gsub(/\?$/, "")
       posts = graph_api.get_connections(objectname, "posts", {:fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta}, { request: { timeout: 10 } })
       ret = true
     rescue Koala::Facebook::ClientError=>error
-      # if error.fb_error_type == 'OAuthException'
-        # log_fail "graph_api.get_connections() #{error.message}"
-        puts " graph_api.get_connections() #{error.message}"
-        logger.debug "   retrieve #{error.backtrace}" 
-      # end
+      puts " graph_api.get_connections() #{error.message}"
+      logger.debug "  ClientError retrieve #{error.backtrace}" 
+      if @num_attempts < self.max_attempts
+        sleep RETRY_SLEEP
+        retry
+      end
     rescue Exception=>error
       # log_fail "graph_api.get_connections() #{error.message}"
       # delayed_do_retrieve(since, hasta)
       puts "   retrieve #{error.message}" 
-      logger.debug "   retrieve #{error.backtrace}" 
+      logger.debug "  Exception retrieve #{error.backtrace}" 
     end
     if ret  
       begin     
@@ -231,6 +232,7 @@ class FacebookAccount < Account
   def process_posts(posts)
     return true if !posts || posts.empty?
     logger.info "Process posts size: #{posts.size}"
+    STDOUT.flush
     # @bulk_insert = []
     last_created_time = DateTime.now.utc
     posts.each do |f|

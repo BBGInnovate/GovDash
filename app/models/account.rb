@@ -99,7 +99,7 @@ class Account < ActiveRecord::Base
   end
 
   def object_name
-    read_attribute(:object_name).split('/').last
+    read_attribute(:object_name).split('/').last rescue ''
   end
 
   def self.accounts_profiles account_id

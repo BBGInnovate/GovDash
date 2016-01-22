@@ -15,10 +15,13 @@ class YoutubeAccount < Account
     end
   end
   
-  def self.retrieve sincedate=nil, from_id=0
+  def self.retrieve sincedate=nil, from_id=0, reversed=false
     started = Time.now.utc
     count = 0
     records = self.retrieve_records from_id
+    if reversed
+      records = records.reverse
+    end
     # where("is_active=1").to_a
     range = "0..#{records.size-1}"
     if YoutubeConf[:retrieve_range] &&
@@ -95,9 +98,14 @@ class YoutubeAccount < Account
     @bulk_insert = []
     puts "Started #{self.class.name}#retrieve #{self.id}"
     
-    process_channel
-   
-    my_videos = self.yt_videos.to_a
+    begin
+      process_channel
+      my_videos = self.yt_videos.to_a
+    rescue Exception=>ex
+      logger.error ex.message
+      return
+    end
+    should_break = 0
     @bulk_insert = []
     started = Time.now
     changed_videos = []
@@ -107,6 +115,7 @@ class YoutubeAccount < Account
         begin
           hs = construct_hash(v)
           video = my_videos.select{|a| a.video_id == v.id}.first
+          # video = YtVideo.find_by video_id: v.id
           if video
             video.update_attributes hs
           else
@@ -126,6 +135,10 @@ class YoutubeAccount < Account
         end
       else
         logger.debug "  Skip #{v.published_at.to_s(:db)}"
+        should_break += 1
+      end
+      if should_break > 3
+        break
       end
     end
 
@@ -138,11 +151,15 @@ class YoutubeAccount < Account
   # handle_asynchronously :retrieve, :run_at => Proc.new {10.seconds.from_now }
   
   def summarize init_date=nil
+    self.reload
     videos = self.yt_videos
     sql = "sum(comments) video_comments,sum(favorites) video_favorites,"
     sql += "sum(likes) video_likes,sum(views) video_views,"
     sql += " date_format(published_at, '%Y-%m-%d') AS date"
     my_videos = videos.select(sql).group('date').order('date ASC')
+    # my_videos = YtVideo.where(account_id: self.id).
+    #       select(sql).group('date').order('date ASC')
+    
     if !init_date
       init_date = Time.parse(my_videos.first.date)
     end
@@ -159,6 +176,16 @@ class YoutubeAccount < Account
           logger.debug "  #{self.class.name}#summarize upload #{@channel_insert.size}"
           YtChannel.import! @channel_insert
           @channel_insert = []
+        end
+      else
+        p "  No Videos for DAte #{init_date}"
+        pre_day = init_date.middle_of_day - 1.day
+        sql = "account_id=#{self.id} AND published_at in ('#{init_date.middle_of_day}', '#{pre_day}')"
+      
+        chs = YtChannel.where(sql).order("published_at desc").to_a
+        if chs.size == 2
+           chs[0].update_column :video_subscribers,
+                     (chs[0].subscribers.to_i - chs[1].subscribers.to_i)
         end
       end
       init_date += 1.day 
@@ -219,22 +246,24 @@ class YoutubeAccount < Account
   def process_channel
     # create daily yt_channel based on created_at
     published = Time.now.middle_of_day
-    yt_ch = self.yt_channels.find_or_create_by account_id: self.id,
+    yt_ch = YtChannel.find_or_create_by account_id: self.id,
        channel_id: channel.id, published_at: published.to_s(:db)
     begin
       yt_ch.subscribers = channel.subscriber_count
       yt_ch.views = channel.view_count
       yt_ch.comments = channel.comment_count
       yt_ch.videos = channel.video_count
+      pre_day = (published-1.day).to_s(:db)
+      # pre_ch = self.yt_channels.where("published_at = '#{pre_day}'").last
+      pre_ch = YtChannel.find_by account_id: self.id,
+                published_at: "'#{pre_day}'"
+      if pre_ch
+        yt_ch.video_subscribers = (yt_ch.subscribers.to_i - pre_ch.subscribers.to_i)
+      end
+      self.update_profile
     rescue Exception=>ex
       logger.error "  process_channel #{ex.message}"
     end
-    pre_day = (published-1.day).to_s(:db)
-    pre_ch = self.yt_channels.where("published_at = '#{pre_day}'").last
-    if pre_ch
-      yt_ch.video_subscribers = (yt_ch.subscribers.to_i - pre_ch.subscribers.to_i)
-    end
-    self.update_profile
     yt_ch.save
   end
 
@@ -314,10 +343,14 @@ class YoutubeAccount < Account
   end 
 
   def summary_for_day init_date, data
+    self.reload
     ch = my_yt_channels.select{|a| a.published_at == init_date.middle_of_day}.first
+    # ch = YtChannel.find_by account_id: self.id,
+    #               published_at: init_date.middle_of_day
     pre_day = init_date.middle_of_day - 1.day
     pre_ch = self.yt_channels.where("published_at = '#{pre_day}'").last
-    
+    # pre_ch = YtChannel.find_by account_id: self.id,
+    #               published_at: "#{pre_day}"
     if !ch
       # new record
       attr = data.attributes
@@ -338,6 +371,7 @@ class YoutubeAccount < Account
     if pre_ch
       ch.video_subscribers = 
                      ch.subscribers.to_i - pre_ch.subscribers.to_i
+
     end
     changed = false
     if ch.video_comments != data.video_comments
@@ -356,7 +390,7 @@ class YoutubeAccount < Account
       ch.video_views = data.video_views
       changed = true
     end
-    ch.save if changed
+    ch.save if ch.changed?
   end
   
   def collect_started

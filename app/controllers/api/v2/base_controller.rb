@@ -359,7 +359,7 @@ class Api::V2::BaseController <  ActionController::Base
   end
   
   def is_admin?
-    unless !!current_user && current_user.role_id.to_i == 1
+    unless !!current_user && current_user.is_admin?
       redirect_to "/#/users/login"
     else
 

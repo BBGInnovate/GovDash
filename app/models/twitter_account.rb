@@ -51,6 +51,7 @@ class TwitterAccount < Account
         @since_date = 6.months.ago
       end
       timelines = request_twitter
+      puts "timelines size : #{timelines.size}"
       upload_timeline timelines
       process_timelines( timelines )
       if rabbit_channel
@@ -89,6 +90,7 @@ class TwitterAccount < Account
   def request_twitter timelines=nil
     @num_attempts = 0
     retweets = []
+    # "-filter:retweets"
     options = {:screen_name=>self.object_name,
                :count=>200,
                :include_rt=>1}
@@ -110,7 +112,10 @@ class TwitterAccount < Account
        # order("tweet_created_at ASC").first   
        last_tweet_id = !!last_tweet ? last_tweet.tweet_id : nil
        if last_tweet_id
-         opt = options.merge(:since_id=>(last_tweet_id + 1))
+         # TODO switch comment line below
+         # this is for reset retweets = 0 for non self.id user
+         # opt = options.merge(:since_id=>(last_tweet_id + 1))
+         opt = options
        else
          opt = options
        end
@@ -140,29 +145,58 @@ class TwitterAccount < Account
     end
     retweets
   end
-
+ 
+  def is_retweet? tweet
+    if tweet.text.match /^RT @/
+      # This is a retweet
+      # Use the original tweet's entities, they are more complete
+      # entities = tweet.retweeted_status.entities
+      is_rt = true # Set 1 if retweeted
+    else
+      # entities = tweet.entities;
+      is_rt = false # if original
+    end
+  end
+  
   def process_timelines(timelines)
     logger.debug "   process_timelines count #{timelines.size}"
     sleep 2
         
+    @total_num_retweets = 0
+    
     return if timelines.empty? || timelines.size==1
     @bulk_tweets = []
     # TODO this is lifetime followers at present
     # total_followers_count = timelines[0].user.followers_count
     timelines.each do | t |
-      options = {:account_id=>self.id,
+      if is_retweet? t
+        # puts "process_timelines tweet_id #{t.id} is retweet"
+        # puts "process_timelines #{t.text}"
+        @total_num_retweets = @total_num_retweets + 1
+        tw = TwTweet.find_by tweet_id: t.id
+        if tw
+          # retweets by other users (not the self.id user)
+          tw.update_columns favorites: 0, retweets: 0, mentions: 0
+        end
+        next
+      else
+        # puts "process_timelines tweet_id #{t.id} is original"
+        options = {:account_id=>self.id,
                 :tweet_id => t.id,
                 :tweet_created_at=>t.created_at,
                 :favorites => t.favorite_count, 
                 :retweets => t.retweet_count,
                 :mentions => t.user_mentions.size}
+      end
+      STDOUT.flush
       find_or_create_tweet(options)
       if t.created_at  < since_date
          logger.debug "  process_timelines break  #{t.created_at}  < #{since_date}"
          break
       end
     end
-    
+    puts "total_num_retweets : #{@total_num_retweets}"
+    puts " total original : #{timelines.size - @total_num_retweets}"
     unless @bulk_tweets.empty?
       last_id = TwTweet.import!(@bulk_tweets)
       from_id = last_id - @bulk_tweets.size
@@ -195,7 +229,7 @@ class TwitterAccount < Account
     while current_date > min_date do
       beginning_of_day = current_date.beginning_of_day.to_s(:db)
       end_of_day = current_date.end_of_day.to_s(:db)
- 
+
       data = tweets.select("count(*) AS tweet_count, sum(favorites) as favorites, sum(retweets) as retweets, sum(mentions) as mentions").
         where("tweet_created_at BETWEEN '#{beginning_of_day}' AND '#{end_of_day}' ").
         first
@@ -715,3 +749,7 @@ class TwitterAccount < Account
   protected
   
 end
+=begin
+  a.client.status 687662009584848897
+=end
+

@@ -146,7 +146,7 @@ class TwitterAccount < Account
     retweets
   end
  
-  def is_retweet? tweet
+  def is_non_auth_retweet? tweet
     if tweet.text.match /^RT @/
       # This is a retweet
       # Use the original tweet's entities, they are more complete
@@ -169,16 +169,16 @@ class TwitterAccount < Account
     # TODO this is lifetime followers at present
     # total_followers_count = timelines[0].user.followers_count
     timelines.each do | t |
-      if is_retweet? t
+      if is_non_auth_retweet? t
         # puts "process_timelines tweet_id #{t.id} is retweet"
         # puts "process_timelines #{t.text}"
         @total_num_retweets = @total_num_retweets + 1
-        tw = TwTweet.find_by tweet_id: t.id
-        if tw
-          # retweets by other users (not the self.id user)
-          tw.update_columns favorites: 0, retweets: 0, mentions: 0
-        end
-        next
+        options = {:account_id=>self.id,
+                :tweet_id => t.id,
+                :tweet_created_at=>t.created_at,
+                :favorites => t.favorite_count, 
+                :retweets => t.retweet_count,
+                :mentions => t.user_mentions.size}
       else
         # puts "process_timelines tweet_id #{t.id} is original"
         options = {:account_id=>self.id,
@@ -631,10 +631,12 @@ class TwitterAccount < Account
   
   
   def find_or_create_tweet(options)
-    re = my_tweets.select{|t| t.tweet_id==options[:tweet_id]}.first
+    # re = my_tweets.select{|t| t.tweet_id==options[:tweet_id]}.first
+    re = TwTweet.find_by tweet_id: options[:tweet_id]
     if !re
       @bulk_tweets << options
     else
+      options.delete :tweet_id
       re.update_attributes options
     end
   end

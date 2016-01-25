@@ -19,6 +19,21 @@ class FacebookAccount < Account
      end
    end
 
+  def self.more_history_data_ids
+    []
+  end
+  
+  # 0 * * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.start_job'  > /tmp/fb-start-job.log 2>&1
+  def self.start_job
+    pid = `pidof clockworkd.clock`.to_i
+    if pid == 0
+      `bundle exec clockworkd -c app/models/clock.rb start --log`
+      puts "  clockwork job started"
+    else
+      puts "  clockwork job is running"
+    end
+  end
+
 # main entry point to process facebook data
   QUERY_LIMIT = 100
   SCHEDULED_DELAY = 1.hour.from_now
@@ -104,7 +119,11 @@ class FacebookAccount < Account
      count = 0
      no_count = 0
      begin
-       records = self.retrieve_records from_id
+       all_records = self.retrieve_records from_id
+       special_accounts = self.where(["id in (?)",more_history_data_ids])
+       records = all_records - special_accounts
+       # special_accounts run for longer backwards date
+       # bundle exec clockworkd -c app/models/clock.rb start --log
        range = "0..#{records.size-1}"
        if retrieve_range &&
           retrieve_range.match(/(\d+\.\.\d+)/)
@@ -185,6 +204,8 @@ class FacebookAccount < Account
   def do_retrieve(since=7.days.ago, hasta=DateTime.now.utc, rabbit=false)
     ret = false
     started = DateTime.now.utc
+    puts " do_retrieve #{since} - #{hasta}"
+    STDOUT.flush
     @num_attempts = 0
     begin
       @num_attempts += 1
@@ -644,7 +665,7 @@ end
 =end
 
   def graph_api(access_token=nil)
-    Koala.config.api_version = "v2.4"
+    Koala.config.api_version = "v2.5"
     Koala.http_service.http_options = {request: {open_timeout: 3, timeout: 5}}
     if !access_token
       access_token = self.app_token.get_access_token
@@ -885,6 +906,12 @@ end
   
 end
 =begin
+  "963149653720643" is a video id
+  a.graph_api.get_object "963149653720643", 
+   {:fields=>
+     "id,created_time,sharedposts,from,
+     likes,embeddable,content_category,title,status"}
+  
   def post_details post_id
     data = graph_api.get_object(post_id, :fields => "shares,likes.summary(true),comments.summary(true)")
     feed = graph_api.get_object('/' + post_id + '/likes?limit=1000')

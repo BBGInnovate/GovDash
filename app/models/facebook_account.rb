@@ -268,7 +268,7 @@ class FacebookAccount < Account
                   :replies_to_comment =>replies_to_comment,
                   :post_created_time=>last_created_time}
                   
-        dbpost = FbPost.find_or_create_by(:post_id=>f['id'])
+        dbpost = self.fb_posts.find_or_create_by(:post_id=>f['id'])
         dbpost.update_attributes insert
       else
         logger.debug "  process_posts #{last_created_time.to_s(:db)} < #{since_date.to_s(:db)}"
@@ -816,7 +816,7 @@ end
   end
   
   def me  
-    feeds=graph_api.graph_call("v2.4/me")
+    feeds=graph_api.graph_call("v2.5/me")
   end
   
   # period 1.day or 1.week or 1.month

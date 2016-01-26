@@ -582,8 +582,8 @@ class TwitterAccount < Account
       # hsh['lifetime'] = user
       # S3Model.new.store(s3_filepath+"show.json", hsh.to_json) 
     rescue Exception=>error
-      logger.error "  #{error.message}"
-      raise "create_today_timeline #{error.message}"
+      logger.error "  create_today_timeline #{error.message}"
+      # raise "create_today_timeline #{error.message}"
     end
     if tl[0] && tl[0].total_followers      
       net_followers_for_day = user.followers_count - tl[0].total_followers.to_i

@@ -573,7 +573,7 @@ class TwitterAccount < Account
     tl = TwTimeline.where(cond).order("tweet_created_at")
     if !tl.empty? && 
       (tl[0].tweet_created_at.to_date==today.to_date)
-      # return
+      # return if today's timeline is created 
     end
     begin
       user = twitter_user

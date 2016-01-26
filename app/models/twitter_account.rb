@@ -573,16 +573,14 @@ class TwitterAccount < Account
     tl = TwTimeline.where(cond).order("tweet_created_at")
     if !tl.empty? && 
       (tl[0].tweet_created_at.to_date==today.to_date)
-      return
+      # return
     end
     begin
       user = twitter_user
-      
       update_profile
-      
-      hsh = {}
-      hsh['lifetime'] = user
-      S3Model.new.store(s3_filepath+"show.json", hsh.to_json) 
+      # hsh = {}
+      # hsh['lifetime'] = user
+      # S3Model.new.store(s3_filepath+"show.json", hsh.to_json) 
     rescue Exception=>error
       logger.error "  #{error.message}"
       raise "create_today_timeline #{error.message}"

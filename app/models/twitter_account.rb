@@ -623,8 +623,14 @@ class TwitterAccount < Account
       timeline = self.tw_timelines.create options
       # @bulk_timelines << options
     else
-      options[:updated_at] = DateTime.now.utc
-      timeline.update_attributes options
+      # only update if any attribute changed
+      options.keys.each do | key |
+        if timeline.send(key) != options[key]
+          options[:updated_at] = DateTime.now.utc
+          timeline.update_attributes options
+          break
+        end
+      end
     end
     timeline
   end
@@ -632,7 +638,7 @@ class TwitterAccount < Account
   
   def find_or_create_tweet(options)
     # re = my_tweets.select{|t| t.tweet_id==options[:tweet_id]}.first
-    re = TwTweet.find_by tweet_id: options[:tweet_id]
+    re = self.tw_tweets.find_by tweet_id: options[:tweet_id]
     if !re
       @bulk_tweets << options
     else

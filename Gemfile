@@ -1,4 +1,6 @@
 source 'https://rubygems.org'
+source 'https://gems.github.com'
+
 # ruby '2.1.5'
 
 gem 'rake'
@@ -14,15 +16,13 @@ gem 'activerecord4-redshift-adapter', github: 'khwangster/activerecord4-redshift
 
 # download http://postgresapp.com/ and add it to Applications
 # gem install pg -- --with-pg-config=/Applications/Postgres.app/Contents/Versions/9.4/bin/pg_config
-gem 'pg'
-
-
+# gem 'pg'
+# gem 'Instagram'
 gem 'fb_graph'
 gem "koala"
 # gem "aws-s3", github: 'bartoszkopinski/aws-s3'
 gem 'aws-sdk', '~> 2'
-
-gem 'yt', '~> 0.25.5'
+gem 'yt' # , '~> 0.25.5'
 
 gem 'language_list'
 gem 'twitter', '>= 5.10.0'
@@ -41,9 +41,8 @@ gem 'delayed_job_active_record'
 # rails generate delayed_job
 # RAILS_ENV=production bin/delayed_job restart
 #
-
-# gem 'clockwork'
-# gem 'stalker'
+gem 'clockwork'
+gem 'stalker'
 
 # gem 'rabbit_jobs'
 
@@ -74,8 +73,8 @@ end
 gem 'bower-rails'
 gem 'jquery-rails'
 gem 'twitter-bootstrap-rails'
-gem 'nokogiri', '>= 1.6.2.1'
-gem 'devise', '~> 3.2'
+gem 'nokogiri', '~> 1.6.6.2'
+gem 'devise' # , '~> 3.2'
 gem 'json'
 
 gem 'raddocs'
@@ -86,8 +85,10 @@ group :development, :test do
   gem 'rspec_api_documentation'
   gem 'better_errors'
   gem 'binding_of_caller'
-  gem "letter_opener"
+#  gem "letter_opener"
 #  gem 'brakeman', :require => false
+# gem unpack dynamics_crm --target vendor/gems
+  gem 'dynamics_crm', :path => "vendor/gems/dynamics_crm-0.6.0"
 end
 
 group :test do

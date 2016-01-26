@@ -19,6 +19,8 @@ class FacebookAccount < Account
      end
    end
 
+  # those account ids are retrieved with longer dates
+  # say retrieve(6.months.ago)
   def self.more_history_data_ids
     []
   end
@@ -139,7 +141,7 @@ class FacebookAccount < Account
          # if !!a.graph_api
            if a.retrieve
              count += 1
-             Rails.logger.debug "Sleep 5 seconds for next account"
+             Rails.logger.info "Finished #{a.id} Sleep 5 seconds for next account"
              sleep 5
            else
              # delayed_retrieve
@@ -163,6 +165,34 @@ class FacebookAccount < Account
      level = ((size-count)/2.0).round % size
      # log_error msg,level
      
+  end
+  
+  def self.retrieve_extended sincedate=nil
+     started = Time.now.utc
+     count = 0
+     no_count = 0
+     begin
+       records = self.where(["id in (?)",more_history_data_ids]).to_a
+       records.each_with_index do |a,i|
+         if sincedate
+           a.since_date = sincedate
+         end
+         if a.retrieve
+           count += 1
+           Rails.logger.info "Finished #{a.id} Sleep 5 seconds for next account"
+           sleep 5
+         end
+       end
+     rescue Exception => ex
+       logger.error "   retrieve #{ex.message}"  
+     end
+     ended = Time.now.utc
+     size = records.size - no_count
+     total_seconds=(ended-started).to_i
+     duration=Time.at(total_seconds).utc.strftime("%H:%M:%S")
+     msg = "#{count} out of #{size} Facebook accounts fetched. Started: #{started.to_s(:db)} Duration: #{duration}"
+     # for cronjob log:     
+     puts msg
   end
   #
   # finish 1 years data for voiceofamerica: 1.5hours

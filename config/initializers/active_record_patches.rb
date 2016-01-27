@@ -33,6 +33,15 @@ class ActiveRecord::Base
     nil
   end
   
+  def self.import_bulk! attributes_array
+    tmp = []
+    attributes_array.each  do | rec | 
+       tmp << self.new(rec)
+    end
+    # from gem activerecord-import
+    self.import tmp
+  end
+  
   def self.import!(record_list, ignore='IGNORE')
     if record_list.empty?
       return

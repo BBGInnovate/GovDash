@@ -205,7 +205,7 @@ class FacebookAccount < Account
     puts "  retrieve #{self.id} #{since_date}"
     since = since_date
     hasta = until_date
-    started=Time.now
+    started=Time.now.strftime("%Y-%m-%d %H:%M:%S .%L")
     success = nil
     # data = FbPost.select("post_created_time").
     #  where(:account_id=>self.id,:post_created_time=>since.beginning_of_day..until_date.end_of_day).to_a
@@ -225,8 +225,8 @@ class FacebookAccount < Account
       self.aggregate_data_daily
     rescue
     end
-    ended=Time.now
-    puts "   finished retrieve #{started} - #{ended}"
+    ended=Time.now.strftime("%Y-%m-%d %H:%M:%S .%L")
+    puts "  id #{self.id} finished retrieve #{started} - #{ended} "
     STDOUT.flush
   end
   
@@ -284,7 +284,9 @@ class FacebookAccount < Account
     return true if !posts || posts.empty?
     logger.info "Process posts size: #{posts.size}"
     STDOUT.flush
-    # @bulk_insert = []
+    self.fb_posts.reload
+    @bulk_insert = []
+    @bulk_update = {}
     last_created_time = DateTime.now.utc
     posts.each do |f|
       last_created_time= DateTime.parse(f['created_time'])
@@ -294,16 +296,34 @@ class FacebookAccount < Account
         post_type = 'original'
         
         insert = {:account_id=>self.id,
+                  :post_id=>f['id'],
                   :post_type=>post_type,
                   :replies_to_comment =>replies_to_comment,
                   :post_created_time=>last_created_time}
                   
-        dbpost = self.fb_posts.find_or_create_by(:post_id=>f['id'])
-        dbpost.update_attributes insert
+        dbpost = self.fb_posts.find_by(:post_id=>f['id'])
+        if dbpost
+          @bulk_update[dbpost.id] = insert
+          # dbpost.update_attributes insert
+        else
+          @bulk_insert << insert
+        end
       else
         logger.debug "  process_posts #{last_created_time.to_s(:db)} < #{since_date.to_s(:db)}"
       end
     end
+    if !@bulk_update.blank?
+      FbPost.transaction do
+        FbPost.update(@bulk_update.keys, @bulk_update.values)
+        @bulk_update = {}
+      end
+    end
+    if !@bulk_insert.empty?
+      puts "  process_posts call FbPost.import_bulk!"
+      FbPost.import_bulk! @bulk_insert
+      @bulk_insert = []
+    end
+    
     # fetch lifetime page likes
     # daily_aggregate_data
     # fetch posts from next page
@@ -415,6 +435,7 @@ class FacebookAccount < Account
      count = 0
      total_processed = 0
      results = []
+     @posts_update = {}
      myposts = FbPost.select('id, post_id').where(account_id: self.id).
         where("post_created_time > '#{since_date}'").to_a
      post_ids = myposts.map(&:post_id)
@@ -450,9 +471,9 @@ class FacebookAccount < Account
                share_count = data['shares']['count']
              end
              post = myposts.detect{|a| data['id'] == a.post_id}
-             post.update_attributes :likes=>like_count,
-               :comments=>comment_count,
-               :shares=>share_count
+             attr = {:likes=>like_count,:comments=>comment_count,:shares=>share_count}
+             @posts_update[post.id] = attr
+             # post.update_attributes attr
            rescue Exception=>ex
              log_error "  #save_posts_details #{ex.message}"
              logger.error "    #{ex.backtrace}"  
@@ -460,6 +481,12 @@ class FacebookAccount < Account
          else
            logger.debug "No public data for post #{post.post_id}"
          end
+       end
+     end
+     if !@posts_update.empty?
+       FbPost.transaction do
+         FbPost.update @posts_update.keys, @posts_update.values
+         @posts_update = {}
        end
      end
      aggregate_data 1,'day', true
@@ -888,6 +915,8 @@ end
     end_of_today = DateTime.now.utc.end_of_day
     current_date = end_of_today
     my_arr = []
+    @bulk_insert=[]
+    @bulk_update={}
     while current_date > min_post_date do
       beginning_of_ = (current_date-increment+1.day).beginning_of_day.to_s(:db)
       end_of_ = current_date
@@ -909,11 +938,37 @@ end
                   "end_time"=>end_of_
                 }
       if create_page
+       # find_or_create_page(options)
+
         options[:post_created_time] = current_date
-        find_or_create_page(options)
+        created_time = options[:post_created_time]
+        begin_date = created_time.beginning_of_day
+        end_date = created_time.end_of_day
+        rec = FbPage.where(account_id: self.id).
+                where(post_created_time: (begin_date..end_date)).first
+        attr = {:account_id => self.id, 
+                :post_created_time=>created_time.middle_of_day,
+                :object_name => self.object_name}
+        if rec
+          @bulk_update[rec.id] =  attr
+        else
+          @bulk_insert << attr
+        end
+    
       end
       # current_date = current_date - increment
       current_date = current_date - 1.day
+    end
+    if !@bulk_update.blank?
+      FbPage.transaction do
+        FbPage.update @bulk_update.keys, @bulk_update.values
+        @bulk_update = {}
+      end
+    elsif !@bulk_insert.empty?
+      FbPage.transaction do
+        FbPage.import_bulk! @bulk_insert
+        @bulk_insert = []
+      end
     end
     my_arr.reverse
   end

@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-source 'https://gems.github.com'
+# source 'https://gems.github.com'
 
 # ruby '2.1.5'
 
@@ -7,6 +7,7 @@ gem 'rake'
 gem 'rack-oauth2'
 # gem 'rails', '~> 4.2.0'
 # gem  "activesupport"
+gem 'activerecord-import'
 
 gem 'thin'
 gem 'mysql2'

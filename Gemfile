@@ -89,7 +89,7 @@ group :development, :test do
 #  gem "letter_opener"
 #  gem 'brakeman', :require => false
 # gem unpack dynamics_crm --target vendor/gems
-  gem 'dynamics_crm', :path => "vendor/gems/dynamics_crm-0.6.0"
+#  gem 'dynamics_crm', :path => "vendor/gems/dynamics_crm-0.6.0"
 end
 
 group :test do

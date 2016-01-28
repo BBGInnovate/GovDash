@@ -852,11 +852,10 @@ end
       end
       self.bulk_update_column 'fb_posts', 'id', "#{col}", ids_hash
     end
-=begin   
+=begin
     FbPost.transaction do
-        puts "  process_posts call FbPost.update"
-        FbPost.update(data.keys, data.values)
-      end
+      puts "  process_posts call FbPost.update"
+      FbPost.update(data.keys, data.values)
     end
 =end
   end

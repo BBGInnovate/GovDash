@@ -202,6 +202,8 @@ class FacebookAccount < Account
     if self.new_item? # !!self.graph
       @since_date = 6.months.ago
     end
+    @bulk_insert_array = []
+    @bulk_update_hash = {}
     puts "  retrieve #{self.id} #{since_date}"
     since = since_date
     hasta = until_date
@@ -216,6 +218,19 @@ class FacebookAccount < Account
       # yes just minus 1 second, becomes the end of previous day
       hasta = since - 1
     end
+    if !@bulk_update_hash.blank?
+      FacebookAccount.bulk_update_posts [:replies_to_comment,:post_created_time], @bulk_update_hash
+      @bulk_update_hash = {}
+    end
+
+    if !@bulk_insert_array.empty?
+      puts "  process_posts call FbPost.import_bulk!"
+      FbPost.import_bulk! @bulk_insert_array
+      @bulk_insert_array = []
+    end
+    
+    save_posts_details
+    
     self.update_attributes :new_item=>false,:status=>success,:updated_at=>DateTime.now.utc
     begin
       self.daily_aggregate_data
@@ -261,8 +276,8 @@ class FacebookAccount < Account
         if !!rabbit
           send_mq_message(rabbit)
         else
-          # save_post_details
-          save_posts_details
+          ## save_post_details
+        #  save_posts_details
         end
       rescue Exception=>error
         # log_fail "process_posts() #{error.message}"
@@ -284,46 +299,31 @@ class FacebookAccount < Account
     return true if !posts || posts.empty?
     logger.info "Process posts size: #{posts.size}"
     STDOUT.flush
-    self.fb_posts.reload
-    @bulk_insert = []
-    @bulk_update = {}
+#    self.fb_posts.reload
     last_created_time = DateTime.now.utc
     posts.each do |f|
       last_created_time= DateTime.parse(f['created_time'])
       if last_created_time > since_date.beginning_of_day
         replies_to_comment = get_replies_to_comment(f)          
         # no good way to tell a post is the original
-        post_type = 'original'
-        
+        post_type = 'original' 
         insert = {:account_id=>self.id,
                   :post_id=>f['id'],
-                  :post_type=>post_type,
                   :replies_to_comment =>replies_to_comment,
-                  :post_created_time=>last_created_time}
+                  :post_created_time=>last_created_time.to_s(:db)}
                   
         dbpost = self.fb_posts.find_by(:post_id=>f['id'])
         if dbpost
-          @bulk_update[dbpost.id] = insert
+          @bulk_update_hash[dbpost.id] = insert
           # dbpost.update_attributes insert
         else
-          @bulk_insert << insert
+          @bulk_insert_array << insert
         end
       else
         logger.debug "  process_posts #{last_created_time.to_s(:db)} < #{since_date.to_s(:db)}"
       end
     end
-    if !@bulk_update.blank?
-      FbPost.transaction do
-        FbPost.update(@bulk_update.keys, @bulk_update.values)
-        @bulk_update = {}
-      end
-    end
-    if !@bulk_insert.empty?
-      puts "  process_posts call FbPost.import_bulk!"
-      FbPost.import_bulk! @bulk_insert
-      @bulk_insert = []
-    end
-    
+
     # fetch lifetime page likes
     # daily_aggregate_data
     # fetch posts from next page
@@ -483,11 +483,10 @@ class FacebookAccount < Account
          end
        end
      end
+     
      if !@posts_update.empty?
-       FbPost.transaction do
-         FbPost.update @posts_update.keys, @posts_update.values
-         @posts_update = {}
-       end
+       FacebookAccount.bulk_update_posts [:likes,:comments,:shares],@posts_update 
+       @posts_update = {}
      end
      aggregate_data 1,'day', true
      # recent_page available after aggregate_data
@@ -845,7 +844,34 @@ end
     end
   end
   
-  
+  def self.bulk_update_posts columns, data
+    columns.each do | col |
+      ids_hash = {}
+      data.keys.each do | id |
+        ids_hash[id] = data[id][col] if data[id][col]
+      end
+      self.bulk_update_column 'fb_posts', 'id', "#{col}", ids_hash
+    end
+=begin   
+    FbPost.transaction do
+        puts "  process_posts call FbPost.update"
+        FbPost.update(data.keys, data.values)
+      end
+    end
+=end
+  end
+  # bulk_update_column 'fb_posts', 'id', 'post_type', {417439=>'test-original'}
+  def self.bulk_update_column table, id_column, update_column, ids_hash
+    sql = "update #{table} set #{update_column} = CASE #{id_column} "
+    ids_hash.each_pair do | id, val |
+      sql += " WHEN #{id} THEN '#{val}'";
+    end
+    sql += " END WHERE #{id_column} in ( #{ids_hash.keys.join(',')} ) "
+    # p sql
+    connection.execute sql
+  end
+
+                  
   protected
 
   

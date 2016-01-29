@@ -25,9 +25,9 @@ name=`date '+%Y%m%d%H%M%S'`
 ruby=/home/uberdash/.rvm/rubies/ruby-2.2.1/bin/ruby
 rake=/home/uberdash/.rvm/rubies/ruby-2.2.1/bin/rake
 bundle=/home/uberdash/.rvm/gems/ruby-2.2.1/bin/bundle
-
-aliases=( govdash-1 govdash-2 )
-array=( 0 )
+#
+aliases=( 54.227.246.200 54.227.248.152 )
+array=( 1 )
 
 configs="config/database.yml config/email.yml config/facebook.yml config/rabbit.yml config/twitter.yml \
   config/youtube.yml config/s3.yml config/sitecatalyst.yml \
@@ -39,7 +39,7 @@ do
   alias=${aliases[$i]}
   echo "deploy to $alias $release_path"
   echo "clone $repos $name"
-  ssh -t $alias "cd $release_path; \
+  ssh -i $HOME/.ssh/UberDash.pem -t uberdash@$alias "cd $release_path; \
     sudo git clone $repos $name; \
     cd $name ; \
     sudo mkdir -p tmp; \

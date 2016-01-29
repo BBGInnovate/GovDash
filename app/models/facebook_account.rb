@@ -283,7 +283,7 @@ class FacebookAccount < Account
         sleep RETRY_SLEEP
         retry
       end
-    rescue Exception=>error
+    rescue StandardError=>error
       # log_fail "graph_api.get_connections() #{error.message}"
       # delayed_do_retrieve(since, hasta)
       puts "   retrieve #{error.message}" 

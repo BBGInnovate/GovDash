@@ -27,7 +27,7 @@ rake=/home/uberdash/.rvm/rubies/ruby-2.2.1/bin/rake
 bundle=/home/uberdash/.rvm/gems/ruby-2.2.1/bin/bundle
 #
 aliases=( 54.227.246.200 54.227.248.152 )
-array=( 1 )
+array=( 0 )
 
 configs="config/database.yml config/email.yml config/facebook.yml config/rabbit.yml config/twitter.yml \
   config/youtube.yml config/s3.yml config/sitecatalyst.yml \

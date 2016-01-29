@@ -248,25 +248,23 @@ class FacebookAccount < Account
       # for today only
       daily_aggregate_data
     rescue Exception=>ex
-      logger.error ex.message
+      logger.error "  retrieve daily_aggregate_data #{ex.message}"
     end
     begin
       # for past 7 days if no argument 
       aggregate_data_daily
     rescue Exception=>ex
-      logger.error ex.message
+      logger.error "  retrieve aggregate_data_daily #{ex.message}"
     end
-    
-    aggregate_data 1,'day', true
+    # create additional fb_pages if neccessary
+    # aggregate_data 1,'day', true
     # recent_page available after aggregate_data
     save_lifetime_data
-
     ended=Time.now.strftime("%Y-%m-%d %H:%M:%S .%L")
     puts "  id #{self.id} finished retrieve #{started} - #{ended} "
     STDOUT.flush
   end
-  
-    
+
   def do_retrieve(since=7.days.ago, hasta=DateTime.now.utc, rabbit=false)
     ret = false
     started = DateTime.now.utc
@@ -298,7 +296,7 @@ class FacebookAccount < Account
           send_mq_message(rabbit)
         else
           ## save_post_details
-        #  save_posts_details
+          #  save_posts_details
         end
       rescue Exception=>error
         # log_fail "process_posts() #{error.message}"
@@ -509,9 +507,9 @@ class FacebookAccount < Account
        FacebookAccount.bulk_update_posts [:likes,:comments,:shares],@posts_update 
        @posts_update = {}
      end
-#     aggregate_data 1,'day', true
+     # aggregate_data 1,'day', true
      # recent_page available after aggregate_data
-#     save_lifetime_data
+     # save_lifetime_data
   end
   
   def self.save_lifetime_data
@@ -853,27 +851,29 @@ end
                     where(post_created_time:  current_date..current_date.end_of_day).to_a.first
 =end
        if posts.size > 0
-          options = {:likes=>posts.sum(&:likes), 
-                 :comments=>posts.sum(&:comments),
-                 :shares=>posts.sum(&:shares),
-                 :posts => posts.size,
-                 :replies_to_comment => posts.sum(&:replies_to_comment)
-                }
-           options[:post_created_time] = current_date.end_of_day
-           # find_or_create_page(options)
-           rec = my_account_pages.detect{|pa| pa.post_date==current_date.strftime('%Y%m%d')}
-           if !rec
-             rec = FbPage.create :account_id => self.id, 
-               :post_created_time=>created_time.middle_of_day,
-               :object_name => self.object_name
-           end
-           options.delete :post_created_time
+         options = construct_sum posts
+         rec = my_account_pages.detect{|pa| pa.post_date==current_date.strftime('%Y%m%d')}
+         if rec
            rec.update_attributes options
+         else
+           options[:post_created_time] = created_time.middle_of_day
+           options[:account_id] = self.id
+           options[:object_name] = self.object_name
+           rec = FbPage.create options
+         end
        else
          #   logger.debug " aggregate_data_daily NOT RECORDS for #{start_date.to_s(:db)} .. #{end_date.to_s(:db)}"
        end
        current_date += 1.day
     end
+  end
+  # return hash
+  def construct_sum posts
+    options = {:posts => posts.size}
+    [:likes, :comments, :shares, :replies_to_comment].each do | col |
+      options[col] = posts.sum{|e| e.send(col).to_i} 
+    end
+    options
   end
   
   def self.bulk_update_posts columns, data
@@ -967,23 +967,25 @@ end
              (end_of.beginning_of_day..end_of.end_of_day)).
              first
   end
-
+  # create fb_page and return aggregated data
   # period 1.day or 1.week or 1.month
   def aggregate_data number=1, unit="month", create_page=false
     increment = instance_eval("#{number}.#{unit}")
     end_of_today = DateTime.now.utc.end_of_day
     current_date = end_of_today
     my_arr = []
-    my_account_pages(true)
-    @bulk_page_insert = []
+    @bulk_insert=[]
+    @bulk_update={}
     while current_date > min_post_date do
       beginning_of_ = (current_date-increment+1.day).beginning_of_day.to_s(:db)
       end_of_ = current_date
       if end_of_ > end_of_today
          break
       end
+      # puts "DATE #{current_date} > #{min_post_date}"
       end_of_ = end_of_.to_s(:db)
       data = select_aggregated_data beginning_of_, end_of_
+      
       options = {:likes=>data.likes, 
                  :comments=>data.comments,
                  :shares=>data.shares,
@@ -996,57 +998,47 @@ end
                 }
       if create_page
        # find_or_create_page(options)
+
         options[:post_created_time] = current_date
         created_time = options[:post_created_time]
         begin_date = created_time.beginning_of_day
         end_date = created_time.end_of_day
-        rec = my_account_pages.detect{|pa| pa.post_date==end_date.strftime('%Y%m%d')}
-        # rec = FbPage.where(account_id: self.id).
-        #        where(post_created_time: (begin_date..end_date)).first
+        rec = FbPage.where(account_id: self.id).
+                where(post_created_time: (begin_date..end_date)).first
         attr = {:account_id => self.id, 
                 :post_created_time=>created_time.middle_of_day,
                 :object_name => self.object_name}
         if rec
-          # @bulk_page_update[rec.id] =  attr
-        elsif !@bulk_page_insert.detect{|pa| pa[:post_created_time]==created_time.middle_of_day}
-          @bulk_page_insert << attr
+          @bulk_update[rec.id] =  attr
+        else
+          @bulk_insert << attr
         end
+    
       end
       # current_date = current_date - increment
       current_date = current_date - 1.day
     end
-    if !@bulk_page_update.blank?
+    if !@bulk_update.blank?
       FbPage.transaction do
         FbPage.update @bulk_update.keys, @bulk_update.values
-        @bulk_page_update = {}
+        @bulk_update = {}
       end
-    elsif !@bulk_page_insert.empty?
+    elsif !@bulk_insert.empty?
       FbPage.transaction do
-        FbPage.import_bulk! @bulk_page_insert
-        @bulk_page_insert = []
+        FbPage.import_bulk! @bulk_insert
+        @bulk_insert = []
       end
     end
     my_arr.reverse
   end
-  
+
+  #
+  # return FbPost object
   def select_aggregated_data beginning_of, end_of
-    if String === end_of
-      date = end_of.split(' ').first.gsub('-','')
-    else
-      date = end_of.strftime('%Y%m%d')
-    end
-    data= my_account_posts.select{|po| po.post_date == date}
-    OpenStruct.new :post_count=>data.size,
-       :likes=>data.sum(&:likes),
-       :comments=>data.sum(&:comments),
-       :shares=>data.sum(&:shares),
-       :replies_to_comment=>data.sum(&:replies_to_comment)
-=begin    
     data = recent_posts.select("count(*) AS post_count,sum(likes) as likes, sum(comments) as comments, sum(shares) as shares,sum(replies_to_comment) as replies_to_comment").
         where(post_type: 'original').
         where(post_created_time: (beginning_of..end_of)).
         first
-=end
   end
   
   def collect_started

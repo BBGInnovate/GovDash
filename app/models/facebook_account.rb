@@ -276,7 +276,7 @@ class FacebookAccount < Account
       objectname = self.object_name.split("/").last.gsub(/\?$/, "")
       posts = graph_api.get_connections(objectname, "posts", {:fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta}, { request: { timeout: 10 } }).to_a
       ret = true
-    rescue Koala::Facebook::ClientError=>error
+    rescue Exception,Koala::Facebook::ClientError=>error
       puts " graph_api.get_connections() #{error.message}"
       logger.debug "  ClientError retrieve #{error.backtrace}" 
       if @num_attempts < self.max_attempts

@@ -19,6 +19,8 @@ class FacebookAccount < Account
      else
        since_date
      end
+     my_account_pages
+     my_account_posts
    end
 
   # those account ids are retrieved with longer dates
@@ -196,22 +198,7 @@ class FacebookAccount < Account
      # for cronjob log:     
      puts msg
   end
-
-  def my_account_pages(load=false)
-    if load
-      @my_account_pages = self.fb_pages.reload.select("id,DATE_FORMAT(post_created_time,'%Y%m%d') AS post_date").where("post_created_time > '#{@since_date}'").to_a  
-    else
-      @my_account_pages ||= self.fb_pages.select("id,DATE_FORMAT(post_created_time,'%Y%m%d') AS post_date").where("post_created_time > '#{@since_date}'").to_a  
-    end
-  end
-  def my_account_posts(load=false)
-    if load
-      @my_account_posts = self.fb_posts.reload.select("id,likes,comments,shares,replies_to_comment,post_id,post_created_time,DATE_FORMAT(post_created_time,'%Y%m%d') AS post_date").where("post_created_time > '#{@since_date}'").to_a
-    else
-      @my_account_posts ||= self.fb_posts.select("id,likes,comments,shares,replies_to_comment,post_id,post_created_time,DATE_FORMAT(post_created_time,'%Y%m%d') AS post_date").where("post_created_time > '#{@since_date}'").to_a
-    end
-  end  
-  #
+  
   # finish 1 years data for voiceofamerica: 1.5hours
   # 
   def retrieve
@@ -233,12 +220,12 @@ class FacebookAccount < Account
       hasta = since - 1
     end
     if !@bulk_update_hash.blank?
-      FacebookAccount.bulk_update_posts [:replies_to_comment,:post_created_time], @bulk_update_hash
+      # FbPost.update_bulk! [:replies_to_comment,:post_created_time], @bulk_update_hash
+      FbPost.update_bulk! @bulk_update_hash
       @bulk_update_hash = {}
     end
-
     if !@bulk_insert_array.empty?
-      puts "  process_posts call FbPost.import_bulk!"
+      # puts "  retrieve call FbPost.import_bulk!"
       FbPost.import_bulk! @bulk_insert_array
       @bulk_insert_array = []
     end
@@ -504,7 +491,7 @@ class FacebookAccount < Account
      end
      
      if !@posts_update.empty?
-       FacebookAccount.bulk_update_posts [:likes,:comments,:shares],@posts_update 
+       FbPost.update_bulk! @posts_update 
        @posts_update = {}
      end
      # aggregate_data 1,'day', true
@@ -895,18 +882,23 @@ end
     duration = ended.to_i - started.to_i
     puts "#{data.keys.size} posts updated in #{duration} seconds"
   end
-  # bulk_update_column 'fb_posts', 'id', 'post_type', {417439=>'test-original'}
-  def self.bulk_update_column table, id_column, update_column, ids_hash
-    sql = "update #{table} set #{update_column} = CASE #{id_column} "
-    ids_hash.each_pair do | id, val |
-      sql += " WHEN #{id} THEN '#{val}'";
-    end
-    sql += " END WHERE #{id_column} in ( #{ids_hash.keys.join(',')} ) "
-    puts "  bulk_update_column sql size: #{sql.size}"
-    connection.execute sql
-  end
         
   protected
+  
+  def my_account_pages(load=false)
+    if load
+      @my_account_pages = self.fb_pages.reload.select("id,DATE_FORMAT(post_created_time,'%Y%m%d') AS post_date").where("post_created_time > '#{@since_date}'").to_a  
+    else
+      @my_account_pages ||= self.fb_pages.select("id,DATE_FORMAT(post_created_time,'%Y%m%d') AS post_date").where("post_created_time > '#{@since_date}'").to_a  
+    end
+  end
+  def my_account_posts(load=false)
+    if load
+      @my_account_posts = self.fb_posts.reload.select("id,likes,comments,shares,replies_to_comment,post_id,post_created_time,DATE_FORMAT(post_created_time,'%Y%m%d') AS post_date").where("post_created_time > '#{@since_date}'").to_a
+    else
+      @my_account_posts ||= self.fb_posts.select("id,likes,comments,shares,replies_to_comment,post_id,post_created_time,DATE_FORMAT(post_created_time,'%Y%m%d') AS post_date").where("post_created_time > '#{@since_date}'").to_a
+    end
+  end
   # TODO not in use
   def find_or_create_page(options)
     created_time = options.delete :post_created_time

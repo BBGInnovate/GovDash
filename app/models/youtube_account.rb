@@ -347,6 +347,7 @@ class YoutubeAccount < Account
                      ch.subscribers.to_i - pre_ch.subscribers.to_i
 
     end
+=begin
     changed = false
     if ch.video_comments != data.video_comments
       ch.video_comments = data.video_comments
@@ -364,6 +365,11 @@ class YoutubeAccount < Account
       ch.video_views = data.video_views
       changed = true
     end
+=end
+    ch.video_comments = data.video_comments
+    ch.video_favorites = data.video_favorites
+    ch.video_likes = data.video_likes
+    ch.video_views = data.video_views
     ch.save if ch.changed?
   end
   
@@ -376,10 +382,10 @@ class YoutubeAccount < Account
   end
 end
 =begin
-  video = Yt::Video.new id: 'ILG4_0ZWScc'
-  video.title #=> "Fullscreen Creator Platform"
+  video = Yt::Video.new id: '0dktCpsvxuw'
+  video.title 
   video.like_count
-  video.comment_count #=> 308
+  video.comment_count 
   video.view_count
   video.hd? #=> true
   video.annotations.count #=> 1

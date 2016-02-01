@@ -3,6 +3,16 @@ class TwitterAccount < Account
   has_many :tw_timelines,  -> { order 'tweet_created_at desc' }, :foreign_key=>:account_id
   has_many :tw_tweets,  -> { order 'tweet_created_at desc' }, :foreign_key=>:account_id
   
+  after_initialize :do_this_after_initialize
+  
+  def do_this_after_initialize
+    @bulk_tweets_array = []
+    @bulk_tweets_hash = {}
+    if self.new_item?
+      @since_date = 6.months.ago
+    end
+  end
+  
   def self.config
     TwitterApp.config
   end
@@ -43,13 +53,10 @@ class TwitterAccount < Account
      # log_error msg,level
   end
   def retrieve(rabbit_channel=false)
+    ret = true
     retry_count = 0
-    @bulk_insert = []
     self.is_download = false
     begin
-      if self.new_item?
-        @since_date = 6.months.ago
-      end
       timelines = request_twitter
       puts "timelines size : #{timelines.size}"
       upload_timeline timelines
@@ -63,29 +70,36 @@ class TwitterAccount < Account
       logger.info "   #{self.id} since: #{since_date.to_s(:db)} retrieve success"
       self.update_attributes :new_item=>false,:status=>true,:updated_at=>DateTime.now.utc
       return 'Success'
-    rescue Timeout::Error => execution_expired
+    rescue Timeout::Error, Exception => execution_expired
       retry_count += 1
       if retry_count < 2
         logger.error " #{execution_expired.message} retry in 10 sec..."
         sleep 10
         retry
       else
-        return false
+        ret = false
       end  
     rescue Exception=>error
       log_fail error.message
       logger.error "   #{error.backtrace}"
       self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
-      return false
+      ret = false
       # raise error.message
+    ensure
+      if !@bulk_tweets_array.empty?
+        TwTweet.import_bulk! @bulk_tweets_array
+        @bulk_tweets_array = []
+      end
+      if !@bulk_tweets_hash.blank?
+        TwTweet.update_bulk! @bulk_tweets_hash
+      end
+      ret
     end
   end
   def delayed_retrieve()
     retrieve
   end
   # handle_asynchronously :delayed_retrieve,:run_at => Proc.new { 1.hour.from_now }
-  
-
 
   def request_twitter timelines=nil
     @num_attempts = 0
@@ -139,7 +153,7 @@ class TwitterAccount < Account
         raise RepeatedFailException.new("request_twitter")
       end
     rescue Exception => error
-      log_fail error.message
+      # log_fail error.message
       logger.error("in request_twitter #{error.message}")
       # raise Exception.new("in request_twitter #{error.message}")
     end
@@ -161,11 +175,9 @@ class TwitterAccount < Account
   def process_timelines(timelines)
     logger.debug "   process_timelines count #{timelines.size}"
     sleep 2
-        
     @total_num_retweets = 0
-    
     return if timelines.empty? || timelines.size==1
-    @bulk_tweets = []
+    # @bulk_tweets_array = []
     # TODO this is lifetime followers at present
     # total_followers_count = timelines[0].user.followers_count
     timelines.each do | t |
@@ -189,7 +201,15 @@ class TwitterAccount < Account
                 :mentions => t.user_mentions.size}
       end
       STDOUT.flush
-      find_or_create_tweet(options)
+      # find_or_create_tweet(options)
+      re = self.tw_tweets.find_by tweet_id: options[:tweet_id]
+      options[:tweet_created_at] = options[:tweet_created_at].to_s(:db)
+      if re
+        options.delete :tweet_id
+        @bulk_tweets_hash[re.id] = options
+      else
+        @bulk_tweets_array << options
+      end
       if t.created_at  < since_date
          logger.debug "  process_timelines break  #{t.created_at}  < #{since_date}"
          break
@@ -197,14 +217,14 @@ class TwitterAccount < Account
     end
     puts "total_num_retweets : #{@total_num_retweets}"
     puts " total original : #{timelines.size - @total_num_retweets}"
-    unless @bulk_tweets.empty?
-      last_id = TwTweet.import!(@bulk_tweets)
-      from_id = last_id - @bulk_tweets.size
-      # sync to Redshif database
-      # RedshiftTwTweet.upload from_id
-      @bulk_tweets = []
-      reload_tw_tweets
-    end
+    # unless @bulk_tweets_array.empty?
+      # last_id = TwTweet.bulk_import!(@bulk_tweets_array)
+      ## from_id = last_id - @bulk_tweets_array.size
+      ## sync to Redshif database
+      ## RedshiftTwTweet.upload from_id
+      # @bulk_tweets_array = []
+      # reload_tw_tweets
+    # end
     last_tweet = timelines.last 
     if last_tweet.created_at > since_date
       begin
@@ -244,7 +264,7 @@ class TwitterAccount < Account
       current_date = current_date - 1.day
     end
     unless @bulk_timelines.empty?
-      last_id = TwTimeline.import! @bulk_timelines
+      last_id = TwTimeline.import_bulk! @bulk_timelines
       from_id = last_id - @bulk_timelines.size
       # sync to Redshif database
       # RedshiftTwTimeline.upload from_id
@@ -632,19 +652,18 @@ class TwitterAccount < Account
     end
     timeline
   end
-  
-  
+
   def find_or_create_tweet(options)
     # re = my_tweets.select{|t| t.tweet_id==options[:tweet_id]}.first
     re = self.tw_tweets.find_by tweet_id: options[:tweet_id]
     if !re
-      @bulk_tweets << options
+      @bulk_tweets_array << options
     else
       options.delete :tweet_id
       re.update_attributes options
     end
   end
-  
+
   def my_timelines
     @my_timelines = recent_timelines
   end
@@ -753,7 +772,7 @@ class TwitterAccount < Account
   end
   
   protected
-  
+
 end
 =begin
   a.client.status 687662009584848897

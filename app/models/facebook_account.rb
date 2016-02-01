@@ -26,7 +26,11 @@ class FacebookAccount < Account
   # those account ids are retrieved with longer dates
   # say retrieve(6.months.ago)
   def self.more_history_data_ids
-    []
+    if Facebook.config[:more_history_data_ids]
+      Facebook.config[:more_history_data_ids].split(',').map(&:to_i)
+    else
+      []
+    end
   end
   
   # 0 * * * * source /home/uberdash/.rvm/scripts/rvm && cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  'FacebookAccount.start_job'  > /tmp/fb-start-job.log 2>&1

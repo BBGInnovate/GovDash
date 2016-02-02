@@ -58,7 +58,8 @@ module Api::ReportsHelper
     begin
       ReplicaAccount.where("is_active=1").select("id, name, object_name, media_type_name, contact").
         where(["id in (?)", @options[:account_ids]]).to_a
-    rescue 
+    rescue Exception=>ex
+      logger.error "  ReportsHelper#accounts #{ex.message}"
       []
     end
   end 

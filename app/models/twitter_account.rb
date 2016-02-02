@@ -2,17 +2,7 @@ class TwitterAccount < Account
   attr_accessor :show_raw, :is_download
   has_many :tw_timelines,  -> { order 'tweet_created_at desc' }, :foreign_key=>:account_id
   has_many :tw_tweets,  -> { order 'tweet_created_at desc' }, :foreign_key=>:account_id
-  
-  after_initialize :do_this_after_initialize
-  
-  def do_this_after_initialize
-    @bulk_tweets_array = []
-    @bulk_tweets_hash = {}
-    if self.new_item?
-      @since_date = 6.months.ago
-    end
-  end
-  
+
   def self.config
     TwitterApp.config
   end
@@ -55,6 +45,8 @@ class TwitterAccount < Account
   def retrieve(rabbit_channel=false)
     ret = true
     retry_count = 0
+    @bulk_tweets_array = []
+    @bulk_tweets_hash = {}
     self.is_download = false
     begin
       timelines = request_twitter
@@ -78,13 +70,7 @@ class TwitterAccount < Account
         retry
       else
         ret = false
-      end  
-    rescue Exception=>error
-      log_fail error.message
-      logger.error "   #{error.backtrace}"
-      self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
-      ret = false
-      # raise error.message
+      end
     ensure
       if !@bulk_tweets_array.empty?
         TwTweet.import_bulk! @bulk_tweets_array

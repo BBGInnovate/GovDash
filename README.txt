@@ -15,12 +15,12 @@ youtube.yml
 Setup Devise and OmniAuth for OAuth2 Authentication to Google
   Create a Google Development Project
     with callback uri:
-      http://localhost:3000/users/auth/google_oauth2
+      http://localhost:3000/users/auth/google_oauth2/callback
     
   Login to https://console.developers.google.com/apis/credentials/
     choose a OAuth 2.0 client IDs and click "Download JSON".
     save the json file to
-    connfig/client_secrets.json
+    config/client_secrets.json
     
   Create database table google_access_tokens to store token and refresh_token
   

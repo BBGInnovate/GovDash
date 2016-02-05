@@ -5,12 +5,21 @@ source 'https://rubygems.org'
 
 gem 'rake'
 gem 'rack-oauth2'
-# gem 'rails', '~> 4.2.0'
+gem 'rails', '~> 4.2.0'
 # gem  "activesupport"
+gem 'mysql2'
 gem 'activerecord-import'
+gem 'rest-client'
+  
+gem 'omniauth', '~> 1.3.1'
+gem 'omniauth-google-oauth2'
+gem 'google-api-client', require: 'google/api_client'
+# gem 'trollop'
+
+#gem 'google_drive'
+## gem 'googleauth'
 
 gem 'thin'
-gem 'mysql2'
 # gem 'activerecord4-redshift-adapter', github: 'aamine/activerecord4-redshift-adapter'
 gem 'activerecord4-redshift-adapter', github: 'khwangster/activerecord4-redshift-adapter'
 # gem 'activerecord-redshift-adapter', '~> 0.9.4'
@@ -31,8 +40,8 @@ gem 'oauth'
 gem 'twitter_oauth'
 # gem 'roo' # Open Office
 gem 'therubyracer'
-gem 'bunny'
-gem 'amqp'
+# gem 'bunny'
+# gem 'amqp'
 gem 'rails-observers'
 # gem 'email_verifier'
 # gem 'valid_email', require: ['valid_email/all_with_extensions']
@@ -42,9 +51,8 @@ gem 'delayed_job_active_record'
 # rails generate delayed_job
 # RAILS_ENV=production bin/delayed_job restart
 #
-gem 'clockwork'
-gem 'stalker'
-
+# gem 'clockwork'
+# gem 'stalker'
 # gem 'rabbit_jobs'
 
 gem 'active_scaffold' #, '>= 3.4.0.rc', :path => "vendor/plugins/active_scaffold"

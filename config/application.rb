@@ -48,8 +48,8 @@ module Radd
       File.open("#{Rails.root.to_s}/config/email.yml")
     )[Rails.env]
     config.action_mailer.smtp_settings = EMAIL_SETTINGS
-    
     config.active_record.observers = :error_log_observer,:account_observer
+
 =begin  
   IAM User Name : oddidev.bbg
   When you are in the sandbox, your sending quota is 200 messages per 24-hour period and

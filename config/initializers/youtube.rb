@@ -1,5 +1,6 @@
-YoutubeConf = 
-  YAML.load_file("#{Rails.root}/config/youtube.yml")[Rails.env].symbolize_keys
+unless defined? YoutubeConf
+  YoutubeConf = Rails.application.config_for("youtube").symbolize_keys
+end
 
 Yt.configure do |config|
   config.api_key = YoutubeConf[:api_key]

@@ -169,8 +169,9 @@ class YoutubeAccount < Account
       
         chs = YtChannel.where(sql).order("published_at desc").to_a
         if chs.size == 2
-           chs[0].update_column :video_subscribers,
-                     (chs[0].subscribers.to_i - chs[1].subscribers.to_i)
+          subs = chs[0].subscribers.to_i - chs[1].subscribers.to_i
+          subs = 0 if subs < 0
+          chs[0].update_column :video_subscribers, subs           
         end
       end
       init_date += 1.day 
@@ -232,7 +233,9 @@ class YoutubeAccount < Account
       pre_ch = YtChannel.find_by account_id: self.id,
                 published_at: "'#{pre_day}'"
       if pre_ch
-        yt_ch.video_subscribers = (yt_ch.subscribers.to_i - pre_ch.subscribers.to_i)
+        subs = yt_ch.subscribers.to_i - pre_ch.subscribers.to_i
+        subs = 0 if subs < 0
+        yt_ch.video_subscribers = subs
       end
       self.update_profile
     rescue Exception=>ex
@@ -334,8 +337,9 @@ class YoutubeAccount < Account
         "account_id" => self.id,
         "channel_id" => self.channel.id
       if pre_ch
-        attr.merge! "video_subscribers" => 
-                     attr["subscribers"].to_i - pre_ch.subscribers.to_i
+        subs  = attr["subscribers"].to_i - pre_ch.subscribers.to_i
+        subs = 0 if subs < 0
+        attr.merge! "video_subscribers" => subs              
       end
     
       @channel_insert << attr
@@ -343,9 +347,9 @@ class YoutubeAccount < Account
     end
     
     if pre_ch
-      ch.video_subscribers = 
-                     ch.subscribers.to_i - pre_ch.subscribers.to_i
-
+      subs = ch.subscribers.to_i - pre_ch.subscribers.to_i
+      subs = 0 if subs < 0
+      ch.video_subscribers = subs
     end
 =begin
     changed = false

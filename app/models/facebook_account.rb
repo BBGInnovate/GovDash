@@ -824,13 +824,14 @@ end
   # for start_date thru end_date fb_pages, default for 7.days
   # set likes, shares etc for each day
   def aggregate_data_daily start_date=7.days.ago, end_date=Time.now
-    start_date = Time.zone.parse start_date if String ===  start_date
-    end_date = Time.zone.parse end_date if String ===  end_date
+    start_date = Time.zone.parse start_date if String === start_date
+    end_date = Time.zone.parse end_date if String === end_date
     current_date = start_date.beginning_of_day
     # reload @my_account_pages
     my_account_pages(true)
     my_arr = []
-    my_posts = fb_posts.select("DATE_FORMAT(post_created_time,'%Y%m%d') AS post_date,likes, comments, shares, replies_to_comment").where("post_created_time > '#{current_date}'").to_a       
+    my_posts = fb_posts.reload.select("DATE_FORMAT(post_created_time,'%Y%m%d') AS post_date,likes, comments, shares, replies_to_comment").
+       where("post_created_time > '#{current_date}'").to_a       
     while current_date < end_date do
       logger.debug " aggregate_data_daily for #{current_date.to_s(:db)}"
       posts= my_posts.select{|po| po.post_date == current_date.strftime('%Y%m%d')}
@@ -841,28 +842,37 @@ end
                     where(post_type: 'original').
                     where(post_created_time:  current_date..current_date.end_of_day).to_a.first
 =end
-       if posts.size > 0
+       rec = my_account_pages.detect{|pa| pa.post_date==current_date.strftime('%Y%m%d')}
+       # if posts.size > 0
          options = construct_sum posts
+         # p "  AAA #{current_date.strftime('%Y%m%d')} #{options}"
          rec = my_account_pages.detect{|pa| pa.post_date==current_date.strftime('%Y%m%d')}
          if rec
            rec.update_attributes options
          else
-           options[:post_created_time] = created_time.middle_of_day
+           options[:post_created_time] = current_date.middle_of_day
            options[:account_id] = self.id
            options[:object_name] = self.object_name
            rec = FbPage.create options
          end
-       else
-         #   logger.debug " aggregate_data_daily NOT RECORDS for #{start_date.to_s(:db)} .. #{end_date.to_s(:db)}"
-       end
+       # else
+       #  logger.debug " aggregate_data_daily NOT RECORDS for #{start_date.to_s(:db)} .. #{end_date.to_s(:db)}"
+       # end
        current_date += 1.day
     end
   end
   # return hash
   def construct_sum posts
-    options = {:posts => posts.size}
-    [:likes, :comments, :shares, :replies_to_comment].each do | col |
-      options[col] = posts.sum{|e| e.send(col).to_i} 
+    options = {}
+    if posts.size > 0
+      options[:posts] = posts.size
+      [:likes, :comments, :shares, :replies_to_comment].each do | col |
+        options[col] = posts.sum{|e| e.send(col).to_i} 
+      end
+    else
+      [:posts,:likes, :comments, :shares, :replies_to_comment].each do | col |
+        options[col] = 0 
+      end
     end
     options
   end

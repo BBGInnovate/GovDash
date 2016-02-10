@@ -13,7 +13,7 @@ gem 'rest-client'
   
 gem 'omniauth', '~> 1.3.1'
 gem 'omniauth-google-oauth2'
-gem 'google-api-client', require: 'google/api_client'
+gem 'google-api-client', '0.8.2', require: 'google/api_client'
 # gem 'trollop'
 
 #gem 'google_drive'

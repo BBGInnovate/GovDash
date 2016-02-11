@@ -24,14 +24,16 @@ class YoutubeAnalytics
 =end
   def execute! parameters={}, api_method='analytics/v1/reports'
     @num_attempts = 0
+    # parameters['prettyPrint'] = false
+    # parameters['quotaUser'] = @channel_id
     unless parameters['ids']
-      parameters['ids'] = "contentOwner==#{self.class.content_owner}"
+      parameters['ids'] = "contentOwner==#{YoutubeConf[:content_owner]}"
     end
     unless parameters['filters']
-      parameters['filters'] = "channel==#{@channel_id}"
+    #  parameters['filters'] = "channel==#{@channel_id}"
     end
     unless parameters['fields']
-      parameters['fields'] = 'columnHeaders,rows'
+      parameters['fields'] = 'columnHeaders,rows,nextPageToken,prevPageToken,tokenPagination'
     end
     endpoint = "https://www.googleapis.com/youtube/#{api_method}"
     url = "#{endpoint}?#{parameters.to_query}"  

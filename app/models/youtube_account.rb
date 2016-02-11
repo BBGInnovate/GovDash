@@ -83,7 +83,7 @@ class YoutubeAccount < Account
   #
   def query_channel
     channel_id = self.channel.id
-    start_date = 8.years.ago
+    start_date = 8.days.ago
     if Time === start_date
       start_date = start_date.strftime('%Y-%m-%d')
     end
@@ -92,15 +92,9 @@ class YoutubeAccount < Account
       end_date = end_date.strftime('%Y-%m-%d')
     end
     @options = {'start-date' => start_date,'end-date' => end_date}
-    @options['metrics'] = 'likes,dislikes,shares,comments,views,subscribersGained,subscribersLost'
-    # @options['metrics'] += ',estimatedMinutesWatched,averageViewDuration,averageViewPercentage'
-    # @options['dimensions'] = 'day'
-    # @options['ids'] = "contentOwner==#{YoutubeConf[:content_owner]}"
-    # @options['filters'] = "channel==#{channel_id}"
-    # @options['fields'] = 'columnHeaders,rows'
-    # @options['prettyPrint'] = false
-    # @options['quotaUser'] = channel_id
-    
+    @options['metrics'] = 'likes,dislikes,shares,comments,views,subscribersGained'
+    # @options['metrics'] += ',subscribersLost,estimatedMinutesWatched,averageViewDuration,averageViewPercentage'
+    @options['dimensions'] = 'day'
     result = nil
     begin
       access_token = GoogleAccessToken.last
@@ -151,12 +145,12 @@ class YoutubeAccount < Account
     end
     if !@insert_array.empty?
       logger.debug @insert_array[0..1]
-    #  YtChannel.import_bulk! @insert_array
+      YtChannel.import_bulk! @insert_array
       @insert_array = []
     end
     if !@update_hash.blank?
       logger.debug "@update_hash size = #{@update_hash.keys.size}"
-    # YtChannel.update_bulk! @update_hash
+      YtChannel.update_bulk! @update_hash
       @update_hash = {}
     end
     

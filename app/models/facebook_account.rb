@@ -129,15 +129,11 @@ class FacebookAccount < Account
      count = 0
      no_count = 0
      begin
-<<<<<<< HEAD
-       records = self.retrieve_records from_id
-=======
        all_records = self.retrieve_records from_id
        special_accounts = self.where(["id in (?)",more_history_data_ids])
        records = all_records - special_accounts
        # special_accounts run for longer backwards date
        # bundle exec clockworkd -c app/models/clock.rb start --log
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
        range = "0..#{records.size-1}"
        if retrieve_range &&
           retrieve_range.match(/(\d+\.\.\d+)/)
@@ -251,52 +247,34 @@ class FacebookAccount < Account
     rescue Exception=>ex
       logger.error "  retrieve aggregate_data_daily #{ex.message}"
     end
-<<<<<<< HEAD
-    ended=Time.now
-    puts "   finished retrieve #{started} - #{ended}"
-=======
     # create additional fb_pages if neccessary
     # aggregate_data 1,'day', true
     # recent_page available after aggregate_data
     save_lifetime_data
     ended=Time.now.strftime("%Y-%m-%d %H:%M:%S .%L")
     puts "  id #{self.id} finished retrieve #{started} - #{ended} "
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     STDOUT.flush
   end
 
   def do_retrieve(since=7.days.ago, hasta=DateTime.now.utc, rabbit=false)
     ret = false
     started = DateTime.now.utc
-<<<<<<< HEAD
-=======
     puts " do_retrieve #{since} - #{hasta}"
     STDOUT.flush
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     @num_attempts = 0
     begin
       @num_attempts += 1
       objectname = self.object_name.split("/").last.gsub(/\?$/, "")
-<<<<<<< HEAD
-      posts = graph_api.get_connections(objectname, "posts", {:fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta}, { request: { timeout: 10 } })
-      ret = true
-    rescue Koala::Facebook::ClientError=>error
-=======
       posts = graph_api.get_connections(objectname, "posts", {:fields=>"id,actions,comments,created_time",:limit=>QUERY_LIMIT, :since=>since, :until=>hasta}, { request: { timeout: 10 } }).to_a
       ret = true
     rescue Exception,Koala::Facebook::ClientError=>error
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
       puts " graph_api.get_connections() #{error.message}"
       logger.debug "  ClientError retrieve #{error.backtrace}" 
       if @num_attempts < self.max_attempts
         sleep RETRY_SLEEP
         retry
       end
-<<<<<<< HEAD
-    rescue Exception=>error
-=======
     rescue StandardError=>error
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
       # log_fail "graph_api.get_connections() #{error.message}"
       # delayed_do_retrieve(since, hasta)
       puts "   retrieve #{error.message}" 
@@ -308,13 +286,8 @@ class FacebookAccount < Account
         if !!rabbit
           send_mq_message(rabbit)
         else
-<<<<<<< HEAD
-          # save_post_details
-          save_posts_details
-=======
           ## save_post_details
           #  save_posts_details
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
         end
       rescue Exception=>error
         # log_fail "process_posts() #{error.message}"
@@ -336,11 +309,7 @@ class FacebookAccount < Account
     return true if !posts || posts.empty?
     logger.info "Process posts size: #{posts.size}"
     STDOUT.flush
-<<<<<<< HEAD
-    # @bulk_insert = []
-=======
 #    self.fb_posts.reload
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     last_created_time = DateTime.now.utc
     posts.each do |f|
       last_created_time= DateTime.parse(f['created_time'])
@@ -365,10 +334,7 @@ class FacebookAccount < Account
         logger.debug "  process_posts #{last_created_time.to_s(:db)} < #{since_date.to_s(:db)}"
       end
     end
-<<<<<<< HEAD
-=======
 
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     # fetch lifetime page likes
     # daily_aggregate_data
     # fetch posts from next page
@@ -480,15 +446,9 @@ class FacebookAccount < Account
      count = 0
      total_processed = 0
      results = []
-<<<<<<< HEAD
-     myposts = FbPost.select('id, post_id').where(account_id: self.id).
-        where("post_created_time > '#{since_date}'").to_a
-     post_ids = myposts.map(&:post_id)
-=======
      @posts_update = {}
      my_account_posts = self.fb_posts.reload.select('id,post_id,post_created_time').where("post_created_time > '#{@since_date}'").to_a
      post_ids = my_account_posts.map(&:post_id)
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
      puts " POSTS count: #{post_ids.size}"
      post_ids.each_slice(50) do | ids |
        @num_attempts = 0
@@ -520,17 +480,10 @@ class FacebookAccount < Account
              if data['shares']
                share_count = data['shares']['count']
              end
-<<<<<<< HEAD
-             post = myposts.detect{|a| data['id'] == a.post_id}
-             post.update_attributes :likes=>like_count,
-               :comments=>comment_count,
-               :shares=>share_count
-=======
              post = my_account_posts.detect{|a| a.post_id == data['id']}
              attr = {:likes=>like_count,:comments=>comment_count,:shares=>share_count}
              @posts_update[post.id] = attr
              # post.update_attributes attr
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
            rescue Exception=>ex
              log_error "  #save_posts_details #{ex.message}"
              logger.error "    #{ex.backtrace}"  
@@ -540,11 +493,6 @@ class FacebookAccount < Account
          end
        end
      end
-<<<<<<< HEAD
-     aggregate_data 1,'day', true
-     # recent_page available after aggregate_data
-     save_lifetime_data
-=======
      
      if !@posts_update.empty?
        FbPost.update_bulk! @posts_update 
@@ -553,7 +501,6 @@ class FacebookAccount < Account
      # aggregate_data 1,'day', true
      # recent_page available after aggregate_data
      # save_lifetime_data
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
   end
   
   def self.save_lifetime_data
@@ -629,10 +576,6 @@ class FacebookAccount < Account
     end
     # @page = self.account.graph_api.get_object self.obj_name
     res = FbPage.where(:account_id=>self.id).select("sum(comments) AS comments").first
-<<<<<<< HEAD
-    
-=======
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     hash = {:total_likes=>options[:total_followers], 
             :total_comments => res.comments,
             :total_talking_about=>talking_about}
@@ -845,11 +788,7 @@ end
   # for now. Let daily_aggregate_data run for another 3 weeks
   # we may switch to FbStatNew.new to use table fbpages data
   #
-<<<<<<< HEAD
-  # This is for life time data
-=======
   # This is for life time data for today
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
   def daily_aggregate_data
     data = FbPost.select("count(*) AS post_count,sum(likes) as likes, sum(comments) as comments, sum(shares) as shares,sum(replies_to_comment) as replies_to_comment").
                   where(account_id: self.id).to_a.first
@@ -881,12 +820,8 @@ end
        logger.debug "  daily_aggregate_data NOT RECORDS for  "
     end
   end
-<<<<<<< HEAD
-  # for start_date thru end_date fb_pages
-=======
   #
   # for start_date thru end_date fb_pages, default for 7.days
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
   # set likes, shares etc for each day
   def aggregate_data_daily start_date=7.days.ago, end_date=Time.now
     start_date = Time.zone.parse start_date if String === start_date
@@ -899,31 +834,13 @@ end
        where("post_created_time > '#{current_date}'").to_a       
     while current_date < end_date do
       logger.debug " aggregate_data_daily for #{current_date.to_s(:db)}"
-<<<<<<< HEAD
-    
-=======
       posts= my_posts.select{|po| po.post_date == current_date.strftime('%Y%m%d')}
       
 =begin
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
       data = FbPost.select("count(*) AS post_count,sum(likes) as likes, sum(comments) as comments, sum(shares) as shares,sum(replies_to_comment) as replies_to_comment").
                     where(account_id:   self.id).
                     where(post_type: 'original').
                     where(post_created_time:  current_date..current_date.end_of_day).to_a.first
-<<<<<<< HEAD
-       if data
-          options = {:likes=>data.likes, 
-                 :comments=>data.comments,
-                 :shares=>data.shares,
-                 :posts => data.post_count,
-                 :replies_to_comment => data.replies_to_comment
-                }
-           options[:post_created_time] = current_date.end_of_day
-           find_or_create_page(options)
-       else
-           logger.debug " aggregate_data_daily NOT RECORDS for #{start_date.to_s(:db)} .. #{end_date.to_s(:db)}"
-       end
-=======
 =end
        rec = my_account_pages.detect{|pa| pa.post_date==current_date.strftime('%Y%m%d')}
        # if posts.size > 0
@@ -941,7 +858,6 @@ end
        # else
        #  logger.debug " aggregate_data_daily NOT RECORDS for #{start_date.to_s(:db)} .. #{end_date.to_s(:db)}"
        # end
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
        current_date += 1.day
     end
   end
@@ -1022,11 +938,7 @@ end
   end
   
   def me  
-<<<<<<< HEAD
-    feeds=graph_api.graph_call("v2.4/me")
-=======
     feeds=graph_api.graph_call("v2.5/me")
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
   end
   
   # period 1.day or 1.week or 1.month

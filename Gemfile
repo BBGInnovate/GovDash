@@ -32,12 +32,7 @@ gem 'fb_graph'
 gem "koala"
 # gem "aws-s3", github: 'bartoszkopinski/aws-s3'
 gem 'aws-sdk', '~> 2'
-<<<<<<< HEAD
-
-gem 'yt', '~> 0.25.5'
-=======
 gem 'yt' # , '~> 0.25.5'
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
 
 gem 'language_list'
 gem 'twitter', '>= 5.10.0'

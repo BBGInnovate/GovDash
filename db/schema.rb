@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160106181442) do
+ActiveRecord::Schema.define(version: 20160203124032) do
 
   create_table "account_profiles", force: :cascade do |t|
     t.integer  "account_id",      limit: 4
@@ -317,7 +317,7 @@ ActiveRecord::Schema.define(version: 20160106181442) do
     t.integer  "likes",              limit: 4
     t.integer  "comments",           limit: 4
     t.integer  "shares",             limit: 4
-    t.string   "post_type",          limit: 20
+    t.string   "post_type",          limit: 20, default: "original"
     t.integer  "replies_to_comment", limit: 4
     t.datetime "post_created_time"
     t.datetime "created_at"
@@ -355,6 +355,18 @@ ActiveRecord::Schema.define(version: 20160106181442) do
 
   add_index "fbpages", ["account_id"], name: "index_fb_pages_on_account_id", using: :btree
   add_index "fbpages", ["post_created_time"], name: "index_fb_pages_on_post_created_time", using: :btree
+
+  create_table "google_access_tokens", force: :cascade do |t|
+    t.string   "email",         limit: 255
+    t.string   "provider",      limit: 36
+    t.string   "token",         limit: 255
+    t.string   "refresh_token", limit: 255
+    t.string   "token_type",    limit: 255
+    t.string   "scope",         limit: 255
+    t.datetime "expires_at"
+    t.integer  "expires_in",    limit: 4
+    t.boolean  "expires",       limit: 1
+  end
 
   create_table "groups", force: :cascade do |t|
     t.string   "name",            limit: 100

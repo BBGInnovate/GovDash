@@ -146,11 +146,7 @@ class TwitterAccount < Account
     retweets
   end
  
-<<<<<<< HEAD
-  def is_retweet? tweet
-=======
   def is_non_auth_retweet? tweet
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     if tweet.text.match /^RT @/
       # This is a retweet
       # Use the original tweet's entities, they are more complete
@@ -165,30 +161,12 @@ class TwitterAccount < Account
   def process_timelines(timelines)
     logger.debug "   process_timelines count #{timelines.size}"
     sleep 2
-<<<<<<< HEAD
-        
     @total_num_retweets = 0
-    
-=======
-    @total_num_retweets = 0
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     return if timelines.empty? || timelines.size==1
     # @bulk_tweets_array = []
     # TODO this is lifetime followers at present
     # total_followers_count = timelines[0].user.followers_count
     timelines.each do | t |
-<<<<<<< HEAD
-      if is_retweet? t
-        # puts "process_timelines tweet_id #{t.id} is retweet"
-        # puts "process_timelines #{t.text}"
-        @total_num_retweets = @total_num_retweets + 1
-        tw = TwTweet.find_by tweet_id: t.id
-        if tw
-          # retweets by other users (not the self.id user)
-          tw.update_columns favorites: 0, retweets: 0, mentions: 0
-        end
-        next
-=======
       if is_non_auth_retweet? t
         # puts "process_timelines tweet_id #{t.id} is retweet"
         # puts "process_timelines #{t.text}"
@@ -199,7 +177,6 @@ class TwitterAccount < Account
                 :favorites => t.favorite_count, 
                 :retweets => t.retweet_count,
                 :mentions => t.user_mentions.size}
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
       else
         # puts "process_timelines tweet_id #{t.id} is original"
         options = {:account_id=>self.id,
@@ -210,9 +187,6 @@ class TwitterAccount < Account
                 :mentions => t.user_mentions.size}
       end
       STDOUT.flush
-<<<<<<< HEAD
-      find_or_create_tweet(options)
-=======
       # find_or_create_tweet(options)
       re = self.tw_tweets.find_by tweet_id: options[:tweet_id]
       options[:tweet_created_at] = options[:tweet_created_at].to_s(:db)
@@ -222,7 +196,6 @@ class TwitterAccount < Account
       else
         @bulk_tweets_array << options
       end
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
       if t.created_at  < since_date
          logger.debug "  process_timelines break  #{t.created_at}  < #{since_date}"
          break
@@ -230,16 +203,6 @@ class TwitterAccount < Account
     end
     puts "total_num_retweets : #{@total_num_retweets}"
     puts " total original : #{timelines.size - @total_num_retweets}"
-<<<<<<< HEAD
-    unless @bulk_tweets.empty?
-      last_id = TwTweet.import!(@bulk_tweets)
-      from_id = last_id - @bulk_tweets.size
-      # sync to Redshif database
-      # RedshiftTwTweet.upload from_id
-      @bulk_tweets = []
-      reload_tw_tweets
-    end
-=======
     # unless @bulk_tweets_array.empty?
       # last_id = TwTweet.bulk_import!(@bulk_tweets_array)
       ## from_id = last_id - @bulk_tweets_array.size
@@ -248,7 +211,6 @@ class TwitterAccount < Account
       # @bulk_tweets_array = []
       # reload_tw_tweets
     # end
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     last_tweet = timelines.last 
     if last_tweet.created_at > since_date
       begin

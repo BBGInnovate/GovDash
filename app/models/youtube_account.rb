@@ -85,10 +85,6 @@ class YoutubeAccount < Account
     @bulk_insert = []
     @bulk_update = {}
     puts "Started #{self.class.name}#retrieve #{self.id}"
-<<<<<<< HEAD
-    
-=======
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     begin
       process_channel
       my_videos = self.yt_videos.to_a
@@ -97,10 +93,6 @@ class YoutubeAccount < Account
       return
     end
     should_break = 0
-<<<<<<< HEAD
-    @bulk_insert = []
-=======
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     started = Time.now
     changed_videos = []
     channel.videos.each do |v|
@@ -177,14 +169,9 @@ class YoutubeAccount < Account
       
         chs = YtChannel.where(sql).order("published_at desc").to_a
         if chs.size == 2
-<<<<<<< HEAD
-           chs[0].update_column :video_subscribers,
-                     (chs[0].subscribers.to_i - chs[1].subscribers.to_i)
-=======
           subs = chs[0].subscribers.to_i - chs[1].subscribers.to_i
           subs = 0 if subs < 0
           chs[0].update_column :video_subscribers, subs           
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
         end
       end
       init_date += 1.day 
@@ -246,13 +233,9 @@ class YoutubeAccount < Account
       pre_ch = YtChannel.find_by account_id: self.id,
                 published_at: "'#{pre_day}'"
       if pre_ch
-<<<<<<< HEAD
-        yt_ch.video_subscribers = (yt_ch.subscribers.to_i - pre_ch.subscribers.to_i)
-=======
         subs = yt_ch.subscribers.to_i - pre_ch.subscribers.to_i
         subs = 0 if subs < 0
         yt_ch.video_subscribers = subs
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
       end
       self.update_profile
     rescue Exception=>ex
@@ -364,15 +347,9 @@ class YoutubeAccount < Account
     end
     
     if pre_ch
-<<<<<<< HEAD
-      ch.video_subscribers = 
-                     ch.subscribers.to_i - pre_ch.subscribers.to_i
-
-=======
       subs = ch.subscribers.to_i - pre_ch.subscribers.to_i
       subs = 0 if subs < 0
       ch.video_subscribers = subs
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     end
 =begin
     changed = false
@@ -392,14 +369,11 @@ class YoutubeAccount < Account
       ch.video_views = data.video_views
       changed = true
     end
-<<<<<<< HEAD
-=======
 =end
     ch.video_comments = data.video_comments
     ch.video_favorites = data.video_favorites
     ch.video_likes = data.video_likes
     ch.video_views = data.video_views
->>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     ch.save if ch.changed?
   end
   

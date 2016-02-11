@@ -3,6 +3,10 @@ class YtChannel < ActiveRecord::Base
   
   # after_save :sync_redshift
    
+  def video_shares
+    read_attribute :video_favorites
+  end
+
   def yt_videos
     @yt_videos ||= 
        YtVideo.where("account_id = #{self.account_id}").to_a

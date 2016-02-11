@@ -14,8 +14,9 @@ class GoogleAccessToken < ActiveRecord::Base
         tok.refresh_token!
       end
     end
+    
     def content_owner
-      YoutubeConf[:content_owner]
+      @content_owner ||= YoutubeConf[:content_owner]
     end
   end
   def refresh_token! force=false
@@ -37,34 +38,6 @@ class GoogleAccessToken < ActiveRecord::Base
       puts "  Token will expire in #{sec} seconds"
     end
   end
-
-  def channel channel_id=nil, start_date=nil, end_date=nil
-    self.class.content_owner
-    channel_id = '' unless channel_id
-    @channel_id = channel_id
-    start_date = 3.days.ago unless start_date
-    end_date = Time.zone.now unless end_date
-    @options = {}
-    @options['ids'] = "contentOwner==#{self.class.content_owner}"
-    @options['start-date'] = start_date.strftime('%Y-%m-%d')
-    @options['end-date']  = end_date.strftime('%Y-%m-%d')
-    @options['metrics'] = 'likes,dislikes,shares,comments,subscribersGained'
-    # @options['metrics'] += 'estimatedMinutesWatched,averageViewDuration,averageViewPercentage'
-    @options['dimensions'] = 'day'
-    @options['filters'] = "channel==#{channel_id}"
-    @options['fields'] = 'columnHeaders,rows'
-    # @options['prettyPrint'] = false
-    # @options['quotaUser'] = @channel_id
-    begin
-      api = YoutubeAnalytics.new self
-      result = api.execute! @options
-      p result
-    rescue => ex
-      p ex.message
-      p ex.backtrace
-    end
-  end
-
   # use google-api-client gem
   def client
     self.refresh_token!

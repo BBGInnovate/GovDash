@@ -78,6 +78,91 @@ class YoutubeAccount < Account
   end
   # handle_asynchronously :initial_load, :run_at => Proc.new {10.seconds.from_now }
   
+  #
+  # start_date is class Time or YYYY-mm-dd format
+  #
+  def query_channel
+    channel_id = self.channel.id
+    start_date = 8.years.ago
+    if Time === start_date
+      start_date = start_date.strftime('%Y-%m-%d')
+    end
+    end_date = Time.zone.now
+    if Time === end_date
+      end_date = end_date.strftime('%Y-%m-%d')
+    end
+    @options = {'start-date' => start_date,'end-date' => end_date}
+    @options['metrics'] = 'likes,dislikes,shares,comments,views,subscribersGained,subscribersLost'
+    # @options['metrics'] += ',estimatedMinutesWatched,averageViewDuration,averageViewPercentage'
+    # @options['dimensions'] = 'day'
+    # @options['ids'] = "contentOwner==#{YoutubeConf[:content_owner]}"
+    # @options['filters'] = "channel==#{channel_id}"
+    # @options['fields'] = 'columnHeaders,rows'
+    # @options['prettyPrint'] = false
+    # @options['quotaUser'] = channel_id
+    
+    result = nil
+    begin
+      access_token = GoogleAccessToken.last
+      api = YoutubeAnalytics.new access_token, self.id, channel_id
+      result = api.execute! @options
+      logger.info result
+      load_to_yt_channels result
+    rescue => ex
+      p ex.message
+      p ex.backtrace
+    end
+    result
+  end
+  
+  def load_to_yt_channels result
+    channel_id = channel.id
+    published = Time.now.middle_of_day
+    today_channel = YtChannel.find_or_create_by account_id: self.id,
+       channel_id: channel.id, published_at: published.to_s(:db)
+    
+    today_channel.subscribers = channel.subscriber_count
+    today_channel.views = channel.view_count
+    today_channel.comments = channel.comment_count
+    today_channel.videos = channel.video_count
+    today_channel.save
+    @insert_array = []
+    @update_hash = {}
+    @mychannels = YtChannel.select("id, DATE_FORMAT(published_at,'%Y-%m-%d') AS published_at").
+       where(account_id: self.id).
+       where("published_at > '#{self.since_date.beginning_of_day.to_s(:db)}'").to_a
+    begin
+      result.results.each do | rec |
+        now = Time.zone.now
+        rec[:updated_at] = now
+        ch = @mychannels.detect{|mc| mc.published_at == rec['published_at']} 
+        if ch
+          @update_hash[ch.id] = rec
+        else
+          rec['account_id'] = self.id
+          rec['channel_id'] = channel_id
+          rec['published_at'] = now.middle_of_day
+          rec[:created_at] = now
+          @insert_array << rec
+        end
+      end
+    rescue => ex
+      logger.error " load_to_yt_channels #{ex.message}"
+    end
+    if !@insert_array.empty?
+      logger.debug @insert_array[0..1]
+    #  YtChannel.import_bulk! @insert_array
+      @insert_array = []
+    end
+    if !@update_hash.blank?
+      logger.debug "@update_hash size = #{@update_hash.keys.size}"
+    # YtChannel.update_bulk! @update_hash
+      @update_hash = {}
+    end
+    
+  end
+
+
   def retrieve
     # to prevent attack from the youtube.yml, such as
     # YoutubeConf[:since_date] = "Account.destroy_all"

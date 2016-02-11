@@ -57,7 +57,7 @@ class YoutubeAccount < Account
         @bulk_insert << hs
         if @bulk_insert.size > BATCH_COUNT
           puts "  initial_load: upload data for #{@bulk_insert.size} videos"
-          YtVideo.import! @bulk_insert
+          YtVideo.import_bulk! @bulk_insert
           @bulk_insert = []
         end
       rescue Exception=>ex
@@ -68,7 +68,7 @@ class YoutubeAccount < Account
       end
     end
     puts "  initial_load: upload data for #{@bulk_insert.size} videos"
-    YtVideo.import! @bulk_insert
+    YtVideo.import_bulk! @bulk_insert
     
     summarize
     
@@ -82,22 +82,13 @@ class YoutubeAccount < Account
     # to prevent attack from the youtube.yml, such as
     # YoutubeConf[:since_date] = "Account.destroy_all"
     # 
-=begin
-    arr = YoutubeConf[:since_date].split('.')
-    n = arr[0].to_i
-    if n == 0
-      raise "  YoutubeAccount#retrieve incorrect YoutubeConf[:since_date] format"
-    end
-    unit = arr[1].match(/days|months/)
-    unless unit
-      raise "  YoutubeAccount#retrieve incorrect YoutubeConf[:since_date] format"
-    end
-    sincedate = eval("#{n}.#{unit}.#{arr[2]}")
-=end
-   
     @bulk_insert = []
+    @bulk_update = {}
     puts "Started #{self.class.name}#retrieve #{self.id}"
+<<<<<<< HEAD
     
+=======
+>>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     begin
       process_channel
       my_videos = self.yt_videos.to_a
@@ -106,7 +97,10 @@ class YoutubeAccount < Account
       return
     end
     should_break = 0
+<<<<<<< HEAD
     @bulk_insert = []
+=======
+>>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     started = Time.now
     changed_videos = []
     channel.videos.each do |v|
@@ -117,18 +111,12 @@ class YoutubeAccount < Account
           video = my_videos.select{|a| a.video_id == v.id}.first
           # video = YtVideo.find_by video_id: v.id
           if video
-            video.update_attributes hs
+            # video.update_attributes hs
+            @bulk_update[video.id] = hs
           else
-            self.yt_videos.create hs
+            # self.yt_videos.create hs
+            @bulk_insert << hs
           end
-=begin
-          @bulk_insert << hs
-          if @bulk_insert.size > BATCH_COUNT
-            puts "Process #{v.published_at.to_s(:db)}"
-            bulk_import
-            @bulk_insert = []
-          end
-=end
         rescue Exception=>ex
           logger.error "  #{self.class.name}#retrieve Id: #{self.id} Video Id: #{v.id}"
           logger.error "  #{self.class.name}#retrieve #{ex.message}"
@@ -141,12 +129,17 @@ class YoutubeAccount < Account
         break
       end
     end
-
     summarize since_date
-    
+    if !@bulk_insert.empty?
+      YtVideo.import_bulk! @bulk_insert
+      @bulk_insert = []
+    end
+    if !@bulk_update.blank?
+      YtVideo.update_bulk! @bulk_update
+      @bulk_update = {}
+    end
     ended = Time.now
     log_duration started, ended
-    @bulk_insert = []
   end
   # handle_asynchronously :retrieve, :run_at => Proc.new {10.seconds.from_now }
   
@@ -174,7 +167,7 @@ class YoutubeAccount < Account
         summary_for_day init_date, data
         if @channel_insert.size > BATCH_COUNT
           logger.debug "  #{self.class.name}#summarize upload #{@channel_insert.size}"
-          YtChannel.import! @channel_insert
+          YtChannel.import_bulk! @channel_insert
           @channel_insert = []
         end
       else
@@ -184,17 +177,22 @@ class YoutubeAccount < Account
       
         chs = YtChannel.where(sql).order("published_at desc").to_a
         if chs.size == 2
+<<<<<<< HEAD
            chs[0].update_column :video_subscribers,
                      (chs[0].subscribers.to_i - chs[1].subscribers.to_i)
+=======
+          subs = chs[0].subscribers.to_i - chs[1].subscribers.to_i
+          subs = 0 if subs < 0
+          chs[0].update_column :video_subscribers, subs           
+>>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
         end
       end
       init_date += 1.day 
     end
-    
     unless @channel_insert.empty?
-      YtChannel.import! @channel_insert
+      YtChannel.import_bulk! @channel_insert
+      @channel_insert = []
     end
-    @channel_insert = []
   end
   
   def channel
@@ -232,17 +230,7 @@ class YoutubeAccount < Account
           :views => video.view_count,
           :favorites => video.favorite_count}
   end
-  
-  def bulk_import
-    unless @bulk_insert.empty?
-      begin
-        YtVideo.import! @bulk_insert
-      rescue Exception=>ex
-        logger.error " #{self.class.name}#bulk_import #{ex.message}"
-      end
-    end
-  end
-  
+
   def process_channel
     # create daily yt_channel based on created_at
     published = Time.now.middle_of_day
@@ -258,7 +246,13 @@ class YoutubeAccount < Account
       pre_ch = YtChannel.find_by account_id: self.id,
                 published_at: "'#{pre_day}'"
       if pre_ch
+<<<<<<< HEAD
         yt_ch.video_subscribers = (yt_ch.subscribers.to_i - pre_ch.subscribers.to_i)
+=======
+        subs = yt_ch.subscribers.to_i - pre_ch.subscribers.to_i
+        subs = 0 if subs < 0
+        yt_ch.video_subscribers = subs
+>>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
       end
       self.update_profile
     rescue Exception=>ex
@@ -335,7 +329,7 @@ class YoutubeAccount < Account
     hours = total_seconds / (60 * 60)
     duration = format("%02d:%02d:%02d", hours, minutes, seconds)
     puts " #{ended.to_s(:db)} Ended #{self.class.name}"
-    puts " Duration: #{duration}"
+    puts " ID #{self.id} - Duration: #{duration}"
   end
   
   def my_yt_channels
@@ -360,8 +354,9 @@ class YoutubeAccount < Account
         "account_id" => self.id,
         "channel_id" => self.channel.id
       if pre_ch
-        attr.merge! "video_subscribers" => 
-                     attr["subscribers"].to_i - pre_ch.subscribers.to_i
+        subs  = attr["subscribers"].to_i - pre_ch.subscribers.to_i
+        subs = 0 if subs < 0
+        attr.merge! "video_subscribers" => subs              
       end
     
       @channel_insert << attr
@@ -369,10 +364,17 @@ class YoutubeAccount < Account
     end
     
     if pre_ch
+<<<<<<< HEAD
       ch.video_subscribers = 
                      ch.subscribers.to_i - pre_ch.subscribers.to_i
 
+=======
+      subs = ch.subscribers.to_i - pre_ch.subscribers.to_i
+      subs = 0 if subs < 0
+      ch.video_subscribers = subs
+>>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     end
+=begin
     changed = false
     if ch.video_comments != data.video_comments
       ch.video_comments = data.video_comments
@@ -390,6 +392,14 @@ class YoutubeAccount < Account
       ch.video_views = data.video_views
       changed = true
     end
+<<<<<<< HEAD
+=======
+=end
+    ch.video_comments = data.video_comments
+    ch.video_favorites = data.video_favorites
+    ch.video_likes = data.video_likes
+    ch.video_views = data.video_views
+>>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     ch.save if ch.changed?
   end
   
@@ -401,5 +411,14 @@ class YoutubeAccount < Account
     end
   end
 end
+=begin
+  video = Yt::Video.new id: '0dktCpsvxuw'
+  video.title 
+  video.like_count
+  video.comment_count 
+  video.view_count
+  video.hd? #=> true
+  video.annotations.count #=> 1
+=end
 
 

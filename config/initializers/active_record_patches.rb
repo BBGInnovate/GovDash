@@ -32,6 +32,57 @@ class ActiveRecord::Base
     end
     nil
   end
+  # attributes_array - array of attributes to be inserted
+  def self.import_bulk! attributes_array
+    tmp = []
+    attributes_array.each  do | rec | 
+       tmp << self.new(rec)
+    end
+    # from gem activerecord-import
+    self.import tmp
+  end
+  # columns - column names to be updated
+  # data = { 1=>{:col1=>'val1',:col2=>'val2'}, 2=>{:col2=>'val2'}}
+  def self.update_bulk! data
+    if Hash != data.class
+      raise "   Input must be a Hash"
+    elsif data.blank?
+      return
+    end
+    if Hash != data.values.first.class
+      raise "   Input Hash value must be a Hash"
+    end
+    started = Time.now
+    columns = data.values.map(&:keys).flatten.uniq
+    columns.each do | col |
+      next if !self.column_names.include?(col.to_s)
+      ids_hash = {}
+      data.keys.each do | id |
+        val = data[id][col] || data[id][col.to_sym]
+        if val 
+          if !ids_hash[id]
+            ids_hash[id] = val
+          else
+            ids_hash[id].merge val
+          end
+        end
+      end
+      if !ids_hash.blank?
+        self.bulk_update_column 'id', col, ids_hash
+      end
+    end
+  end
+  
+  # bulk_update_column 'fb_posts', 'id', 'post_type', {417439=>'test-original'}
+  def self.bulk_update_column id_column, update_column, ids_hash
+    sql = "update #{self.table_name} set #{update_column} = CASE #{id_column} "
+    ids_hash.each_pair do | id, val |
+      sql += " WHEN #{id} THEN '#{val}'";
+    end
+    sql += " END WHERE #{id_column} in ( #{ids_hash.keys.join(',')} ) "
+    puts "  bulk_update_column sql size: #{sql.size}"
+    connection.execute sql
+  end
   
   def self.import!(record_list, ignore='IGNORE')
     if record_list.empty?

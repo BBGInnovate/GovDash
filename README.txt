@@ -10,7 +10,61 @@ rabbit.yml
 s3.yml 
 sitecatalyst.yml 
 twitter.yml
+youtube.yml
 
+Setup Devise and OmniAuth for OAuth2 Authentication to Google
+  Create a Google Development Project
+    with callback uri:
+      http://localhost:3000/users/auth/google_oauth2/callback
+    
+  Login to https://console.developers.google.com/apis/credentials/
+    choose a OAuth 2.0 client IDs and click "Download JSON".
+    save the json file to
+    config/client_secrets.json
+    
+  Create database table google_access_tokens to store token and refresh_token
+  
+  Modify app/models/user.rb
+    add to devise :omniauthable, :omniauth_providers => [:google_oauth2]
+  
+  Add to config/initializers/devise.rb
+    config.omniauth_path_prefix = "/users/auth"
+    config.omniauth :google_oauth2, client_id, client_secret
+    
+ Modify config/initializers/youtube.rb, add
+    config.client_id 
+    config.client_secret
+  
+  Modify confing/routes.rb
+    change devise_for :users
+    to
+    devise_for :users, :controllers => { :omniauth_callbacks => "callbacks" }
+
+  Create controller
+    app/controllers/callbacks_controller.rb with method "google_oauth2":
+    
+  Create config/initializers/omniauth.rb, add lines below:
+  
+  Rails.application.config.middleware.use OmniAuth::Builder do
+    provider :google_oauth2, YoutubeConf[:client_id], YoutubeConf[:client_secret],
+    {
+      :name => "google",
+      :scope => YoutubeConf[:scopes],
+      :prompt => "select_account",
+      :image_aspect_ratio => "square",
+      :image_size => 50,
+      :access_type => 'offline'
+    }
+  end
+  
+  Finally 
+    Clear cache for your default browser and
+    get to page http://localhost:3000/users/auth/google_oauth2
+    This will store the access token to google_access_tokens table
+    
+    Create a cron run every 50 minutes (the token expires in 0 minutes)
+    Run GoogleAccessToken.last.refresh_token_if_expired
+    
 1. MySQL database govdash_app setup
   There are two methods to set up the database.
   

@@ -2,7 +2,7 @@ class TwitterAccount < Account
   attr_accessor :show_raw, :is_download
   has_many :tw_timelines,  -> { order 'tweet_created_at desc' }, :foreign_key=>:account_id
   has_many :tw_tweets,  -> { order 'tweet_created_at desc' }, :foreign_key=>:account_id
-  
+
   def self.config
     TwitterApp.config
   end
@@ -43,13 +43,12 @@ class TwitterAccount < Account
      # log_error msg,level
   end
   def retrieve(rabbit_channel=false)
+    ret = true
     retry_count = 0
-    @bulk_insert = []
+    @bulk_tweets_array = []
+    @bulk_tweets_hash = {}
     self.is_download = false
     begin
-      if self.new_item?
-        @since_date = 6.months.ago
-      end
       timelines = request_twitter
       puts "timelines size : #{timelines.size}"
       upload_timeline timelines
@@ -63,29 +62,30 @@ class TwitterAccount < Account
       logger.info "   #{self.id} since: #{since_date.to_s(:db)} retrieve success"
       self.update_attributes :new_item=>false,:status=>true,:updated_at=>DateTime.now.utc
       return 'Success'
-    rescue Timeout::Error => execution_expired
+    rescue Timeout::Error, Exception => execution_expired
       retry_count += 1
       if retry_count < 2
         logger.error " #{execution_expired.message} retry in 10 sec..."
         sleep 10
         retry
       else
-        return false
-      end  
-    rescue Exception=>error
-      log_fail error.message
-      logger.error "   #{error.backtrace}"
-      self.update_attributes :status=>false,:updated_at=>DateTime.now.utc
-      return false
-      # raise error.message
+        ret = false
+      end
+    ensure
+      if !@bulk_tweets_array.empty?
+        TwTweet.import_bulk! @bulk_tweets_array
+        @bulk_tweets_array = []
+      end
+      if !@bulk_tweets_hash.blank?
+        TwTweet.update_bulk! @bulk_tweets_hash
+      end
+      ret
     end
   end
   def delayed_retrieve()
     retrieve
   end
   # handle_asynchronously :delayed_retrieve,:run_at => Proc.new { 1.hour.from_now }
-  
-
 
   def request_twitter timelines=nil
     @num_attempts = 0
@@ -139,14 +139,18 @@ class TwitterAccount < Account
         raise RepeatedFailException.new("request_twitter")
       end
     rescue Exception => error
-      log_fail error.message
+      # log_fail error.message
       logger.error("in request_twitter #{error.message}")
       # raise Exception.new("in request_twitter #{error.message}")
     end
     retweets
   end
  
+<<<<<<< HEAD
   def is_retweet? tweet
+=======
+  def is_non_auth_retweet? tweet
+>>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     if tweet.text.match /^RT @/
       # This is a retweet
       # Use the original tweet's entities, they are more complete
@@ -161,14 +165,19 @@ class TwitterAccount < Account
   def process_timelines(timelines)
     logger.debug "   process_timelines count #{timelines.size}"
     sleep 2
+<<<<<<< HEAD
         
     @total_num_retweets = 0
     
+=======
+    @total_num_retweets = 0
+>>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     return if timelines.empty? || timelines.size==1
-    @bulk_tweets = []
+    # @bulk_tweets_array = []
     # TODO this is lifetime followers at present
     # total_followers_count = timelines[0].user.followers_count
     timelines.each do | t |
+<<<<<<< HEAD
       if is_retweet? t
         # puts "process_timelines tweet_id #{t.id} is retweet"
         # puts "process_timelines #{t.text}"
@@ -179,6 +188,18 @@ class TwitterAccount < Account
           tw.update_columns favorites: 0, retweets: 0, mentions: 0
         end
         next
+=======
+      if is_non_auth_retweet? t
+        # puts "process_timelines tweet_id #{t.id} is retweet"
+        # puts "process_timelines #{t.text}"
+        @total_num_retweets = @total_num_retweets + 1
+        options = {:account_id=>self.id,
+                :tweet_id => t.id,
+                :tweet_created_at=>t.created_at,
+                :favorites => t.favorite_count, 
+                :retweets => t.retweet_count,
+                :mentions => t.user_mentions.size}
+>>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
       else
         # puts "process_timelines tweet_id #{t.id} is original"
         options = {:account_id=>self.id,
@@ -189,7 +210,19 @@ class TwitterAccount < Account
                 :mentions => t.user_mentions.size}
       end
       STDOUT.flush
+<<<<<<< HEAD
       find_or_create_tweet(options)
+=======
+      # find_or_create_tweet(options)
+      re = self.tw_tweets.find_by tweet_id: options[:tweet_id]
+      options[:tweet_created_at] = options[:tweet_created_at].to_s(:db)
+      if re
+        options.delete :tweet_id
+        @bulk_tweets_hash[re.id] = options
+      else
+        @bulk_tweets_array << options
+      end
+>>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
       if t.created_at  < since_date
          logger.debug "  process_timelines break  #{t.created_at}  < #{since_date}"
          break
@@ -197,6 +230,7 @@ class TwitterAccount < Account
     end
     puts "total_num_retweets : #{@total_num_retweets}"
     puts " total original : #{timelines.size - @total_num_retweets}"
+<<<<<<< HEAD
     unless @bulk_tweets.empty?
       last_id = TwTweet.import!(@bulk_tweets)
       from_id = last_id - @bulk_tweets.size
@@ -205,6 +239,16 @@ class TwitterAccount < Account
       @bulk_tweets = []
       reload_tw_tweets
     end
+=======
+    # unless @bulk_tweets_array.empty?
+      # last_id = TwTweet.bulk_import!(@bulk_tweets_array)
+      ## from_id = last_id - @bulk_tweets_array.size
+      ## sync to Redshif database
+      ## RedshiftTwTweet.upload from_id
+      # @bulk_tweets_array = []
+      # reload_tw_tweets
+    # end
+>>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
     last_tweet = timelines.last 
     if last_tweet.created_at > since_date
       begin
@@ -244,7 +288,7 @@ class TwitterAccount < Account
       current_date = current_date - 1.day
     end
     unless @bulk_timelines.empty?
-      last_id = TwTimeline.import! @bulk_timelines
+      last_id = TwTimeline.import_bulk! @bulk_timelines
       from_id = last_id - @bulk_timelines.size
       # sync to Redshif database
       # RedshiftTwTimeline.upload from_id
@@ -573,19 +617,17 @@ class TwitterAccount < Account
     tl = TwTimeline.where(cond).order("tweet_created_at")
     if !tl.empty? && 
       (tl[0].tweet_created_at.to_date==today.to_date)
-      return
+      # return if today's timeline is created 
     end
     begin
       user = twitter_user
-      
       update_profile
-      
-      hsh = {}
-      hsh['lifetime'] = user
-      S3Model.new.store(s3_filepath+"show.json", hsh.to_json) 
+      # hsh = {}
+      # hsh['lifetime'] = user
+      # S3Model.new.store(s3_filepath+"show.json", hsh.to_json) 
     rescue Exception=>error
-      logger.error "  #{error.message}"
-      raise "create_today_timeline #{error.message}"
+      logger.error "  create_today_timeline #{error.message}"
+      # raise "create_today_timeline #{error.message}"
     end
     if tl[0] && tl[0].total_followers      
       net_followers_for_day = user.followers_count - tl[0].total_followers.to_i
@@ -623,22 +665,29 @@ class TwitterAccount < Account
       timeline = self.tw_timelines.create options
       # @bulk_timelines << options
     else
-      options[:updated_at] = DateTime.now.utc
-      timeline.update_attributes options
+      # only update if any attribute changed
+      options.keys.each do | key |
+        if timeline.send(key) != options[key]
+          options[:updated_at] = DateTime.now.utc
+          timeline.update_attributes options
+          break
+        end
+      end
     end
     timeline
   end
-  
-  
+
   def find_or_create_tweet(options)
-    re = my_tweets.select{|t| t.tweet_id==options[:tweet_id]}.first
+    # re = my_tweets.select{|t| t.tweet_id==options[:tweet_id]}.first
+    re = self.tw_tweets.find_by tweet_id: options[:tweet_id]
     if !re
-      @bulk_tweets << options
+      @bulk_tweets_array << options
     else
+      options.delete :tweet_id
       re.update_attributes options
     end
   end
-  
+
   def my_timelines
     @my_timelines = recent_timelines
   end
@@ -747,7 +796,7 @@ class TwitterAccount < Account
   end
   
   protected
-  
+
 end
 =begin
   a.client.status 687662009584848897

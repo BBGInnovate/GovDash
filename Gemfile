@@ -1,28 +1,43 @@
 source 'https://rubygems.org'
+# source 'https://gems.github.com'
+
 # ruby '2.1.5'
 
 gem 'rake'
 gem 'rack-oauth2'
-# gem 'rails', '~> 4.2.0'
+gem 'rails', '~> 4.2.0'
 # gem  "activesupport"
+gem 'mysql2'
+gem 'activerecord-import'
+gem 'rest-client'
+  
+gem 'omniauth', '~> 1.3.1'
+gem 'omniauth-google-oauth2'
+gem 'google-api-client', '0.8.2', require: 'google/api_client'
+# gem 'trollop'
+
+#gem 'google_drive'
+## gem 'googleauth'
 
 gem 'thin'
-gem 'mysql2'
 # gem 'activerecord4-redshift-adapter', github: 'aamine/activerecord4-redshift-adapter'
 gem 'activerecord4-redshift-adapter', github: 'khwangster/activerecord4-redshift-adapter'
 # gem 'activerecord-redshift-adapter', '~> 0.9.4'
 
 # download http://postgresapp.com/ and add it to Applications
 # gem install pg -- --with-pg-config=/Applications/Postgres.app/Contents/Versions/9.4/bin/pg_config
-gem 'pg'
-
-
+# gem 'pg'
+# gem 'Instagram'
 gem 'fb_graph'
 gem "koala"
 # gem "aws-s3", github: 'bartoszkopinski/aws-s3'
 gem 'aws-sdk', '~> 2'
+<<<<<<< HEAD
 
 gem 'yt', '~> 0.25.5'
+=======
+gem 'yt' # , '~> 0.25.5'
+>>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
 
 gem 'language_list'
 gem 'twitter', '>= 5.10.0'
@@ -30,8 +45,8 @@ gem 'oauth'
 gem 'twitter_oauth'
 # gem 'roo' # Open Office
 gem 'therubyracer'
-gem 'bunny'
-gem 'amqp'
+# gem 'bunny'
+# gem 'amqp'
 gem 'rails-observers'
 # gem 'email_verifier'
 # gem 'valid_email', require: ['valid_email/all_with_extensions']
@@ -41,10 +56,8 @@ gem 'delayed_job_active_record'
 # rails generate delayed_job
 # RAILS_ENV=production bin/delayed_job restart
 #
-
 # gem 'clockwork'
 # gem 'stalker'
-
 # gem 'rabbit_jobs'
 
 gem 'active_scaffold' #, '>= 3.4.0.rc', :path => "vendor/plugins/active_scaffold"
@@ -74,8 +87,8 @@ end
 gem 'bower-rails'
 gem 'jquery-rails'
 gem 'twitter-bootstrap-rails'
-gem 'nokogiri', '>= 1.6.2.1'
-gem 'devise', '~> 3.2'
+gem 'nokogiri', '~> 1.6.6.2'
+gem 'devise' # , '~> 3.2'
 gem 'json'
 
 gem 'raddocs'
@@ -86,8 +99,10 @@ group :development, :test do
   gem 'rspec_api_documentation'
   gem 'better_errors'
   gem 'binding_of_caller'
-  gem "letter_opener"
+#  gem "letter_opener"
 #  gem 'brakeman', :require => false
+# gem unpack dynamics_crm --target vendor/gems
+#  gem 'dynamics_crm', :path => "vendor/gems/dynamics_crm-0.6.0"
 end
 
 group :test do

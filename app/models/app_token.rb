@@ -12,7 +12,12 @@ class AppToken < ActiveRecord::Base
       @oauth = Koala::Facebook::OAuth.new(client_id, client_secret, callback_url)
       begin
         access_token = @oauth.get_app_access_token
+<<<<<<< HEAD
         self.update_attribute :page_access_token, access_token
+=======
+        self.update_attributes page_access_token: access_token,
+            updated_at: Time.zone.now
+>>>>>>> ac072fe55a2f0bfacede5eb3f4631c6bbbe2ad49
         access_token
       rescue Exception=>ex
         times = times + 1

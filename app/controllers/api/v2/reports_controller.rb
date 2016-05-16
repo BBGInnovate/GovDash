@@ -1,4 +1,6 @@
 =begin
+ get
+ api/reports?options[account_ids][]=21
  post
 {"options":{
      "source":"youtube",

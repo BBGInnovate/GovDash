@@ -157,115 +157,54 @@ class ReplicaAccount < Replica
   #           :account_ids=>[1]   # this override all 
   #          }
   def self.get_account_ids options
-    social_network_ids = options[:social_network_ids] || []
-    options[:media_type_names] = MediaType.where(["id in (?)", social_network_ids ]).map{|m| "'#{m.name}'"}
-    
-    ids = options.delete(:account_ids) || []
-    options[:ids] = ids
-    account_type_ids = options[:account_type_ids] || []
-    organization_ids = options[:organization_ids] || []
-    group_ids = options[:group_ids] || []
-    subgroup_ids = options[:subgroup_ids] || []
-    service_ids = options[:service_ids] || []
-    language_ids = options[:language_ids] || []
-    
-    region_ids = options[:region_ids] || []
-    country_ids = options[:country_ids] || []
-    sc_segment_ids = options[:sc_segment_ids] || []
-
-    cond = []
-    account_ids = []
-    region_account_ids = []
-    country_account_ids = []
-    combined_account_ids = []
-    if !options[:account_ids]
-      options[:account_ids] = []
-    else
-      combined_account_ids << options[:account_ids]
+    options[:ids] = options.delete(:account_ids)
+    if options[:ids] && options[:ids].size > 0
+      options[:ids]
     end
-
-    [:ids, :account_type_ids, :media_type_names].each do |opt|
-       if (options[opt] && options[opt].first)
-         cond += ["#{opt.to_s.singularize} in (#{options[opt].join(',')})"]
+    social_network_ids = options.delete(:social_network_ids) || []
+    options[:media_type_names] = MediaType.where(id: social_network_ids).pluck :name
+    
+    cond = {}
+    [:account_type_ids, :media_type_names,
+     :organization_ids,:sc_segment_ids].each do |opt|
+       if (options[opt] && options[opt].size > 0)
+         cond[opt.to_s.singularize] = options[opt]
        end
     end
-    
+    combined_account_ids = []
     unless cond.empty?
-      cond = cond.join(' AND ')
-      account_ids = ReplicaAccount.where(cond).
-        pluck(:id)
-      combined_account_ids << account_ids
+      combined_account_ids.concat ReplicaAccount.where(cond).pluck(:id)
     end    
-
-    if !language_ids.empty?
-      language_account_ids = AccountsLanguage.
-          where(["language_id in (#{language_ids.join(',')})"]).
-          pluck(:account_id)
-      combined_account_ids << language_account_ids
-    end 
-    if !region_ids.empty?
-      region_account_ids = AccountsRegion.
-          where(["region_id in (#{region_ids.join(',')})"]).
-          pluck(:account_id)
-      combined_account_ids << region_account_ids
-    end
-    if !country_ids.empty?
-      country_account_ids = AccountsCountry.
-           where(["country_id in (#{country_ids.join(',')})"]).
-           pluck(:account_id)
-      combined_account_ids << country_account_ids
-    end
-    if !subgroup_ids.empty?
-      subgroup_account_ids = AccountsSubgroup.
-           where(["subgroup_id in (#{subgroup_ids.join(',')})"]).
-           pluck(:account_id)
-      combined_account_ids << subgroup_account_ids
-    elsif !group_ids.empty?
-      group_account_ids = AccountsGroup.
-           where(["group_id in (#{group_ids.join(',')})"]).
-           pluck(:account_id)
-      combined_account_ids << group_account_ids
-    elsif !organization_ids.empty?
-      org_account_ids = ReplicaAccount.
-        where(["organization_id in (?)",organization_ids]).
-        pluck(:id)
-      combined_account_ids << org_account_ids  
+    ['AccountsSubgroup','AccountsGroup','AccountsLanguage',
+     'AccountsRegion','AccountsCountry'].each do | lookup |
+      lookup_klass = lookup.constantize
+      name = lookup.split('Accounts').last
+      klass = name.constantize
+      column_id = "#{name.downcase}_id"
+      opt = options["#{name.downcase}_ids".to_sym]
+      if opt && !opt.empty?
+        combined_account_ids.concat lookup_klass.where(column_id => klass.get_ids(opt)).map(&:account_id)
+      end
     end
 
-    # remove 1 == 0 when user role is setup
+    if combined_account_ids.empty?
+      account_ids = ReplicaAccount.where("is_active=1").pluck(:id)
+    else
+      account_ids = consolidate_account_ids combined_account_ids
+    end
+    
     if !current_user.is_admin?
       user_account_ids = []
       current_user.organizations.each do |org|
-        user_account_ids << org.accounts.map(&:id)
+        user_account_ids.concat org.accounts.map(&:id)
       end
-      user_account_ids.flatten!
-    end
-    if combined_account_ids.empty?
-        account_ids = ReplicaAccount.where("is_active=1").
-          pluck(:id)
-    else
-        account_ids = consolidate_account_ids combined_account_ids
-    end
-    if !current_user.is_admin?
       account_ids = (user_account_ids & account_ids)
-    else
-      account_ids
     end
     account_ids
   end
   
   def self.consolidate_account_ids account_ids_array
-    # delete empty ones from account_ids_array
-    # account_ids_array.delete_if{|m| m.empty?}
-    if account_ids_array.size > 0
-      account_ids = account_ids_array[0]
-      account_ids_array[1..-1].each do |ids|
-        account_ids = (account_ids & ids)
-      end
-    else
-      account_ids = []
-    end
-
+    account_ids = account_ids_array.uniq
     logger.debug "CONSOLIDATED account ids #{account_ids}"
     account_ids
   end
@@ -280,8 +219,8 @@ class ReplicaAccount < Replica
   
   def self.config
     conf_name = self.name.split('Account').first.downcase
-    @config ||= 
-       YAML.load_file("#{Rails.root}/config/#{conf_name}.yml")[Rails.env].symbolize_keys
+    @config = Rails.application.config_for conf_name
+    # @config ||= YAML.load_file("#{Rails.root}/config/#{conf_name}.yml")[Rails.env].symbolize_keys
   end
     
   def months_list

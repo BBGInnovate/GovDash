@@ -64,7 +64,7 @@ class Account < ActiveRecord::Base
     if klass == 'Facebook'
       to_send = (date < 9.hours.ago)
     else
-      to_send = (date < 6.hours.ago) 
+      to_send = (date < 9.hours.ago) 
     end
     if to_send
       UserMailer.alarm_email(to, msg).deliver_now!

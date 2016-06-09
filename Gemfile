@@ -21,7 +21,7 @@ gem 'google-api-client', '0.8.2', require: 'google/api_client'
 
 gem 'thin'
 # gem 'activerecord4-redshift-adapter', github: 'aamine/activerecord4-redshift-adapter'
-gem 'activerecord4-redshift-adapter', github: 'khwangster/activerecord4-redshift-adapter'
+# gem 'activerecord4-redshift-adapter', github: 'khwangster/activerecord4-redshift-adapter'
 # gem 'activerecord-redshift-adapter', '~> 0.9.4'
 
 # download http://postgresapp.com/ and add it to Applications
@@ -51,8 +51,8 @@ gem 'delayed_job_active_record'
 # rails generate delayed_job
 # RAILS_ENV=production bin/delayed_job restart
 #
-# gem 'clockwork'
-# gem 'stalker'
+gem 'clockwork'
+gem 'stalker'
 # gem 'rabbit_jobs'
 
 gem 'active_scaffold' #, '>= 3.4.0.rc', :path => "vendor/plugins/active_scaffold"

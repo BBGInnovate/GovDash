@@ -31,6 +31,19 @@ class Account < ActiveRecord::Base
      }}, on: :create
  #    message: "Username %{value} exists." },
   
+  def self.clockworkd_pid
+     `pidof clockworkd.clock`.to_i
+  end
+  
+  def self.restart_jobs
+    pid = clockworkd_pid
+    `#{Rails.root}/gracefully-kill #{pid}`  if pid > 0
+    pid = clockworkd_pid
+    if pid == 0
+      `bundle exec clockworkd -c #{Rails.root}/app/models/clock.rb start --log`
+    end  
+  end
+  
   def self.retrieve_records from_id=0
      if from_id.to_i > 0
         from_id=" id >= #{from_id}"

@@ -37,10 +37,9 @@ module Clockwork
   end
   #  
   # start clockwork 2 minutes from now
-  s = Time.zone.now+2.minutes
-  start_at = Time.at(s).utc.strftime("%H.%M").to_f
+  start_at = Time.zone.now+2.minutes
   arr = make_arr start_at
-
+  puts "AAA #{arr}"
   every(1.hours, "Account .check_status") {Account.check_status}
   every(4.hours, "FacebookAccount .aggregate_data_daily(2.days.ago)"){FacebookAccount.aggregate_data_daily(2.days.ago)}
   every(1.day, "TwitterAccount .retrieve(30.days.ago)", :at => arr){TwitterAccount.retrieve(30.days.ago)}

@@ -5,6 +5,14 @@ require File.expand_path('../../../config/environment', __FILE__)
 
 require 'stalker'
 #
+def make_arr start_at
+  gap = 8*3600 #=> 8 hours
+  [to_time(start_at),to_time(start_at+gap),to_time(start_at+2*gap)]
+end
+  
+def to_time(seconds)
+  Time.at(seconds).utc.strftime("%H:%M")
+end
 # bundle exec clockwork app/models/clock.rb
 # RAILS_ENV=development bundle exec clockworkd -c app/models/clock.rb start --log
 # clockworkd.clock: pid file: /Users/lliu/development/hub/tmp/clockworkd.clock.pid
@@ -49,7 +57,7 @@ module Clockwork
   
   start_at = start_at + 1800
   arr = make_arr start_at
-  every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"106..400")', :at => arr]){FacebookAccount.retrieve(28.days.ago,0,"106..400")}
+  every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"106..400")', :at => arr){FacebookAccount.retrieve(28.days.ago,0,"106..400")}
   start_at = start_at + 1800
   arr = make_arr start_at  
   every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"0..15")', :at => arr){FacebookAccount.retrieve(28.days.ago,0,"0..15")}
@@ -62,15 +70,6 @@ module Clockwork
   start_at = start_at + 1800
   arr = make_arr start_at  
   every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"46..60")', :at => arr){FacebookAccount.retrieve(28.days.ago,0,"46..60")}
-
-  def make_arr start_at
-    gap = 8*3600 #=> 8 hours
-    [to_time(start_at),to_time(start_at+gap),to_time(start_at+2*gap)]
-  end
-  
-  def to_time(seconds)
-    Time.at(seconds).utc.strftime("%H:%M")
-  end
 
 end
 =begin

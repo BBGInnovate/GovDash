@@ -13,8 +13,8 @@ end
 def to_time(seconds)
   Time.at(seconds).utc.strftime("%H:%M")
 end
-# bundle exec clockwork app/models/clock.rb
-# RAILS_ENV=development bundle exec clockworkd -c app/models/clock.rb start --log
+# export RAILS_ENV=production 
+# bundle exec clockworkd -c app/models/clock.rb start --log
 # clockworkd.clock: pid file: /Users/lliu/development/hub/tmp/clockworkd.clock.pid
 module Clockwork
   log_file_path = File.expand_path('../../../tmp/clockworkd.clock.output', __FILE__)

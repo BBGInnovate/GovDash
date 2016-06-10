@@ -3,7 +3,7 @@ unless defined? YoutubeConf
 end
 
 conf_file='client_secrets.json'
-GoogleClient = Google::APIClient::ClientSecrets.load "config/#{conf_file}"
+GoogleClient = Google::APIClient::ClientSecrets.load "#{Rails.root}/config/#{conf_file}"
 
 Rails.application.config.middleware.use OmniAuth::Builder do
   provider :google_oauth2, GoogleClient.client_id, GoogleClient.client_secret, {

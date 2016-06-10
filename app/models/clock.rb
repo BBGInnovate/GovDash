@@ -21,15 +21,68 @@ module Clockwork
     config[:thread] = true
   end
   
-  every(1.minute, 'FacebookAccount.retrieve(28.days.ago,0,"76..90")'){ puts "AAA #{Time.now}"}
-  
-=begin
   every(1.hours, 'Account.check_status') {Account.check_status}
   every(4.hours, 'FacebookAccount.aggregate_data_daily(2.days.ago)'){FacebookAccount.aggregate_data_daily(2.days.ago)}
+  
+  start_at = 21600 #=>  06:00  
+  arr = make_arr start_at
+  every(1.day, 'TwitterAccount.retrieve(30.days.ago)', :at => arr){TwitterAccount.retrieve(30.days.ago)}
+  
+  start_at = start_at + 1800
+  arr = make_arr start_at
+  every(1.day, 'YoutubeAccount.retrieve', :at => arr){YoutubeAccount.retrieve}
+  start_at = start_at + 1800
+  arr = make_arr start_at
+  every(1.day, 'ScReferralTraffic.get_daily_report', :at => arr){ScReferralTraffic.get_daily_report}
+  start_at = start_at + 1800
+  arr = make_arr start_at
+  every(1.day, 'FacebookAccount.retrieve_extended(2.months.ago)', :at => arr){FacebookAccount.retrieve_extended(2.months.ago)}
+  start_at = start_at + 1800
+  arr = make_arr start_at  
+  every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"61..75")', :at => arr){FacebookAccount.retrieve_extended(2.months.ago)}
+  start_at = start_at + 1800
+  arr = make_arr start_at
+  every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"76..90")', :at => arr){FacebookAccount.retrieve(28.days.ago,0,"76..90")}
+  start_at = start_at + 1800
+  arr = make_arr start_at  
+  every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"91..105")', :at => arr){FacebookAccount.retrieve(28.days.ago,0,"91..105")}
+  
+  start_at = start_at + 1800
+  arr = make_arr start_at
+  every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"106..400")', :at => arr]){FacebookAccount.retrieve(28.days.ago,0,"106..400")}
+  start_at = start_at + 1800
+  arr = make_arr start_at  
+  every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"0..15")', :at => arr){FacebookAccount.retrieve(28.days.ago,0,"0..15")}
+  start_at = start_at + 1800
+  arr = make_arr start_at  
+  every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"16..30")', :at => arr){FacebookAccount.retrieve(28.days.ago,0,"16..30")}
+  start_at = start_at + 1800
+  arr = make_arr start_at
+  every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"31..45")', :at => arr){FacebookAccount.retrieve(28.days.ago,0,"31..45")}
+  start_at = start_at + 1800
+  arr = make_arr start_at  
+  every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"46..60")', :at => arr){FacebookAccount.retrieve(28.days.ago,0,"46..60")}
+
+  def make_arr start_at
+    gap = 8*3600 #=> 8 hours
+    [to_time(start_at),to_time(start_at+gap),to_time(start_at+2*gap)]
+  end
+  
+  def to_time(seconds)
+    Time.at(seconds).utc.strftime("%H:%M")
+  end
+
+end
+=begin
+  start_at = 21600 #>  06:00
+  every(1.hours, 'Account.check_status') {Account.check_status}
+  every(4.hours, 'FacebookAccount.aggregate_data_daily(2.days.ago)'){FacebookAccount.aggregate_data_daily(2.days.ago)}
+  
   every(1.day, 'TwitterAccount.retrieve(30.days.ago)', :at => ['6:00', '14:00','22:00']){TwitterAccount.retrieve(30.days.ago)}
+  every(1.day, 'YoutubeAccount.retrieve', :at => ['6:30', '14:30','22:30']){YoutubeAccount.retrieve}
   every(1.day, 'ScReferralTraffic.get_daily_report', :at => ['7:00', '15:00','23:00']){ScReferralTraffic.get_daily_report}
-  every(1.day, 'YoutubeAccount.retrieve', :at => ['7:30', '15:30','23:30']){YoutubeAccount.retrieve}
-  every(1.day, 'FacebookAccount.retrieve_extended(2.months.ago)', :at => ['8:00', '16:00','23:59']){FacebookAccount.retrieve_extended(2.months.ago)}
+  
+  every(1.day, 'FacebookAccount.retrieve_extended(2.months.ago)', :at => ['7:30', '15:30','22:30']){FacebookAccount.retrieve_extended(2.months.ago)}
   every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"61..75")', :at => ['9:30', '17:30', '1:30']){FacebookAccount.retrieve_extended(2.months.ago)}
   every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"76..90")', :at => ['10:00', '18:00','2:00']){FacebookAccount.retrieve(28.days.ago,0,"76..90")}
   every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"91..105")', :at => ['10:20', '18:20','2:20']){FacebookAccount.retrieve(28.days.ago,0,"91..105")}
@@ -39,5 +92,4 @@ module Clockwork
   every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"31..45")', :at => ['12:00', '20:00','4:00']){FacebookAccount.retrieve(28.days.ago,0,"31..45")}
   every(1.day, 'FacebookAccount.retrieve(28.days.ago,0,"46..60")', :at => ['12:30', '20:30','4:30']){FacebookAccount.retrieve(28.days.ago,0,"46..60")}
 =end
-end
 

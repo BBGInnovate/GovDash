@@ -36,8 +36,8 @@ class Account < ActiveRecord::Base
   end
   
   def self.restart_jobs
-    pid = clockworkd_pid
-    `#{Rails.root}/gracefully-kill #{pid}`  if pid > 0
+    # pid = clockworkd_pid
+    # `#{Rails.root}/gracefully-kill #{pid}`  if pid > 0
     pid = clockworkd_pid
     if pid == 0
       `bundle exec clockworkd -c #{Rails.root}/app/models/clock.rb start --log`

@@ -8,4 +8,4 @@ export IRBRC='/home/uberdash/.rvm/rubies/ruby-2.2.1/.irbrc'
 export RUBY_VERSION='ruby-2.2.1'
 # source /home/uberdash/.rvm/scripts/rvm && bundle exec rails runner -e production  "Scheduler.restart_jobs" 
 
-/bin/bash -l -c 'source /home/uberdash/.rvm/scripts/rvm; cd /home/uberdash/hub/current && bundle exec rails runner -e production  "Account.restart_jobs"'
+/bin/bash -l -c 'source /home/uberdash/.rvm/scripts/rvm; cd /home/uberdash/socialdash_app/current && bundle exec rails runner -e production  "Account.restart_jobs"'

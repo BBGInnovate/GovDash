@@ -1,6 +1,26 @@
 class ActiveRecord::Base
   # @topics_hash = Hash.new {|h,k| h[k] = Array.new }
   
+  def self.get_ids ids_param
+    unless self.column_names.include? 'name'
+      return ids_param.split(",")
+    end
+    ids = []
+    ids_param.split(",").each do | sid |
+      _sid = sid
+      _sid = _sid[0] if Array === _sid
+      if _sid.to_i == 0
+        obj = self.find_by name: _sid
+        if obj
+          ids << obj.id
+        end
+      else
+        ids << _sid
+      end
+    end
+    ids
+  end
+  
   def self.clear_stale_connection
      connection_pool.clear_stale_cached_connections!
   end

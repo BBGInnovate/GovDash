@@ -45,7 +45,7 @@ class FacebookAccount < Account
   end
 
 # main entry point to process facebook data
-  QUERY_LIMIT = 100
+  QUERY_LIMIT = 50
   SCHEDULED_DELAY = 1.hour.from_now
   def self.archive
      started = Time.now
@@ -1055,6 +1055,54 @@ end
     end
   end
   
+  def clean_day_page a, date, pages
+     return if pages.empty?
+     to_delete = []
+     page_class = pages.first.class
+     while (date > 21.days.ago)
+       if pages.size > 1
+         pages[1..-1].each do |p|
+           puts " delete #{a.id}: Date #{date.to_s(:db)}"
+           to_delete << p.id
+           #p.destroy!
+         end
+       else
+         # puts " skip #{a.id}: Date #{date.to_s(:db)}"
+       end
+       date = date - 1.day
+       pages = page_class.where(account_id: a.id).
+         # where("likes is null and comments  is null and  shares  is null").
+         where(post_created_time: (date.beginning_of_day..date.end_of_day)).
+         order("created_at desc").to_a
+     end
+     if !to_delete.empty?
+       # page_class.delete_all("id in (#{to_delete.join(',')})")
+       puts "  #{pages[0].object_name} Deleted #{to_delete.size} from #{page_class.table_name}"
+     else
+       puts " Account id #{a.id} Nothing to delete "
+     end
+  end
+  
+  public 
+  def delete_rows
+    FacebookAccount.where("id > 0").each do | a |
+      date = Time.zone.now
+      pages = FbPage.where(account_id: a.id).
+         # where("likes is null and comments  is null and  shares  is null").
+         where(post_created_time: (date.beginning_of_day..date.end_of_day)).
+         order("created_at desc").to_a
+     
+      clean_day_page a, date, pages
+      date = Time.zone.now
+      pages = Fbpage.where(account_id: a.id).
+         where(post_created_time: (date.beginning_of_day..date.end_of_day)).
+         order("created_at desc").to_a
+     
+      # clean_day_page a, date, pages
+    end; nil
+
+  end
+  
 end
 =begin
   "963149653720643" is a video id
@@ -1551,5 +1599,5 @@ end
     end; nil
 
   end
-  
 =end
+
